@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TraceVault | Explore</title>
+  <link rel="shortcut icon" href="WhatsApp Image 2025-05-19 at 1.39.10 AM(1).jpeg" type="image/x-icon">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background: #0f172a;
+      color: #f8fafc;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      text-align: center;
+      padding: 2rem;
+      background: #1e293b;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    header h1 {
+      font-size: 2.5rem;
+      color: #38bdf8;
+    }
+    header img {
+      position: absolute;
+      top: 1rem;
+      left: 1rem;
+      width: 40px;
+      height: 40px;
+      background-color: #f8fafc;
+      border: none;
+      border-radius: 50%;
+      object-fit: cover;
+      cursor: pointer;
+    }
+
+    @media (max-width: 768px) {
+      header img {
+      width: 30px;
+      height: 30px;
+      }
+    }
+
+    header h1 span {
+      color: #facc15;
+    }
+
+    .search-filter {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      padding: 2rem;
+      justify-content: center;
+    }
+
+    .search-filter input,
+    .search-filter select {
+      padding: 0.7rem 1rem;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      outline: none;
+    }
+
+    .search-filter input {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .search-filter select {
+      background: #1e293b;
+      color: #f8fafc;
+      border: 1px solid #334155;
+    }
+
+    .container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 2rem;
+      padding: 2rem;
+      flex: 1;
+    }
+
+    .item-card {
+      background: #1e293b;
+      padding: 1.5rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+      text-align: center;
+      transition: transform 0.3s ease, background 0.3s ease;
+    }
+
+    .item-card:hover {
+      transform: translateY(-8px);
+      background: #334155;
+    }
+
+    .item-card h3 {
+      margin-bottom: 0.5rem;
+      color: #f1f5f9;
+    }
+
+    .item-card p {
+      margin-bottom: 1rem;
+      color: #cbd5e1;
+    }
+
+    .tag {
+      background: #38bdf8;
+      color: #0f172a;
+      display: inline-block;
+      padding: 0.3rem 0.8rem;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 0.8rem;
+    }
+
+    footer {
+      text-align: center;
+      padding: 1rem;
+      background: #1e293b;
+      color: #64748b;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <img class='back' onclick=location.href='/' src="https://img.icons8.com/?size=100&id=26191&format=png&color=000000" alt="">
+    <h1>Trace<span>Vault</span></h1>
+    <p>Explore found items across campus. Use the filters to narrow your search.</p>
+  </header>
+
+  <section class="search-filter">
+    <input type="text" id="searchInput" placeholder="Search items..." />
+    <select id="filterSelect">
+      <option value="all">All Categories</option>
+      <option value="phone">Phone</option>
+      <option value="id">ID Card</option>
+      <option value="bag">Bag</option>
+      <option value="wallet">Wallet</option>
+    </select>
+  </section>
+
+  <main class="container">
+    <div class="item-card" data-category="bag">
+      <h3>Black Backpack</h3>
+      <p>Found near Faculty of Science. Has a water bottle and notebooks inside.</p>
+      <div class="tag">Found: May 16</div>
+    </div>
+
+    <div class="item-card" data-category="phone">
+      <h3>Samsung Phone</h3>
+      <p>Discovered in the school cafeteria. No visible passcode lock.</p>
+      <div class="tag">Found: May 15</div>
+    </div>
+
+    <div class="item-card" data-category="id">
+      <h3>Student ID Card - John D.</h3>
+      <p>ID for 300 level Computer Science student. Dropped at NACOSS stand.</p>
+      <div class="tag">Found: May 14</div>
+    </div>
+
+    <div class="item-card" data-category="wallet">
+      <h3>Brown Leather Wallet</h3>
+      <p>Contains student ID and ₦1500. Found in Hostel C corridor.</p>
+      <div class="tag">Found: May 13</div>
+    </div>
+
+    <div class="item-card" data-category="phone">
+      <h3>iPhone 11 - Blue Case</h3>
+      <p>Turned in to security. Last seen charging at the cafeteria.</p>
+      <div class="tag">Found: May 12</div>
+    </div>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 TraceVault Team | Explore Page</p>
+  </footer>
+
+  <script>
+    const searchInput = document.getElementById("searchInput");
+    const filterSelect = document.getElementById("filterSelect");
+    const itemCards = document.querySelectorAll(".item-card");
+
+    function filterItems() {
+      const searchTerm = searchInput.value.toLowerCase();
+      const selectedCategory = filterSelect.value;
+
+      itemCards.forEach(card => {
+        const text = card.innerText.toLowerCase();
+        const category = card.getAttribute("data-category");
+
+        const matchesSearch = text.includes(searchTerm);
+        const matchesFilter = selectedCategory === "all" || selectedCategory === category;
+
+        card.style.display = matchesSearch && matchesFilter ? "block" : "none";
+      });
+    }
+
+    searchInput.addEventListener("input", filterItems);
+    filterSelect.addEventListener("change", filterItems);
+  </script>
+</body>
+</html>
