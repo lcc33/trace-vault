@@ -1,12 +1,14 @@
 {
-  "name": "server",
-  "version": "1.0.0",
-  "main": "main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "nodemon app.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": ""
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "express-handlebars": "^8.0.3",
+    "handlebars": "^4.7.8",
+    "nodemon": "^3.1.10",
+    "nvm": "0.0.4",
+    "stable": "^0.1.8"
+  }
 }
