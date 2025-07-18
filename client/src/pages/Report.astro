@@ -1,7 +1,7 @@
 ---
 import Layout from "../layouts/Layout.astro";
-// const backBtn =
-//   "https://img.icons8.com/?size=100&id=26191&format=png&color=000000";
+const backBtn =
+  "https://img.icons8.com/?size=100&id=26191&format=png&color=000000";
 ---
 
 <style>
@@ -156,7 +156,7 @@ import Layout from "../layouts/Layout.astro";
 <Layout>
   <title>TraceVault | Report Lost Item</title>
   <header>
-    <!-- <img class="back" onclick="location.href='./'" src={backBtn} alt="back" /> -->
+    <img class="back" onclick="location.href='./'" src={backBtn} alt="back" />
     <h1>Trace<span>Vault</span></h1>
     <p>Report a lost item here.</p>
   </header>
@@ -168,7 +168,7 @@ import Layout from "../layouts/Layout.astro";
         <input
           type="text"
           id="itemName"
-          name="itemName"
+          name="name"
           placeholder="e.g., Black iPhone 11"
           required
         />
@@ -176,7 +176,7 @@ import Layout from "../layouts/Layout.astro";
 
       <div>
         <label for="itemCategory">Category</label>
-        <select id="itemCategory" name="itemCategory" required>
+        <select id="itemCategory" name="category" required>
           <option value="">Select Category</option>
           <option value="phone">Phone</option>
           <option value="id">ID Card</option>
@@ -191,7 +191,7 @@ import Layout from "../layouts/Layout.astro";
         <input
           type="text"
           id="locationLost"
-          name="locationLost"
+          name="location"
           placeholder="e.g., Faculty of Engineering"
           required
         />
@@ -241,13 +241,14 @@ import Layout from "../layouts/Layout.astro";
       e.preventDefault();
       const newReport = {
         id: reports.length + 1,
-        name: reportForm.itemName.value,
-        category: reportForm.itemCategory.value,
-        location: reportForm.locationLost.value,
+        name: reportForm.name.value,
+        category: reportForm.category.value,
+        location: reportForm.location.value,
         description: reportForm.description.value,
         contact: reportForm.contact.value,
       };
       reports.push(newReport);
+      console.log(newReport);
       fetch("http://localhost:5000/api/report", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -255,6 +256,7 @@ import Layout from "../layouts/Layout.astro";
       })
         .then((res) => res.json())
         .then((data) => console.log(data))
+        .then(() => alert("report sent successfully!"))
         .catch((err) => console.error(err));
     });
   </script>

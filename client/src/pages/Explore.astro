@@ -96,35 +96,31 @@ const backBtn =
     padding: 1.5rem;
     border-radius: 12px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-    text-align: center;
-    transition:
-      transform 0.3s ease,
-      background 0.3s ease;
-  }
-
-  .item-card:hover {
-    transform: translateY(-8px);
-    background: #334155;
-  }
-
-  .item-card h3 {
-    margin-bottom: 0.5rem;
-    color: #f1f5f9;
-  }
-
-  .item-card p {
+    text-align: left;
     margin-bottom: 1rem;
-    color: #cbd5e1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
   }
-
-  .tag {
-    background: #38bdf8;
+  .item-card h3 {
+    color: #38bdf8;
+    margin-bottom: 0.3rem;
+  }
+  .item-card .tag {
+    background: #facc15;
     color: #0f172a;
     display: inline-block;
     padding: 0.3rem 0.8rem;
     border-radius: 8px;
     font-weight: bold;
     font-size: 0.8rem;
+    margin-right: 0.5rem;
+    margin-top: 0.2rem;
+  }
+
+  .item-card:hover {
+    transform: translateY(-8px);
+    background: #334155;
   }
 
   footer {
@@ -157,62 +153,57 @@ const backBtn =
   </section>
 
   <main class="container" id="cover">
-    <div class="item-card" data-category="bag">
-      <h3>Black Backpack</h3>
-      <p>
-        Found near Faculty of Science. Has a water bottle and notebooks inside.
-      </p>
-      <div class="tag">Found: May 16</div>
-    </div>
-
-    <div class="item-card" data-category="phone">
-      <h3>Samsung Phone</h3>
-      <p>Discovered in the school cafeteria. No visible passcode lock.</p>
-      <div class="tag">Found: May 15</div>
-    </div>
-
-    <div class="item-card" data-category="id">
-      <h3>Student ID Card - John D.</h3>
-      <p>ID for 300 level Computer Science student. Dropped at NACOSS stand.</p>
-      <div class="tag">Found: May 14</div>
-    </div>
-
-    <div class="item-card" data-category="wallet">
-      <h3>Brown Leather Wallet</h3>
-      <p>Contains student ID and ₦1500. Found in Hostel C corridor.</p>
-      <div class="tag">Found: May 13</div>
-    </div>
-
-    <div class="item-card" data-category="phone">
-      <h3>iPhone 11 - Blue Case</h3>
-      <p>Turned in to security. Last seen charging at the cafeteria.</p>
-      <div class="tag">Found: May 12</div>
-    </div>
+    <div class="item-card" data-category="bag"></div>
   </main>
-
   <footer>
-    <p>&copy; 2025 TraceVault Kindra| Explore Page</p>
+    <p>&copy; 2025 TraceVault | Kindra</p>
   </footer>
 
   <script is:inline>
-    let cover = document.querySelector("#cover");
+    const cover = document.getElementById("cover");
     const searchInput = document.getElementById("searchInput");
     const filterSelect = document.getElementById("filterSelect");
-    const itemCards = document.querySelectorAll(".item-card");
+    let allReports = [];
+
+    
+    fetch("http://localhost:5000/reports")
+      .then((res) => res.json())
+      .then((data) => {
+        Reports = data;
+        renderReports(Reports);
+      });
+
+    function renderReports(Reports) {
+      cover.innerHTML = "";
+      Reports.forEach((report) => {
+        const card = document.createElement("div");
+        card.className = "item-card";
+        card.setAttribute("data-category", report.category);
+
+        card.innerHTML = `
+        <h3>${report.name}</h3>
+        <p>${report.description}</p>
+        <div class="tag">Location: ${report.location}</div>
+        <div class="tag">Contact: ${report.contact}</div>
+      `;
+
+        cover.appendChild(card);
+      });
+    }
 
     function filterItems() {
       const searchTerm = searchInput.value.toLowerCase();
       const selectedCategory = filterSelect.value;
-
-      itemCards.forEach((card) => {
-        const text = card.innerText.toLowerCase();
-        const category = card.getAttribute("data-category");
-
-        const matchesSearch = text.includes(searchTerm);
-        const matchesFilter =
-          selectedCategory === "all" || selectedCategory === category;
-        filterItems(matchesSearch && matchesFilter);
+      const filtered = allReports.filter((report) => {
+        const matchesSearch =
+          report.name.toLowerCase().includes(searchTerm) ||
+          report.description.toLowerCase().includes(searchTerm) ||
+          report.location.toLowerCase().includes(searchTerm);
+        const matchesCategory =
+          selectedCategory === "all" || report.category === selectedCategory;
+        return matchesSearch && matchesCategory;
       });
+      renderReports(filtered);
     }
 
     searchInput.addEventListener("input", filterItems);
