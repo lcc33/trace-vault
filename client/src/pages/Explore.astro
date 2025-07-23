@@ -2,135 +2,9 @@
 import Layout from "../layouts/Layout.astro";
 const backBtn =
   "https://img.icons8.com/?size=100&id=26191&format=png&color=000000";
+import "../styles/explore.css";
 ---
 
-<style>
-  * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  }
-
-  body {
-    background: #0f172a;
-    color: #f8fafc;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-  }
-
-  header {
-    text-align: center;
-    padding: 2rem;
-    background: #1e293b;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-  }
-
-  header h1 {
-    font-size: 2.5rem;
-    color: #38bdf8;
-  }
-  header img {
-    position: absolute;
-    top: 1rem;
-    left: 1rem;
-    width: 40px;
-    height: 40px;
-    background-color: #f8fafc;
-    border: none;
-    border-radius: 50%;
-    object-fit: cover;
-    cursor: pointer;
-  }
-
-  @media (max-width: 768px) {
-    header img {
-      width: 30px;
-      height: 30px;
-    }
-  }
-
-  header h1 span {
-    color: #facc15;
-  }
-
-  .search-filter {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    padding: 2rem;
-    justify-content: center;
-  }
-
-  .search-filter input,
-  .search-filter select {
-    padding: 0.7rem 1rem;
-    border: none;
-    border-radius: 8px;
-    font-size: 1rem;
-    outline: none;
-  }
-
-  .search-filter input {
-    flex: 1;
-    min-width: 200px;
-  }
-
-  .search-filter select {
-    background: #1e293b;
-    color: #f8fafc;
-    border: 1px solid #334155;
-  }
-
-  .container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 2rem;
-    padding: 2rem;
-    flex: 1;
-  }
-
-  .item-card {
-    background: #1e293b;
-    padding: 1.5rem;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-    text-align: left;
-    margin-bottom: 1rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-  .item-card h3 {
-    color: #38bdf8;
-    margin-bottom: 0.3rem;
-  }
-  .item-card .tag {
-    background: #facc15;
-    color: #0f172a;
-    display: inline-block;
-    padding: 0.3rem 0.8rem;
-    border-radius: 8px;
-    font-weight: bold;
-    font-size: 0.8rem;
-    margin-right: 0.5rem;
-    margin-top: 0.2rem;
-  }
-
-  .item-card:hover {
-    transform: translateY(-8px);
-    background: #334155;
-  }
-
-  footer {
-    text-align: center;
-    padding: 1rem;
-    background: #1e293b;
-    color: #64748b;
-    font-size: 0.9rem;
-  }
-</style>
 <Layout>
   <title>TraceVault | Explore</title>
   <header>
@@ -143,70 +17,22 @@ const backBtn =
 
   <section class="search-filter">
     <input type="text" id="searchInput" placeholder="Search items..." />
-    <select id="filterSelect">
+    <select id="filterSelect"
+      >transform: translateY(-8px); background: #334155;
       <option value="all">All Categories</option>
       <option value="phone">Phone</option>
       <option value="id">ID Card</option>
       <option value="bag">Bag</option>
       <option value="wallet">Wallet</option>
+      <option value="other">Other</option>
     </select>
   </section>
 
   <main class="container" id="cover">
-    <div class="item-card" data-category="bag"></div>
+    <!-- Item cards will be rendered here -->
   </main>
-  <footer>
-    <p>&copy; 2025 TraceVault | Kindra</p>
-  </footer>
 
-  <script is:inline>
-    const cover = document.getElementById("cover");
-    const searchInput = document.getElementById("searchInput");
-    const filterSelect = document.getElementById("filterSelect");
-    let allReports = [];
-
-    
-    fetch("http://localhost:5000/reports")
-      .then((res) => res.json())
-      .then((data) => {
-        Reports = data;
-        renderReports(Reports);
-      });
-
-    function renderReports(Reports) {
-      cover.innerHTML = "";
-      Reports.forEach((report) => {
-        const card = document.createElement("div");
-        card.className = "item-card";
-        card.setAttribute("data-category", report.category);
-
-        card.innerHTML = `
-        <h3>${report.name}</h3>
-        <p>${report.description}</p>
-        <div class="tag">Location: ${report.location}</div>
-        <div class="tag">Contact: ${report.contact}</div>
-      `;
-
-        cover.appendChild(card);
-      });
-    }
-
-    function filterItems() {
-      const searchTerm = searchInput.value.toLowerCase();
-      const selectedCategory = filterSelect.value;
-      const filtered = allReports.filter((report) => {
-        const matchesSearch =
-          report.name.toLowerCase().includes(searchTerm) ||
-          report.description.toLowerCase().includes(searchTerm) ||
-          report.location.toLowerCase().includes(searchTerm);
-        const matchesCategory =
-          selectedCategory === "all" || report.category === selectedCategory;
-        return matchesSearch && matchesCategory;
-      });
-      renderReports(filtered);
-    }
-
-    searchInput.addEventListener("input", filterItems);
-    filterSelect.addEventListener("change", filterItems);
-  </script>
+  <script src="../scripts/explore.js"></script>
 </Layout>
+
+<!-- ive installed rust...thougt im using tauri for the app...how am i creating the app again...what does the frontend and backend do...what am i using on the frontend...how many os would support it..can it work on android or just desktop only...also would i need to create versions for windows,mac and linux...also how would people be able to download the app from theri terminal from os like linux..would i have to set the commands or what...amnwer all the questions please -->

@@ -168,7 +168,7 @@ const backBtn =
         <input
           type="text"
           id="itemName"
-          name="name"
+          name="itemName"
           placeholder="e.g., Black iPhone 11"
           required
         />
@@ -241,14 +241,14 @@ const backBtn =
       e.preventDefault();
       const newReport = {
         id: reports.length + 1,
-        name: reportForm.name.value,
+        name: reportForm.itemName.value,
         category: reportForm.category.value,
         location: reportForm.location.value,
         description: reportForm.description.value,
         contact: reportForm.contact.value,
       };
-      reports.push(newReport);
-      console.log(newReport);
+      // reports.push(newReport);
+      // console.log(newReport);
       fetch("http://localhost:5000/api/report", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -256,7 +256,6 @@ const backBtn =
       })
         .then((res) => res.json())
         .then((data) => console.log(data))
-        .then(() => alert("report sent successfully!"))
         .catch((err) => console.error(err));
     });
   </script>
