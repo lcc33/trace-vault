@@ -76,12 +76,37 @@ header h1 span {
   border: 1px solid #334155;
 }
 
+/* ...existing code... */
+
 .container {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 3fr));
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 2rem;
   padding: 2rem;
   flex: 1;
+}
+
+@media (min-width: 1200px) {
+  .container {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+@media (min-width: 1500px) {
+  .container {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+@media (max-width: 900px) {
+  .container {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 600px) {
+  .container {
+    grid-template-columns: 1fr;
+    padding: 1rem;
+    gap: 1rem;
+  }
 }
 
 .item-card {
@@ -92,21 +117,63 @@ header h1 span {
   margin-bottom: 1rem;
   display: flex;
   flex-direction: column;
-  justify-content: space-evenly;
-  flex-wrap: wrap;
   gap: 0.7rem;
   position: relative;
   overflow: hidden;
-  min-height: 260px;
+  min-height: 340px;
   transition: 0.3s all ease;
+  align-items: center;
+}
+
+.item-img {
+  width: 100%;
+  max-width: 220px;
+  height: auto;
+  object-fit: cover;
+  border-radius: 12px;
+  margin: 0.5rem 0;
+  box-shadow: 0 2px 12px rgba(56,189,248,0.15);
+  background: #fff;
+  display: block;
+}
+
+@media (max-width: 600px) {
+  .item-img {
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+.item-card h3 {
+  color: #38bdf8;
+  margin-bottom: 0.3rem;
+  font-size: 1.2rem;
+  text-align: center;
+}
+
+.item-card .tag {
+  background: #334155;
+  color: #fafbff;
+  display: inline-block;
+  padding: 0.3rem 0.8rem;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 0.8rem;
+  margin-right: 0.5rem;
+  margin-top: 0.2rem;
+}
+
+.item-card p {
+  font-size: 1rem;
+  margin: 0.5rem 0;
+  text-align: center;
 }
 
 .status-mark {
   position: absolute;
   top: 1.2rem;
   right: 1.2rem;
-  /* background: #22c55e; */
-  background: red;
+  background: #22c55e;
   color: #fff;
   font-size: 0.85rem;
   font-weight: bold;
@@ -115,10 +182,13 @@ header h1 span {
   box-shadow: 0 2px 8px rgba(34, 197, 94, 0.15);
   letter-spacing: 1px;
 }
+.status-mark.claimed {
+  background: red;
+}
 
 .claim-btn {
   margin-top: auto;
-  align-self: flex-end;
+  align-self: center;
   background: #a3ff3c;
   color: #0f172a;
   border: none;
@@ -133,30 +203,9 @@ header h1 span {
 .claim-btn:hover {
   background: #7fff00;
 }
-.item-card h3 {
-  color: #38bdf8;
-  margin-bottom: 0.3rem;
-}
-.item-card .tag {
-  background: #334155;
-  color: #fafbff;
-  display: inline-block;
-  padding: 0.3rem 0.8rem;
-  border-radius: 8px;
-  font-weight: bold;
-  font-size: 0.8rem;
-  margin-right: 0.5rem;
-  margin-top: 0.2rem;
-}
 
 .item-card:hover {
   transform: translateY(-8px);
 }
 
-footer {
-  text-align: center;
-  padding: 1rem;
-  background: #1e293b;
-  color: #64748b;
-  font-size: 0.9rem;
-}
+/* ...existing code... */

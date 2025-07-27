@@ -1,6 +1,7 @@
 ---
 import "../styles/index.css";
 import Layout from "../layouts/Layout.astro";
+import Navbar from "./Navbar.astro";
 ---
 <Layout>
       <div
@@ -34,6 +35,7 @@ import Layout from "../layouts/Layout.astro";
       </svg>
       <span>Google</span>
     </div>
+    <Navbar/>
     <header class="header">
       <h1>Trace<span>Vault</span></h1>
       <p>Lost something? Found something? Let's connect the dots.</p>
@@ -55,11 +57,11 @@ import Layout from "../layouts/Layout.astro";
           <button>Explore</button>
         </a>
       </section>
-      <!-- 
-      <section class="card">
+      
+      <!-- <section class="card">
         <h2>Trace Item</h2>
         <p>Enter your Trace ID to check the status of your report.</p>
-        <a href="src/trace.html">
+        <a href="/Trace">
           <button>Trace Item</button>
         </a>
       </section> -->

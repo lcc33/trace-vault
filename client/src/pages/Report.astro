@@ -196,7 +196,7 @@ const backBtn =
           required
         />
       </div>
-      <!-- <div>
+      <div>
         <label for="itemImage">Upload Image (required)</label>
         <input
           type="file"
@@ -205,7 +205,7 @@ const backBtn =
           accept="image/*"
           required
         />
-      </div> -->
+      </div>
       <div>
         <label for="description">Description</label>
         <textarea
@@ -234,29 +234,20 @@ const backBtn =
     <p>&copy; 2025 TraceVault Team | Report Page</p>
   </footer>
 
-  <script is:inline>
-    let reports = [];
-    const reportForm = document.getElementById("reportForm");
-    reportForm.addEventListener("submit", function makeReport(e) {
-      e.preventDefault();
-      const newReport = {
-        id: reports.length + 1,
-        name: reportForm.itemName.value,
-        category: reportForm.category.value,
-        location: reportForm.location.value,
-        description: reportForm.description.value,
-        contact: reportForm.contact.value,
-      };
-      // reports.push(newReport);
-      // console.log(newReport);
-      fetch("http://localhost:5000/api/report", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ newReport }),
-      })
-        .then((res) => res.json())
-        .then((data) => console.log(data))
-        .catch((err) => console.error(err));
-    });
-  </script>
+ <script is:inline>
+  const reportForm = document.getElementById("reportForm");
+  reportForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const formData = new FormData(reportForm);
+
+    fetch("http://localhost:5000/api/report", {
+      method: "POST",
+      body: formData,
+    })
+    .then((res) => res.json())
+    .then((data) => console.log(data))
+    .catch((err) => console.error(err));
+  });
+</script>
+
 </Layout>

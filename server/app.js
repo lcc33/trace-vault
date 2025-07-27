@@ -27,6 +27,8 @@ app.use('/', require('./routes/reportRoutes'));
 app.get('/admin', (req, res) => {
   res.render('index', { title: 'Admin Dashboard' });
 });
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 
 const PORT = process.env.PORT;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

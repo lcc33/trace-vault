@@ -17,30 +17,29 @@ function renderReports(reports) {
     card.classList.add("item-card");
 
     card.innerHTML = `
-        <span class="status-mark">Unclaimed</span>
-        <h3>${report.name}</h3>
-        <div>
-          <span class="tag">${report.category?.toUpperCase() || ""}</span>
-          <span class="tag">Location: ${report.location || ""}</span>
-        </div>
-        <p>Description: ${report.description || ""}</p>
-        <div class="tag">Contact: ${report.contact || ""}</div>
-        <button class="claim-btn">Claim</button>
-      `;
+      <span class="status-mark">Available</span>
+      <h3>${report.name}</h3>
+      <div>
+        <span class="tag">${report.category?.toUpperCase() || ""}</span>
+        <span class="tag">Location: ${report.location || ""}</span>
+      </div>
+      ${report.image ? `<img src="http://localhost:5000/uploads/${report.image}" class="item-img" alt="${report.name}" />` : ""}
+      <p>Description: ${report.description || ""}</p>
+      <div class="tag">Contact: ${report.contact || ""}</div>
+      <button class="claim-btn">Claim</button>
+    `;
+
+    
+    const claimBtn = card.querySelector(".claim-btn");
+    const statusMark = card.querySelector(".status-mark");
+    claimBtn.addEventListener("click", () => {
+      claimBtn.textContent = "Claimed";
+      claimBtn.disabled = true;
+      statusMark.textContent = "Claimed";
+      statusMark.classList.add("claimed");
+    });
 
     cover.appendChild(card);
-  });
-
-  // Add click event for claim buttons (optional)
-  // const btn = document.querySelectorAll(".claim-btn");
-  document.querySelectorAll(".claim-btn").forEach((button) => {
-    button.addEventListener("click", () => {
-      const status = document.querySelector(".status-mark");
-      status.textContent = "claimed";
-      status.style.background = "#22c55e";
-
-      // document.querySelector('.status-mark').className.replace('claimed');
-    });
   });
 }
 

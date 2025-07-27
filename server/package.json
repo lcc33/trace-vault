@@ -1,7 +1,7 @@
 {
   "scripts": {
-  "start": "nodemon app.js"
-},
+    "start": "nodemon app.js"
+  },
   "dependencies": {
     "cors": "^2.8.5",
     "dotenv": "^17.2.0",
@@ -10,6 +10,7 @@
     "express-session": "^1.18.2",
     "handlebars": "^4.7.8",
     "mongoose": "^8.16.1",
+    "multer": "^2.0.2",
     "nvm": "0.0.4",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",

@@ -7,6 +7,7 @@ const ReportSchema = new mongoose.Schema({
   location: String,
   description: String,
   contact: String,
+  image: String, // <-- new field
   createdAt: { type: Date, default: Date.now },
 });
 
