@@ -1,11 +1,12 @@
 ---
 import Layout from "../layouts/Layout.astro"
 ---
+<!-- Navbar.astro -->
 <style>
   .menu-toggle {
     position: fixed;
     top: 1rem;
-    left: 1rem;
+    left: 1rem; /* changed from right to left */
     width: 50px;
     height: 50px;
     background: #1e293b;
@@ -26,15 +27,14 @@ import Layout from "../layouts/Layout.astro"
   .menu {
     position: fixed;
     top: 4rem;
-    left: 1rem;
+    left: 1rem; /* changed from right to left */
     display: flex;
     flex-direction: column;
     gap: 1rem;
-    opacity: 0;
+    opacity: 1;
     transform: scale(0);
     transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55), opacity 0.3s ease;
     z-index: 999;
-    margin-left: 20px;
   }
 
   .menu.show {
@@ -56,17 +56,6 @@ import Layout from "../layouts/Layout.astro"
     transform: scale(1.2);
     background: #0ea5e9;
   }
-
-  @media (max-width: 700px) {
-    .menu {
-      flex-direction: row;
-      top: 1rem;
-      left: 100px;
-      align-items: center;
-      gap: 3rem;
-      margin-left: 50px;
-    }
-  }
 </style>
 <Layout>
 <button class="menu-toggle" onclick="toggleMenu()">
@@ -74,8 +63,8 @@ import Layout from "../layouts/Layout.astro"
 </button>
 
 <div class="menu" id="menu">
-  <img src="https://img.icons8.com/ios-glyphs/30/ffffff/user--v1.png" class="menu-icon" alt="Profile" onclick="location.href='#'"/>
-  <img src="https://img.icons8.com/ios-glyphs/30/ffffff/appointment-reminders--v1.png" class="menu-icon" alt="Notifications" onclick="location.href='#'"/>
+  <img src="https://img.icons8.com/ios-glyphs/30/ffffff/user--v1.png" class="menu-icon" alt="Profile" onclick="location.href='/profile'"/>
+  <img src="https://img.icons8.com/ios-glyphs/30/ffffff/appointment-reminders--v1.png" class="menu-icon" alt="Notifications" onclick="location.href='/notifications'"/>
   <img src="https://img.icons8.com/ios-glyphs/30/ffffff/logout-rounded--v1.png" class="menu-icon" alt="Logout" onclick="logoutUser()"/>
 </div>
 
@@ -87,7 +76,8 @@ import Layout from "../layouts/Layout.astro"
   function logoutUser() {
     // clear tokens/session
     console.log('User logged out');
-    location.href = './';
+    // redirect if you want:
+    location.href = '/';
   }
 </script>
 </Layout>

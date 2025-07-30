@@ -1,14 +1,26 @@
+import { io } from "socket.io-client";
+const socket = io("http://localhost:9000/");
 const cover = document.getElementById("cover");
 const searchInput = document.getElementById("searchInput");
 const filterSelect = document.getElementById("filterSelect");
 let allReports = [];
 
-fetch("http://localhost:5000/reports")
+socket.on("connect", () => {
+  console.log("connected to socket.io");
+});
+
+fetch("http://localhost:9000/reports")
   .then((res) => res.json())
   .then((data) => {
     allReports = data;
     renderReports(allReports);
   });
+
+socket.on("newReport", (newReport) => {
+  // console.log("new report recieved:", newReport);
+  allReports.unshift(newReport);
+  renderReports(allReports);
+});
 
 function renderReports(reports) {
   cover.innerHTML = "";
@@ -17,26 +29,29 @@ function renderReports(reports) {
     card.classList.add("item-card");
 
     card.innerHTML = `
-      <span class="status-mark">Available</span>
+      
       <h3>${report.name}</h3>
       <div>
-        <span class="tag">${report.category?.toUpperCase() || ""}</span>
+        
         <span class="tag">Location: ${report.location || ""}</span>
       </div>
-      ${report.image ? `<img src="http://localhost:5000/uploads/${report.image}" class="item-img" alt="${report.name}" />` : ""}
+      ${
+        report.image
+          ? `<img src="http://localhost:5000/uploads/${report.image}" class="item-img" alt="${report.name}" />`
+          : ""
+      }
       <p>Description: ${report.description || ""}</p>
       <div class="tag">Contact: ${report.contact || ""}</div>
       <button class="claim-btn">Claim</button>
     `;
 
-    
     const claimBtn = card.querySelector(".claim-btn");
-    const statusMark = card.querySelector(".status-mark");
+
     claimBtn.addEventListener("click", () => {
       claimBtn.textContent = "Claimed";
       claimBtn.disabled = true;
-      statusMark.textContent = "Claimed";
-      statusMark.classList.add("claimed");
+      claimBtn.style.background = "red";
+      //<span class="tag">${report.category?.toUpperCase() || ""}</span>
     });
 
     cover.appendChild(card);
@@ -60,3 +75,16 @@ function filterItems() {
 
 searchInput.addEventListener("input", filterItems);
 filterSelect.addEventListener("change", filterItems);
+// function protectedPage() {
+//       fetch("http://localhost:9000/api/user")
+//         .then((res) => res.json())
+//         .then((data) => {
+//           if (!data.user) {
+//             window.location.href = "./";
+//           } else {
+//             console.log(`Logged in user: ,${data.user}`);
+//           }
+//         })
+//         .catch((err) => console.log(err));
+//     }
+//     protectedPage();

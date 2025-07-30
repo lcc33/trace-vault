@@ -1,74 +1,163 @@
 ---
-import "../styles/index.css";
 import Layout from "../layouts/Layout.astro";
-import Navbar from "./Navbar.astro";
 ---
+<title>Trace Vault</title>
+<style>
+  :root {
+    --primary: #00ffc3;
+    --bg-dark: #0f172a;
+    --bg-card: #16213e;
+    --accent: #2563eb;
+    --text-main: #f1f5f9;
+    --shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    min-height: 100vh;
+    background: linear-gradient(135deg, var(--bg-dark) 60%, #1e293b 100%);
+    font-family: "Inter", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-main);
+  }
+
+  .container {
+    background: rgba(22, 33, 62, 0.95);
+    padding: 3rem 2.5rem 2.5rem 2.5rem;
+    border-radius: 24px;
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 340px;
+    max-width: 90vw;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--primary);
+    letter-spacing: 2px;
+    margin-bottom: 0.5rem;
+    text-shadow:
+      0 2px 24px var(--primary),
+      0 1px 0 #fff2;
+    user-select: none;
+  }
+
+  .logo-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    background: linear-gradient(135deg, var(--primary) 60%, var(--accent) 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 16px var(--primary);
+  }
+
+  .tagline {
+    font-size: 1.1rem;
+    color: #cbd5e1;
+    margin-bottom: 2.2rem;
+    letter-spacing: 0.5px;
+  }
+
+  #google-signin {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.9rem 2.2rem;
+    background: linear-gradient(90deg, var(--primary) 60%, var(--accent) 100%);
+    color: #222;
+    font-weight: 600;
+    font-size: 1.1rem;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    box-shadow: 0 2px 12px rgba(0, 255, 195, 0.15);
+    transition:
+      background 0.3s,
+      color 0.3s,
+      transform 0.2s;
+    outline: none;
+  }
+
+  #google-signin:hover,
+  #google-signin:focus {
+    background: linear-gradient(90deg, #fff 60%, var(--primary) 100%);
+    color: var(--accent);
+    transform: translateY(-2px) scale(1.03);
+  }
+
+  .google-icon {
+    width: 1.5rem;
+    height: 1.5rem;
+    display: inline-block;
+  }
+
+  @media (max-width: 500px) {
+    .container {
+      padding: 2rem 1rem;
+      min-width: unset;
+    }
+    .logo {
+      font-size: 2rem;
+    }
+  }
+</style>
 <Layout>
-      <div
-      class="floating-google-login"
-      onclick="location.href ='/Login'"
-    >
-      <svg
-        width="28"
-        height="28"
-        viewBox="0 0 48 48"
-        style="vertical-align: middle"
-      >
-        <g>
+  <div class="container">
+    <div class="logo">
+      <span class="logo-icon">
+        <!-- Simple shield icon SVG -->
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
           <path
-            fill="#4285F4"
-            d="M43.6 20.5h-1.9V20H24v8h11.3c-1.6 4.3-5.7 7-11.3 7-6.6 0-12-5.4-12-12s5.4-12 12-12c2.7 0 5.2 0.9 7.2 2.5l6-6C34.2 5.1 29.4 3 24 3 12.9 3 4 11.9 4 23s8.9 20 20 20c11 0 19.7-8 19.7-20 0-1.3-0.1-2.7-0.3-3.5z"
-          />
-          <path
-            fill="#34A853"
-            d="M6.3 14.7l6.6 4.8C14.5 16.1 18.9 13 24 13c2.7 0 5.2 0.9 7.2 2.5l6-6C34.2 5.1 29.4 3 24 3 16.3 3 9.4 7.7 6.3 14.7z"
-          />
-          <path
-            fill="#FBBC05"
-            d="M24 43c5.3 0 10-1.8 13.7-4.9l-6.3-5.2C29.2 34.6 26.7 35.5 24 35.5c-5.6 0-10.3-3.8-12-9l-6.6 5.1C9.4 40.3 16.3 45 24 45z"
-          />
-          <path
-            fill="#EA4335"
-            d="M43.6 20.5h-1.9V20H24v8h11.3c-0.7 2-2.1 3.7-3.9 4.9l6.3 5.2C41.8 36.2 44 30.9 44 24c0-1.3-0.1-2.7-0.4-3.5z"
-          />
-        </g>
-      </svg>
-      <span>Google</span>
+            d="M14 3L24 7V13C24 19 19 23 14 25C9 23 4 19 4 13V7L14 3Z"
+            fill="#00ffc3"
+            stroke="#2563eb"
+            stroke-width="2"></path>
+        </svg>
+      </span>
+      Trace Vault
     </div>
-    <Navbar/>
-    <header class="header">
-      <h1>Trace<span>Vault</span></h1>
-      <p>Lost something? Found something? Let's connect the dots.</p>
-    </header>
-
-    <main class="container">
-      <section class="card">
-        <h2>Report Lost Item</h2>
-        <p>Help us find your belongings by submitting a report.</p>
-        <a href="/Report">
-          <button>Report Now</button>
-        </a>
-      </section>
-
-      <section class="card">
-        <h2>View Found Items</h2>
-        <p>Check the list of items people have found around campus.</p>
-        <a href="/Explore">
-          <button>Explore</button>
-        </a>
-      </section>
-      
-      <!-- <section class="card">
-        <h2>Trace Item</h2>
-        <p>Enter your Trace ID to check the status of your report.</p>
-        <a href="/Trace">
-          <button>Trace Item</button>
-        </a>
-      </section> -->
-    </main>
-
-    <footer class="footer">
-      <p>&copy; 2025 TraceVault | Built with purpose.</p>
-    </footer>
-
+    <p class="tagline">Secure the lost. Connect the found.</p>
+    <button id="google-signin" onclick="location.href ='http://localhost:9000/auth/google'">
+      <span class="google-icon">
+        <!-- Google G icon SVG -->
+        <svg viewBox="0 0 24 24" width="24" height="24">
+          <g>
+            <path
+              fill="#4285F4"
+              d="M21.805 10.023h-9.18v3.955h5.262c-.226 1.17-1.36 3.43-5.262 3.43-3.167 0-5.75-2.62-5.75-5.858s2.583-5.858 5.75-5.858c1.805 0 3.017.77 3.71 1.43l2.54-2.47C18.09 3.77 16.21 2.75 14 2.75 8.89 2.75 4.75 6.89 4.75 12s4.14 9.25 9.25 9.25c5.34 0 8.86-3.75 8.86-9.03 0-.61-.07-1.07-.16-1.47z"
+            ></path>
+            <path
+              fill="#34A853"
+              d="M12.625 21.25c2.43 0 4.47-.8 5.96-2.18l-2.84-2.32c-.79.53-1.8.85-3.12.85-2.4 0-4.44-1.62-5.17-3.8H4.59v2.39C6.08 19.13 9.09 21.25 12.625 21.25z"
+            ></path>
+            <path
+              fill="#FBBC05"
+              d="M7.455 13.8a5.93 5.93 0 0 1 0-3.6V7.81H4.59a9.25 9.25 0 0 0 0 8.38l2.865-2.39z"
+            ></path>
+            <path
+              fill="#EA4335"
+              d="M12.625 6.92c1.32 0 2.5.45 3.43 1.34l2.57-2.5C17.09 4.13 15.05 3.25 12.625 3.25c-3.535 0-6.545 2.12-8.035 5.19l2.865 2.39c.73-2.18 2.77-3.8 5.17-3.8z"
+            ></path>
+          </g>
+        </svg>
+      </span>
+      Sign in with Google
+    </button>
+  </div>
+  
 </Layout>

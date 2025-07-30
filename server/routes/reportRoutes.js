@@ -8,7 +8,7 @@ const path = require("path");
 // Configure storage
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "uploads"); 
+    cb(null, "uploads");
   },
   filename: (req, file, cb) => {
     cb(null, Date.now() + path.extname(file.originalname));
@@ -16,8 +16,12 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
+function ensureAuth(req, res, next) {
+  if (req.isAuthenticated()) return next();
+  res.status(401).json({ message: "unauthorized access deniad!" });
+}
 
-router.post('/api/report', upload.single('itemImage'), async (req, res) => {
+router.post("/api/report", ensureAuth, upload.single("itemImage"), async (req, res) => {
   try {
     const { itemName, category, location, description, contact } = req.body;
 
@@ -31,15 +35,18 @@ router.post('/api/report', upload.single('itemImage'), async (req, res) => {
     });
 
     await newReport.save();
+    // const io = req.app.get("io");
+    // io.emit("newReport", newReport);
+    req.app.get("io").emit("newReport", newReport);
 
-    res.json({ message: 'Report added successfully', report: newReport });
+    res.json({ message: "Report added successfully", report: newReport });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: 'Failed to add report' });
+    res.status(500).json({ message: "Failed to add report" });
   }
 });
 
 // GET all reports
-router.get("/reports", getReports);
+router.get("/reports", ensureAuth, getReports);
 
 module.exports = router;
