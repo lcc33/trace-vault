@@ -156,7 +156,12 @@ const backBtn =
 <Layout>
   <title>TraceVault | Report Lost Item</title>
   <header>
-    <img class="back" onclick="location.href='./'" src={backBtn} alt="back" />
+    <img
+      class="back"
+      onclick="location.href='./Home'"
+      src={backBtn}
+      alt="back"
+    />
     <h1>Trace<span>Vault</span></h1>
     <p>Report a lost item here.</p>
   </header>
@@ -240,7 +245,7 @@ const backBtn =
       e.preventDefault();
       const formData = new FormData(reportForm);
 
-      fetch("http://localhost:9000/api/report", {
+      fetch("http://localhost:5000/api/report", {
         method: "POST",
         body: formData,
       })
@@ -248,19 +253,18 @@ const backBtn =
         .then((data) => console.log(data))
         .catch((err) => console.error(err));
     });
-      function protectedPage() {
-          fetch("http://localhost:9000/api/user")
-            .then((res) => res.json())
-            .then((data) => {
-              if (!data.user) {
-                window.location.href = "./";
-              } else {
-                console.log(`Logged in user: ,${data.user}`);
-              }
-            })
-            .catch((err) => console.log(err));
-        }
-        protectedPage();
-    
+    function protectedPage() {
+      fetch("http://localhost:9000/api/user")
+        .then((res) => res.json())
+        .then((data) => {
+          if (!data.user) {
+            window.location.href = "./";
+          } else {
+            console.log(`Logged in user: ,${data.user}`);
+          }
+        })
+        .catch((err) => console.log(err));
+    }
+    // protectedPage();
   </script>
 </Layout>

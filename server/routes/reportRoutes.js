@@ -21,7 +21,7 @@ function ensureAuth(req, res, next) {
   res.status(401).json({ message: "unauthorized access deniad!" });
 }
 
-router.post("/api/report", ensureAuth, upload.single("itemImage"), async (req, res) => {
+router.post("/api/report", upload.single("itemImage"), async (req, res) => {
   try {
     const { itemName, category, location, description, contact } = req.body;
 

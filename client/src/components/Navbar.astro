@@ -1,43 +1,49 @@
 ---
-import Layout from "../layouts/Layout.astro"
+import Layout from "../layouts/Layout.astro";
 ---
+
 <!-- Navbar.astro -->
 <style>
+  body {
+  }
   .menu-toggle {
     position: fixed;
-    top: 1rem;
-    left: 1rem; /* changed from right to left */
-    width: 50px;
-    height: 50px;
-    background: #1e293b;
-    border-radius: 50%;
+    top: 10px;
+    right: 1rem;
+    background: transparent;
+    /* background: #1e293b; */
+    background: rgba(30, 41, 59, 0.85);
+    /* border-radius: 50%; */
     border: none;
     cursor: pointer;
-    z-index: 1000;
+    z-index: 100;
     display: flex;
+    opacity: 0;
     justify-content: center;
     align-items: center;
-    transition: background 0.3s ease;
+    transition: transform 0.3s ease;
   }
 
   .menu-toggle:hover {
-    background: #0f172a;
+    transform: scale(1.2);
   }
 
   .menu {
     position: fixed;
-    top: 4rem;
-    left: 1rem; /* changed from right to left */
+    top: 2rem;
+    right: 1rem; /* changed from right to left */
+    flex-direction: row;
+    gap: 3rem;
     display: flex;
-    flex-direction: column;
-    gap: 1rem;
+    transform: scale(1);
     opacity: 1;
-    transform: scale(0);
-    transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55), opacity 0.3s ease;
+    transition:
+      transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55),
+      opacity 0.3s ease;
     z-index: 999;
   }
 
-  .menu.show {
+  .mobileMenu.show {
     opacity: 1;
     transform: scale(1);
   }
@@ -54,30 +60,109 @@ import Layout from "../layouts/Layout.astro"
 
   .menu-icon:hover {
     transform: scale(1.2);
-    background: #0ea5e9;
+    background: rgba(30, 41, 59, 0.85);
+  }
+  .mobileMenu {
+    position: fixed;
+    top: 3rem;
+    right: 1rem; /* changed from right to left */
+    flex-direction: row;
+    gap: 3rem;
+    display: flex;
+    transform: scale(0);
+    opacity: 0;
+    /* transform: scale(0); */
+    transition:
+      transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55),
+      opacity 0.3s ease;
+    z-index: 999;
+  }
+  @media (max-width: 700px) {
+    .menu-toggle {
+      opacity: 1;
+      display: flex;
+    }
+    .menu {
+      display: none;
+      /* opacity: 0 */
+    }
   }
 </style>
 <Layout>
-<button class="menu-toggle" onclick="toggleMenu()">
-  <img src="https://img.icons8.com/ios-glyphs/30/ffffff/menu--v2.png" alt="Menu"/>
-</button>
+  <img
+    src="https://img.icons8.com/ios-glyphs/30/ffffff/menu--v2.png"
+    alt="Menu"
+    onclick="toggleMenu()"
+    class="menu-toggle"
+  />
 
-<div class="menu" id="menu">
-  <img src="https://img.icons8.com/ios-glyphs/30/ffffff/user--v1.png" class="menu-icon" alt="Profile" onclick="location.href='/profile'"/>
-  <img src="https://img.icons8.com/ios-glyphs/30/ffffff/appointment-reminders--v1.png" class="menu-icon" alt="Notifications" onclick="location.href='/notifications'"/>
-  <img src="https://img.icons8.com/ios-glyphs/30/ffffff/logout-rounded--v1.png" class="menu-icon" alt="Logout" onclick="logoutUser()"/>
-</div>
+  <div class="menu" id="menu">
+    <img
+      src="https://img.icons8.com/ios-glyphs/30/ffffff/appointment-reminders--v1.png"
+      class="menu-icon"
+      alt="Notifications"
+      title="Notifications"
+      onclick="location.href='/notifications'"
+    />
+    <img
+      src="https://img.icons8.com/ios-glyphs/30/ffffff/user--v1.png"
+      class="menu-icon"
+      alt="Profile"
+      title="Profile"
+      onclick="location.href='/profile'"
+    />
 
-<script is:inline>
-  function toggleMenu() {
-    document.getElementById('menu').classList.toggle('show');
-  }
+ <a href="http://locahost:5000/auth/logout">
+<img
+      src="https://img.icons8.com/ios-glyphs/30/ffffff/logout-rounded--v1.png"
+      class="menu-icon"
+      alt="Logout"
+      title="Logout"
+      onclick="location.href"
+    />
+</a>
+  </div>
 
-  function logoutUser() {
-    // clear tokens/session
-    console.log('User logged out');
-    // redirect if you want:
-    location.href = '/';
-  }
-</script>
+  <div class="mobileMenu" id="mobileMenu">
+    <img
+      src="https://img.icons8.com/ios-glyphs/30/ffffff/appointment-reminders--v1.png"
+      class="menu-icon"
+      alt="Notifications"
+      title="Notifications"
+      onclick="location.href='/notifications'"
+    />
+    <img
+      src="https://img.icons8.com/ios-glyphs/30/ffffff/user--v1.png"
+      class="menu-icon"
+      alt="Profile"
+      title="Profile"
+      onclick="location.href='/profile'"
+    />
+<a href="http://locahost:5000/auth/logout">
+<img
+      src="https://img.icons8.com/ios-glyphs/30/ffffff/logout-rounded--v1.png"
+      class="menu-icon"
+      alt="Logout"
+      title="Logout"
+      onclick="location.href"
+    />
+</a>
+    
+  </div>
+
+  <script is:inline>
+    function toggleMenu() {
+      document.getElementById("mobileMenu").classList.toggle("show");
+    }
+
+    function logoutUser() {
+      // clear tokens/session
+      console.log("User logged out");
+      // redirect if you want:
+
+      fetch("http://locahost:5000/auth/logout")
+        .then((res) => res.json())
+        .then((data) => console.log(data));
+    }
+  </script>
 </Layout>

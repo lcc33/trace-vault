@@ -1,5 +1,5 @@
 import { io } from "socket.io-client";
-const socket = io("http://localhost:9000/");
+const socket = io("http://localhost:5000/");
 const cover = document.getElementById("cover");
 const searchInput = document.getElementById("searchInput");
 const filterSelect = document.getElementById("filterSelect");
@@ -9,7 +9,7 @@ socket.on("connect", () => {
   console.log("connected to socket.io");
 });
 
-fetch("http://localhost:9000/reports")
+fetch("http://localhost:5000/reports")
   .then((res) => res.json())
   .then((data) => {
     allReports = data;
@@ -75,16 +75,16 @@ function filterItems() {
 
 searchInput.addEventListener("input", filterItems);
 filterSelect.addEventListener("change", filterItems);
-// function protectedPage() {
-//       fetch("http://localhost:9000/api/user")
-//         .then((res) => res.json())
-//         .then((data) => {
-//           if (!data.user) {
-//             window.location.href = "./";
-//           } else {
-//             console.log(`Logged in user: ,${data.user}`);
-//           }
-//         })
-//         .catch((err) => console.log(err));
-//     }
-//     protectedPage();
+function protectedPage() {
+      fetch("http://localhost:5000/api/user")
+        .then((res) => res.json())
+        .then((data) => {
+          if (!data.user) {
+            cover.innerHTML = "<h1>Unauthorized access denied pls login!</h1>"
+          } else {
+            console.log(`Logged in user: ,${data.user}`);
+          }
+        })
+        .catch((err) => console.log(err));
+    }
+    protectedPage();

@@ -1,6 +1,7 @@
 ---
 import Layout from "../layouts/Layout.astro";
 ---
+
 <title>Trace Vault</title>
 <style>
   :root {
@@ -20,7 +21,7 @@ import Layout from "../layouts/Layout.astro";
 
   body {
     min-height: 100vh;
-    background: linear-gradient(135deg, var(--bg-dark) 60%, #1e293b 100%);
+    background: linear-gradient(125deg, var(--bg-dark) 60%, #1e293b 100%);
     font-family: "Inter", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
     display: flex;
     align-items: center;
@@ -91,6 +92,7 @@ import Layout from "../layouts/Layout.astro";
       color 0.3s,
       transform 0.2s;
     outline: none;
+    text-decoration: none;
   }
 
   #google-signin:hover,
@@ -120,7 +122,7 @@ import Layout from "../layouts/Layout.astro";
   <div class="container">
     <div class="logo">
       <span class="logo-icon">
-        <!-- Simple shield icon SVG -->
+        
         <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
           <path
             d="M14 3L24 7V13C24 19 19 23 14 25C9 23 4 19 4 13V7L14 3Z"
@@ -132,7 +134,11 @@ import Layout from "../layouts/Layout.astro";
       Trace Vault
     </div>
     <p class="tagline">Secure the lost. Connect the found.</p>
-    <button id="google-signin" onclick="location.href ='http://localhost:9000/auth/google'">
+    <a
+      href="http://localhost:5000/auth/google"
+      id="google-signin"
+      target="_top"
+    >
       <span class="google-icon">
         <!-- Google G icon SVG -->
         <svg viewBox="0 0 24 24" width="24" height="24">
@@ -156,8 +162,7 @@ import Layout from "../layouts/Layout.astro";
           </g>
         </svg>
       </span>
-      Sign in with Google
-    </button>
+      Get Started
+    </a>
   </div>
-  
 </Layout>
