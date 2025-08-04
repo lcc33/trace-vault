@@ -11,12 +11,14 @@ exports.addReport = async (req, res) => {
   }
 };
 
+
+
 exports.getReports = async (req, res) => {
-  try {
-    const reports = await Report.find().sort({ createdAt: -1 });
+ try {
+    const reports = await Report.find().populate('user', 'name profilePic');
     res.json(reports);
   } catch (err) {
-    res.status(500).json({ message: "Failed to fetch reports" });
+    res.status(500).json({ message: 'Failed to get reports' });
   }
 };
 

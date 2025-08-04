@@ -30,9 +30,9 @@ router.post('/api/report', ensureAuth, upload.single('itemImage'), async (req, r
       category,
       location,
       description,
-      contact,    // or leave out if you want
+      contact,   
       image: req.file.filename,
-      user: req.user._id,         // tie to current user
+      user: req.user._id,        
     });
 
     await newReport.save();

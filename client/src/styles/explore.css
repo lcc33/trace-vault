@@ -169,22 +169,7 @@ header h1 span {
   text-align: center;
 }
 
-.status-mark {
-  position: absolute;
-  top: 1.2rem;
-  right: 1.2rem;
-  background: #22c55e;
-  color: #fff;
-  font-size: 0.85rem;
-  font-weight: bold;
-  padding: 0.3rem 1rem;
-  border-radius: 999px;
-  box-shadow: 0 2px 8px rgba(34, 197, 94, 0.15);
-  letter-spacing: 1px;
-}
-.status-mark.claimed {
-  background: red;
-}
+
 
 .claim-btn {
   margin-top: auto;
@@ -202,10 +187,30 @@ header h1 span {
 }
 .claim-btn:hover {
   background: #7fff00;
+  box-shadow: 0 4px 12px rgba(163, 255, 60, 0.2);
 }
 
 .item-card:hover {
-  transform: translateY(-8px);
+  box-shadow: 0 4px 16px rgba(56, 189, 248, 0.2);
 }
+
+.user-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 5px;
+}
+
+.profile-pic {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 8px;
+}
+
+.username {
+  font-weight: 600;
+}
+
 
 /* ...existing code... */

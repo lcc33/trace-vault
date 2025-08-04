@@ -15,6 +15,7 @@ app.use(
   session({
     secret: "tracevalla",
     resave: false,
+    cookie: { secure: false }, 
     saveUninitialized: false,
   })
 );

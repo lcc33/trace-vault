@@ -1,5 +1,7 @@
 ---
 import Layout from "../layouts/Layout.astro";
+const currentPath =
+  typeof window !== "undefined" ? window.location.pathname : "";
 ---
 
 <style>
@@ -52,8 +54,8 @@ import Layout from "../layouts/Layout.astro";
   }
 
   .nav-icon.active {
-    background: #facc15;
-    border-color: #facc15;
+    background: #facc15 !important;
+    border-color: #facc15 !important;
     box-shadow: 0 4px 24px rgba(250, 204, 21, 0.18);
   }
 
@@ -72,8 +74,8 @@ import Layout from "../layouts/Layout.astro";
       top: unset;
       bottom: 0;
       right: 0;
-      left: 0;
-      width: 100vw;
+      /* left: 0; */
+      width: 100%;
       height: 68px;
       flex-direction: row;
       justify-content: space-evenly;
@@ -82,8 +84,8 @@ import Layout from "../layouts/Layout.astro";
       box-shadow: 0 -2px 24px rgba(16, 24, 40, 0.18);
       border-radius: 0;
       border-left: none;
-      /* border-top: 3px solid #facc15; */
-      background: linear-gradient(90deg, #38bdf8 0%, #1e293b 100%);
+      background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+
       gap: 0.5rem;
     }
     .nav-icon {
@@ -97,19 +99,30 @@ import Layout from "../layouts/Layout.astro";
       display: block;
     }
   }
+
+  .nav-icon img {
+    width: 34px;
+    height: 34px;
+    /* filter: brightness(0) invert(1); */
+  }
 </style>
 
 <Layout>
   <nav class="navbar">
-    <div class="nav-icon" title="Home" onclick="location.href='/'">
+    <div
+      class="nav-icon"
+      id="nav-home"
+      title="Home"
+      onclick="location.href='/'"
+    >
       <img
         src="https://img.icons8.com/ios-glyphs/36/38bdf8/home.png"
         alt="Home"
       />
     </div>
-
     <div
       class="nav-icon"
+      id="nav-notifications"
       title="Notifications"
       onclick="location.href='/notifications'"
     >
@@ -118,19 +131,29 @@ import Layout from "../layouts/Layout.astro";
         alt="Notifications"
       />
     </div>
-    <div class="nav-icon" title="Profile" onclick="location.href='/profile'">
+    <div
+      class="nav-icon"
+      id="nav-profile"
+      title="Profile"
+      onclick="location.href='/profile'"
+    >
       <img
         src="https://img.icons8.com/ios-glyphs/36/38bdf8/user--v1.png"
         alt="Profile"
       />
     </div>
-    <div class="nav-icon" title="About" onclick="location.href='/about'">
+    <div
+      class="nav-icon"
+      id="nav-about"
+      title="About"
+      onclick="location.href='/about'"
+    >
       <img
         src="https://img.icons8.com/ios-glyphs/36/38bdf8/info--v1.png"
         alt="About"
       />
     </div>
-    <div class="nav-icon" title="Logout" onclick="logoutUser()">
+    <div class="nav-icon" id="nav-logout" title="Logout" onclick="logoutUser()">
       <img
         src="https://img.icons8.com/ios-glyphs/36/38bdf8/logout-rounded--v1.png"
         alt="Logout"
@@ -139,14 +162,24 @@ import Layout from "../layouts/Layout.astro";
   </nav>
 
   <script is:inline>
+    const path = window.location.pathname;
+    if (path === "/" || path === "/home") {
+      document.getElementById("nav-home").classList.add("active");
+    } else if (path.startsWith("/notifications")) {
+      document.getElementById("nav-notifications").classList.add("active");
+    } else if (path.startsWith("/profile")) {
+      document.getElementById("nav-profile").classList.add("active");
+    } else if (path.startsWith("/about")) {
+      document.getElementById("nav-about").classList.add("active");
+    }
+
     function logoutUser() {
       fetch("http://localhost:5000/auth/logout", {
-  method: "GET",
-  credentials: "include"
-})
-  .then(() => window.location.href = "/") // or show logged out UI
-  .catch(err => console.error(err));
-
+        method: "GET",
+        credentials: "include",
+      })
+        .then(() => (window.location.href = "/"))
+        .catch((err) => console.error(err));
     }
   </script>
 </Layout>

@@ -152,6 +152,33 @@ const backBtn =
     color: #64748b;
     font-size: 0.9rem;
   }
+  .popup {
+    display: none;
+    position: fixed;
+    top: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    min-width: 220px;
+    max-width: 90vw;
+    padding: 1rem 2rem;
+    border-radius: 10px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    text-align: center;
+    z-index: 2000;
+    box-shadow: 0 4px 24px rgba(56, 189, 248, 0.18);
+    transition: opacity 0.3s;
+  }
+  .popup.success {
+    background: #22c55e;
+    color: #fff;
+    border: 2px solid #38bdf8;
+  }
+  .popup.error {
+    background: #ef4444;
+    color: #fff;
+    border: 2px solid #facc15;
+  }
 </style>
 <Layout>
   <title>TraceVault | Report Lost Item</title>
@@ -234,8 +261,21 @@ const backBtn =
     <p>&copy; 2025 TraceVault Team | Report Page</p>
   </footer>
 
+  <div id="popup" class="popup"></div>
+
   <script is:inline>
     const reportForm = document.getElementById("reportForm");
+    const popup = document.getElementById("popup");
+
+    function showPopup(message, success = true) {
+      popup.textContent = message;
+      popup.className = "popup " + (success ? "success" : "error");
+      popup.style.display = "block";
+      setTimeout(() => {
+        popup.style.display = "none";
+      }, 2500);
+    }
+
     reportForm.addEventListener("submit", async (e) => {
       e.preventDefault();
       const formData = new FormData(reportForm);
@@ -243,12 +283,27 @@ const backBtn =
       fetch("http://localhost:5000/api/report", {
         method: "POST",
         body: formData,
-        credentials: "include", // <== VERY IMPORTANT
+        credentials: "include",
       })
         .then((res) => res.json())
-        .then((data) => console.log(data))
-        .catch((err) => console.error(err));
+        .then((data) => {
+          if (
+            data &&
+            data.message &&
+            data.message.toLowerCase().includes("success")
+          ) {
+            showPopup("Report sent successfully!", true);
+            reportForm.reset();
+          } else {
+            showPopup("Failed to send report.", false);
+          }
+        })
+        .catch((err) => {
+          showPopup("Failed to send report.", false);
+          console.error(err);
+        });
     });
+
     function protectedPage() {
       fetch("http://localhost:5000/api/user", {
         credentials: "include",

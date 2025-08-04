@@ -18,6 +18,7 @@ router.get(
       res.redirect("http://localhost:4321/");
     }
   }
+  
 );
 
 router.get("/logout", (req, res) => {
