@@ -5,9 +5,7 @@ const router = express.Router();
 
 router.get(
   "/google",
-  passport.authenticate("google", {
-    scope: ["profile", "email"],
-  })
+  passport.authenticate("google", { scope: ["profile", "email"] })
 );
 
 router.get(
@@ -15,18 +13,19 @@ router.get(
   passport.authenticate("google", { failureRedirect: "/" }),
   (req, res) => {
     if (req.user && req.user.email === "bryanedwarding@gmail.com") {
-      res.redirect("/Dashboard");
+      res.redirect("http://localhost:4321/");
     } else {
-      res.redirect("/Home");
+      res.redirect("http://localhost:4321/");
     }
   }
 );
 
 router.get("/logout", (req, res) => {
-  req.logout();
-  // res.redirect("/Login");
-  res.send("Goodbye");
-  req.session.destroy();
+  req.logout(() => {
+    req.session.destroy();
+    // res.redirect("/"); // or send JSON: res.json({ message: "Logged out" });
+  });
 });
+
 
 module.exports = router;

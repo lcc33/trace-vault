@@ -20,9 +20,11 @@ app.use(
 );
 app.use(passport.initialize());
 app.use(passport.session());
+app.use(cors({
+  origin: "http://localhost:4321", // or your frontend URL
+  credentials: true,
+}));
 
-// Static files
-// app.use(express.static(path.join(__dirname, "public")));
 
 //socket.io setup shii
 const http = require("http");
@@ -55,6 +57,7 @@ app.get("/api/user", (req, res) => {
     res.json({ user: null });
   }
 });
+
 
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));

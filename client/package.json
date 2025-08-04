@@ -9,7 +9,7 @@
     "astro": "astro"
   },
   "dependencies": {
-    "astro": "^5.9.4",
+    "astro": "^5.12.8",
     "socket.io-client": "^4.8.1"
   }
 }

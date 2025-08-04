@@ -2,167 +2,151 @@
 import Layout from "../layouts/Layout.astro";
 ---
 
-<!-- Navbar.astro -->
 <style>
-  body {
-  }
-  .menu-toggle {
+  .navbar {
     position: fixed;
-    top: 10px;
-    right: 1rem;
-    background: transparent;
-    /* background: #1e293b; */
-    background: rgba(30, 41, 59, 0.85);
-    /* border-radius: 50%; */
-    border: none;
-    cursor: pointer;
-    z-index: 100;
+    top: 0;
+    right: 0;
+    height: 100vh;
+    width: 86px;
+    background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
     display: flex;
-    opacity: 0;
-    justify-content: center;
+    flex-direction: column;
     align-items: center;
-    transition: transform 0.3s ease;
+    justify-content: flex-start;
+    gap: 2.2rem;
+    padding: 2.5rem 0 1.5rem 0;
+    z-index: 1200;
+    box-shadow: -4px 0 24px rgba(16, 24, 40, 0.18);
+    border-top-left-radius: 24px;
+    border-bottom-left-radius: 24px;
+    border-left: 3px solid #facc15;
+    transition: width 0.2s;
+    margin-left: 24px;
   }
 
-  .menu-toggle:hover {
-    transform: scale(1.2);
-  }
-
-  .menu {
-    position: fixed;
-    top: 2rem;
-    right: 1rem; /* changed from right to left */
-    flex-direction: row;
-    gap: 3rem;
-    display: flex;
-    transform: scale(1);
-    opacity: 1;
-    transition:
-      transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55),
-      opacity 0.3s ease;
-    z-index: 999;
-  }
-
-  .mobileMenu.show {
-    opacity: 1;
-    transform: scale(1);
-  }
-
-  .menu-icon {
-    width: 40px;
-    height: 40px;
-    background: #38bdf8;
-    border-radius: 12px;
+  .nav-icon {
+    width: 48px;
+    height: 48px;
+    background: #f8fafc;
+    border-radius: 16px;
     padding: 0.5rem;
+    margin-bottom: 0.5rem;
     cursor: pointer;
-    transition: transform 0.2s ease;
+    transition:
+      background 0.2s,
+      transform 0.2s,
+      box-shadow 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 12px rgba(56, 189, 248, 0.1);
+    border: 2px solid #38bdf8;
+    position: relative;
+  }
+  .nav-icon:hover {
+    background: #facc15;
+    border-color: #facc15;
+    transform: scale(1.13) rotate(-8deg);
+    box-shadow: 0 4px 24px rgba(250, 204, 21, 0.18);
   }
 
-  .menu-icon:hover {
-    transform: scale(1.2);
-    background: rgba(30, 41, 59, 0.85);
+  .nav-icon.active {
+    background: #facc15;
+    border-color: #facc15;
+    box-shadow: 0 4px 24px rgba(250, 204, 21, 0.18);
   }
-  .mobileMenu {
-    position: fixed;
-    top: 3rem;
-    right: 1rem; /* changed from right to left */
-    flex-direction: row;
-    gap: 3rem;
-    display: flex;
-    transform: scale(0);
-    opacity: 0;
-    /* transform: scale(0); */
-    transition:
-      transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55),
-      opacity 0.3s ease;
-    z-index: 999;
+
+  .nav-label {
+    display: none;
+    font-size: 0.85rem;
+    color: #0f172a;
+    font-weight: 600;
+    margin-top: 0.2rem;
+    text-align: center;
+    letter-spacing: 0.5px;
   }
+
   @media (max-width: 700px) {
-    .menu-toggle {
-      opacity: 1;
-      display: flex;
+    .navbar {
+      top: unset;
+      bottom: 0;
+      right: 0;
+      left: 0;
+      width: 100vw;
+      height: 68px;
+      flex-direction: row;
+      justify-content: space-evenly;
+      align-items: center;
+      padding: 0 0.5rem;
+      box-shadow: 0 -2px 24px rgba(16, 24, 40, 0.18);
+      border-radius: 0;
+      border-left: none;
+      /* border-top: 3px solid #facc15; */
+      background: linear-gradient(90deg, #38bdf8 0%, #1e293b 100%);
+      gap: 0.5rem;
     }
-    .menu {
-      display: none;
-      /* opacity: 0 */
+    .nav-icon {
+      margin-bottom: 0;
+      border-radius: 14px;
+      width: 44px;
+      height: 44px;
+      padding: 0.4rem;
+    }
+    .nav-label {
+      display: block;
     }
   }
 </style>
+
 <Layout>
-  <img
-    src="https://img.icons8.com/ios-glyphs/30/ffffff/menu--v2.png"
-    alt="Menu"
-    onclick="toggleMenu()"
-    class="menu-toggle"
-  />
+  <nav class="navbar">
+    <div class="nav-icon" title="Home" onclick="location.href='/'">
+      <img
+        src="https://img.icons8.com/ios-glyphs/36/38bdf8/home.png"
+        alt="Home"
+      />
+    </div>
 
-  <div class="menu" id="menu">
-    <img
-      src="https://img.icons8.com/ios-glyphs/30/ffffff/appointment-reminders--v1.png"
-      class="menu-icon"
-      alt="Notifications"
+    <div
+      class="nav-icon"
       title="Notifications"
       onclick="location.href='/notifications'"
-    />
-    <img
-      src="https://img.icons8.com/ios-glyphs/30/ffffff/user--v1.png"
-      class="menu-icon"
-      alt="Profile"
-      title="Profile"
-      onclick="location.href='/profile'"
-    />
-
- <a href="http://locahost:5000/auth/logout">
-<img
-      src="https://img.icons8.com/ios-glyphs/30/ffffff/logout-rounded--v1.png"
-      class="menu-icon"
-      alt="Logout"
-      title="Logout"
-      onclick="location.href"
-    />
-</a>
-  </div>
-
-  <div class="mobileMenu" id="mobileMenu">
-    <img
-      src="https://img.icons8.com/ios-glyphs/30/ffffff/appointment-reminders--v1.png"
-      class="menu-icon"
-      alt="Notifications"
-      title="Notifications"
-      onclick="location.href='/notifications'"
-    />
-    <img
-      src="https://img.icons8.com/ios-glyphs/30/ffffff/user--v1.png"
-      class="menu-icon"
-      alt="Profile"
-      title="Profile"
-      onclick="location.href='/profile'"
-    />
-<a href="http://locahost:5000/auth/logout">
-<img
-      src="https://img.icons8.com/ios-glyphs/30/ffffff/logout-rounded--v1.png"
-      class="menu-icon"
-      alt="Logout"
-      title="Logout"
-      onclick="location.href"
-    />
-</a>
-    
-  </div>
+    >
+      <img
+        src="https://img.icons8.com/ios-glyphs/36/38bdf8/appointment-reminders--v1.png"
+        alt="Notifications"
+      />
+    </div>
+    <div class="nav-icon" title="Profile" onclick="location.href='/profile'">
+      <img
+        src="https://img.icons8.com/ios-glyphs/36/38bdf8/user--v1.png"
+        alt="Profile"
+      />
+    </div>
+    <div class="nav-icon" title="About" onclick="location.href='/about'">
+      <img
+        src="https://img.icons8.com/ios-glyphs/36/38bdf8/info--v1.png"
+        alt="About"
+      />
+    </div>
+    <div class="nav-icon" title="Logout" onclick="logoutUser()">
+      <img
+        src="https://img.icons8.com/ios-glyphs/36/38bdf8/logout-rounded--v1.png"
+        alt="Logout"
+      />
+    </div>
+  </nav>
 
   <script is:inline>
-    function toggleMenu() {
-      document.getElementById("mobileMenu").classList.toggle("show");
-    }
-
     function logoutUser() {
-      // clear tokens/session
-      console.log("User logged out");
-      // redirect if you want:
+      fetch("http://localhost:5000/auth/logout", {
+  method: "GET",
+  credentials: "include"
+})
+  .then(() => window.location.href = "/") // or show logged out UI
+  .catch(err => console.error(err));
 
-      fetch("http://locahost:5000/auth/logout")
-        .then((res) => res.json())
-        .then((data) => console.log(data));
     }
   </script>
 </Layout>

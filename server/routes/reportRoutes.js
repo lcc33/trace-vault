@@ -21,7 +21,7 @@ function ensureAuth(req, res, next) {
   res.status(401).json({ message: "unauthorized access deniad!" });
 }
 
-router.post("/api/report", upload.single("itemImage"), async (req, res) => {
+router.post('/api/report', ensureAuth, upload.single('itemImage'), async (req, res) => {
   try {
     const { itemName, category, location, description, contact } = req.body;
 
@@ -30,21 +30,23 @@ router.post("/api/report", upload.single("itemImage"), async (req, res) => {
       category,
       location,
       description,
-      contact,
+      contact,    // or leave out if you want
       image: req.file.filename,
+      user: req.user._id,         // tie to current user
     });
 
     await newReport.save();
-    // const io = req.app.get("io");
-    // io.emit("newReport", newReport);
-    req.app.get("io").emit("newReport", newReport);
 
-    res.json({ message: "Report added successfully", report: newReport });
+    // emit to sockets
+    req.app.get('io').emit('newReport', newReport);
+
+    res.json({ message: 'Report added successfully', report: newReport });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Failed to add report" });
+    res.status(500).json({ message: 'Failed to add report' });
   }
 });
+
 
 // GET all reports
 router.get("/reports", ensureAuth, getReports);

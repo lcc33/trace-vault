@@ -156,12 +156,7 @@ const backBtn =
 <Layout>
   <title>TraceVault | Report Lost Item</title>
   <header>
-    <img
-      class="back"
-      onclick="location.href='./Home'"
-      src={backBtn}
-      alt="back"
-    />
+    <img class="back" onclick="location.href='./'" src={backBtn} alt="back" />
     <h1>Trace<span>Vault</span></h1>
     <p>Report a lost item here.</p>
   </header>
@@ -248,13 +243,16 @@ const backBtn =
       fetch("http://localhost:5000/api/report", {
         method: "POST",
         body: formData,
+        credentials: "include", // <== VERY IMPORTANT
       })
         .then((res) => res.json())
         .then((data) => console.log(data))
         .catch((err) => console.error(err));
     });
     function protectedPage() {
-      fetch("http://localhost:5000/api/user")
+      fetch("http://localhost:5000/api/user", {
+        credentials: "include",
+      })
         .then((res) => res.json())
         .then((data) => {
           if (!data.user) {

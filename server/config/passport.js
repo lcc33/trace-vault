@@ -8,22 +8,31 @@ module.exports = function (passport) {
         clientID: process.env.GOOGLE_CLIENT_ID,
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
         callbackURL: "/auth/google/callback",
-        passReqToCallback: true
+        passReqToCallback: true,
       },
-      async (accessToken, refreshToken, Profiler, done) => {
-        const existingUser = await User.findOne({ googleId: profile.id });
-        if (existingUser) return done(null, existingUser);
+      async (req, accessToken, refreshToken, profile, done) => {
+        try {
+          const existingUser = await User.findOne({ googleId: profile.id });
+          if (existingUser) return done(null, existingUser);
 
-        const newUser = await User.create({
-          googleId: profile.id,
-          name: profile.displayName,
-          email: profile.emails[0].value,
-          profilePic: profile.photos[0].value,
-        });
-        return done(null, newUser);
+          const newUser = await User.create({
+            googleId: profile.id,
+            name: profile.displayName,
+            email: profile.emails[0].value,
+            profilePic: profile.photos[0].value,
+            username:
+              profile.displayName.replace(/\s+/g, "").toLowerCase() +
+              Date.now(),
+          });
+
+          return done(null, newUser);
+        } catch (err) {
+          return done(err, null);
+        }
       }
     )
   );
+
   passport.serializeUser((user, done) => done(null, user.id));
   passport.deserializeUser((id, done) =>
     User.findById(id).then((user) => done(null, user))

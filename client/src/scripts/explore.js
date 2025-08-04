@@ -51,7 +51,7 @@ function renderReports(reports) {
       claimBtn.textContent = "Claimed";
       claimBtn.disabled = true;
       claimBtn.style.background = "red";
-      //<span class="tag">${report.category?.toUpperCase() || ""}</span>
+      
     });
 
     cover.appendChild(card);
@@ -75,12 +75,18 @@ function filterItems() {
 
 searchInput.addEventListener("input", filterItems);
 filterSelect.addEventListener("change", filterItems);
+
+
+// Function to check if user is authenticated
 function protectedPage() {
-      fetch("http://localhost:5000/api/user")
+  const check = document.querySelector(".check");
+      fetch("http://localhost:5000/api/user", {
+        credentials: "include"
+      })
         .then((res) => res.json())
         .then((data) => {
           if (!data.user) {
-            cover.innerHTML = "<h1>Unauthorized access denied pls login!</h1>"
+            check.innerHTML = "<h1>Unauthorized access denied pls login!</h1>"
           } else {
             console.log(`Logged in user: ,${data.user}`);
           }
