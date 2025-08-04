@@ -7,7 +7,7 @@ const UserSchema = new mongoose.Schema({
   name: String,
   email: String,
   profilePic: String,
-  username: { type: String, unique: true, required: true },
+  username: { type: String, unique: true, required: true, trim: true, minLength: [5, 'username must have 5 characters!'], lowercase: true, },
   createdAt: { type: Date, default: Date.now },
 });
 
