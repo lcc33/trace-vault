@@ -76,8 +76,6 @@ header h1 span {
   border: 1px solid #334155;
 }
 
-/* ...existing code... */
-
 .container {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -132,7 +130,7 @@ header h1 span {
   object-fit: cover;
   border-radius: 12px;
   margin: 0.5rem 0;
-  box-shadow: 0 2px 12px rgba(56,189,248,0.15);
+  box-shadow: 0 2px 12px rgba(56, 189, 248, 0.15);
   background: #fff;
   display: block;
 }
@@ -168,8 +166,6 @@ header h1 span {
   margin: 0.5rem 0;
   text-align: center;
 }
-
-
 
 .claim-btn {
   margin-top: auto;
@@ -212,5 +208,18 @@ header h1 span {
   font-weight: 600;
 }
 
-
-/* ...existing code... */
+.loader {
+  width: 48px;
+  height: 48px;
+  border: 5px solid #38bdf8;
+  border-top: 5px solid #facc15;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 3rem auto;
+  display: block;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

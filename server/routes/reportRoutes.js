@@ -1,11 +1,14 @@
 const express = require("express");
 const router = express.Router();
-const Report = require("../models/Report");
-const { getReports } = require("../controllers/reportController"); // only getReports now
 const multer = require("multer");
 const path = require("path");
+const {
+  getReports,
+  updateReport,
+  deleteReport,
+} = require("../controllers/reportController"); // Import new controllers
 
-// Configure storage
+// Multer config (keep your existing setup)
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, "uploads");
@@ -16,12 +19,16 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
+// Auth middleware (improved error message)
 function ensureAuth(req, res, next) {
   if (req.isAuthenticated()) return next();
-  res.status(401).json({ message: "unauthorized access deniad!" });
+  res.status(401).json({ message: "Unauthorized access denied!" });
 }
 
-router.post('/api/report', ensureAuth, upload.single('itemImage'), async (req, res) => {
+// --- Routes ---
+
+// POST new report (keep your existing upload logic)
+router.post("/api/report", ensureAuth, upload.single("itemImage"), async (req, res) => {
   try {
     const { itemName, category, location, description, contact } = req.body;
 
@@ -30,25 +37,33 @@ router.post('/api/report', ensureAuth, upload.single('itemImage'), async (req, r
       category,
       location,
       description,
-      contact,   
-      image: req.file.filename,
-      user: req.user._id,        
+      contact,
+      image: req.file?.filename || null, // Handle case where no file is uploaded
+      user: req.user._id,
     });
 
     await newReport.save();
-
-    // emit to sockets
-    req.app.get('io').emit('newReport', newReport);
-
-    res.json({ message: 'Report added successfully', report: newReport });
+    req.app.get("io").emit("newReport", newReport);
+    res.json({ message: "Report added successfully", report: newReport });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: 'Failed to add report' });
+    res.status(500).json({ message: "Failed to add report" });
   }
 });
 
-
-// GET all reports
+// GET all reports (unchanged)
 router.get("/reports", ensureAuth, getReports);
+
+// --- NEW ROUTES ADDED ---
+
+// PUT update report (no file upload for edits)
+router.put("/reports/:id", ensureAuth, async (req, res) => {
+  await updateReport(req, res); // Uses controller logic
+});
+
+// DELETE report
+router.delete("/reports/:id", ensureAuth, async (req, res) => {
+  await deleteReport(req, res); // Uses controller logic
+});
 
 module.exports = router;

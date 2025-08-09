@@ -2,8 +2,9 @@
 import Layout from "../layouts/Layout.astro";
 const backBtn =
   "https://img.icons8.com/?size=100&id=26191&format=png&color=000000";
-import "../styles/explore.css";
 ---
+
+<!-- STYLES OMITTED FOR BREVITY -->
 
 <Layout>
   <title>TraceVault | Explore</title>
@@ -14,24 +15,24 @@ import "../styles/explore.css";
       Explore found items across campus. Use the filters to narrow your search.
     </p>
   </header>
-<div class="check">
-  <section class="search-filter">
-    <input type="text" id="searchInput" placeholder="Search items..." />
-    <select id="filterSelect"
-      >transform: translateY(-8px); background: #334155;
-      <option value="all">All Categories</option>
-      <option value="phone">Phone</option>
-      <option value="id">ID Card</option>
-      <option value="bag">Bag</option>
-      <option value="wallet">Wallet</option>
-      <option value="other">Other</option>
-    </select>
-  </section>
 
-  <main class="container" id="cover">
-    <!-- Item cards will be rendered here -->
-  </main>
-</div>
-  <script  src="../scripts/explore.js"></script>
+  <div class="check">
+    <section class="search-filter">
+      <input type="text" id="searchInput" placeholder="Search items..." />
+      <select id="filterSelect">
+        <option value="all">All Categories</option>
+        <option value="phone">Phone</option>
+        <option value="id">ID Card</option>
+        <option value="bag">Bag</option>
+        <option value="wallet">Wallet</option>
+        <option value="other">Other</option>
+      </select>
+    </section>
+
+    <main class="container" id="cover">
+      <div id="loader" class="loader"></div>
+    </main>
+  </div>
+
+  <script src="../scripts/explore.js"></script>
 </Layout>
-

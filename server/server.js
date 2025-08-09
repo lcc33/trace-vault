@@ -7,7 +7,10 @@ const passport = require("passport");
 const app = express();
 connectDB();
 require("dotenv").config();
-app.use(cors());
+app.use(cors({
+  origin: "http://localhost:4321", 
+  credentials: true,
+}));
 app.use(express.json());
 require("./config/passport")(passport);
 
@@ -21,10 +24,6 @@ app.use(
 );
 app.use(passport.initialize());
 app.use(passport.session());
-app.use(cors({
-  origin: "http://localhost:4321", // or your frontend URL
-  credentials: true,
-}));
 
 
 //socket.io setup shii
