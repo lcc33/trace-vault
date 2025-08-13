@@ -1,4 +1,4 @@
-const Report = require('../models/Report');
+const Report = require("../models/Report");
 
 exports.addReport = async (req, res) => {
   try {
@@ -11,52 +11,28 @@ exports.addReport = async (req, res) => {
   }
 };
 
-
-
 exports.getReports = async (req, res) => {
- try {
-    const reports = await Report.find().populate('user', 'name profilePic');
+  try {
+    const reports = await Report.find().populate("user", "name profilePic");
     res.json(reports);
   } catch (err) {
-    res.status(500).json({ message: 'Failed to get reports' });
+    res.status(500).json({ message: "Failed to get reports" });
   }
 };
 
 exports.updateReport = async (req, res) => {
-  try {
-    const id = req.params.id;
-    const userId = req.session?.user?.id;
-    const { title, description } = req.body;
+  const { name, description, location } = req.body;
+  const { id } = req.params;
 
-    const report = await Report.findById(id);
-    if (!report) return res.status(404).json({ message: "Report not found" });
-    if (report.userId.toString() !== userId) return res.status(403).json({ message: "Unauthorized" });
-
-    report.title = title;
-    report.description = description;
-    report.updatedAt = new Date();
-
-    await report.save();
-    res.json({ success: true });
-  } catch (err) {
-    res.status(500).json({ message: "Failed to update report" });
-  }
+  Report.findByIdAndUpdate(id, { name, description, location }, { new: true })
+    .then((updatedReport) => res.json(updatedReport))
+    .catch((err) => res.status(500).json({ error: "Failed to update Report" }));
 };
 
-
 exports.deleteReport = async (req, res) => {
-  try {
-    const id = req.params.id;
-    const userId = req.session?.user?.id;
+  const { id } = req.params;
 
-    const report = await Report.findById(id);
-    if (!report) return res.status(404).json({ message: "Report not found" });
-    if (report.userId.toString() !== userId) return res.status(403).json({ message: "Unauthorized" });
-
-    await Report.findByIdAndDelete(id);
-
-    res.json({ success: true });
-  } catch (err) {
-    res.status(500).json({ message: "Failed to delete report" });
-  }
+  Report.findByIdAndDelete(id)
+    .then(() => res.json({ message: "Report Deleted" }))
+    .catch((err) => res.status(500).json({ error: "Failed to delete report" }));
 };

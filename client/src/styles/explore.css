@@ -126,8 +126,8 @@ header h1 span {
 .item-img {
   width: 100%;
   max-width: 220px;
-  height: auto;
-  object-fit: cover;
+  height: 180px; /* Fixed height for uniformity */
+  object-fit: cover; /* Ensures image fills the box and crops excess */
   border-radius: 12px;
   margin: 0.5rem 0;
   box-shadow: 0 2px 12px rgba(56, 189, 248, 0.15);
@@ -138,7 +138,7 @@ header h1 span {
 @media (max-width: 600px) {
   .item-img {
     max-width: 100%;
-    height: auto;
+    height: 160px; /* Slightly smaller on mobile */
   }
 }
 
@@ -222,4 +222,131 @@ header h1 span {
   to {
     transform: rotate(360deg);
   }
+}
+.edit-btn,
+.delete-btn {
+  width: 18px;
+  height: 18px;
+  background: #f8fafc;
+  border-radius: 50px;
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 12px rgba(56, 189, 248, 0.1);
+  border: 2px solid #38bdf8;
+  position: relative;
+}
+
+.actions {
+  display: flex;
+  flex-direction: row;
+  gap: 0.5rem;
+  align-items: center;
+  margin-left: auto;
+}
+.edit-btn,
+.delete-btn {
+  width: 24px;
+  height: 24px;
+  background: #f8fafc;
+  border-radius: 50px;
+  padding: 0.2rem;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(56, 189, 248, 0.12);
+  border: 2px solid #38bdf8;
+  margin: 0;
+}
+
+.edit-btn:hover {
+  background: #38bdf8;
+  border-color: #38bdf8;
+}
+.delete-btn:hover {
+  background: #ef4444;
+  border-color: #ef4444;
+}
+
+.edit-form {
+  background: #1e293b;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(56, 189, 248, 0.1);
+  padding: 1rem;
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  align-items: stretch;
+}
+
+.edit-form input,
+.edit-form textarea {
+  padding: 0.7rem 1rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  background: #334155;
+  color: #f8fafc;
+  margin-bottom: 0.5rem;
+}
+
+.edit-form button {
+  background: #38bdf8;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.6rem 1.2rem;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  margin-right: 0.5rem;
+  margin-top: 0.5rem;
+  transition: background 0.2s;
+}
+
+.edit-form button.save-edit {
+  background: #22c55e;
+}
+.edit-form button.cancel-edit {
+  background: #ef4444;
+}
+
+.edit-form button:hover {
+  opacity: 0.85;
+}
+
+.action-popup {
+  position: fixed;
+  top: 2.5rem;
+  left: 50%;
+  transform: translateX(-50%) translateY(-40px);
+  min-width: 200px;
+  max-width: 90vw;
+  padding: 0.9rem 2rem;
+  border-radius: 10px;
+  font-size: 1.08rem;
+  font-weight: 600;
+  text-align: center;
+  z-index: 3000;
+  box-shadow: 0 4px 24px rgba(56,189,248,0.18);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s cubic-bezier(.4,0,.2,1), transform 0.4s cubic-bezier(.4,0,.2,1);
+}
+.action-popup.success {
+  background: #549c6e;
+  color: #fff;
+  border: 2px solid #38bdf8;
+}
+.action-popup.error {
+  background: #ef4444;
+  color: #fff;
+  border: 2px solid #facc15;
 }

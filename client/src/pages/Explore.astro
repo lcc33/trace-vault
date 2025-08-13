@@ -2,6 +2,7 @@
 import Layout from "../layouts/Layout.astro";
 const backBtn =
   "https://img.icons8.com/?size=100&id=26191&format=png&color=000000";
+import "../styles/explore.css";
 ---
 
 <!-- STYLES OMITTED FOR BREVITY -->
@@ -9,7 +10,7 @@ const backBtn =
 <Layout>
   <title>TraceVault | Explore</title>
   <header>
-    <img class="back" onclick="location.href='./'" src={backBtn} alt="" />
+    <img class="back" onclick="location.href='./home'" src={backBtn} alt="" />
     <h1>Trace<span>Vault</span></h1>
     <p>
       Explore found items across campus. Use the filters to narrow your search.

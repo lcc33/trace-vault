@@ -13,9 +13,9 @@ router.get(
   passport.authenticate("google", { failureRedirect: "/" }),
   (req, res) => {
     if (req.user && req.user.email === "bryanedwarding@gmail.com") {
-      res.redirect("http://localhost:4321/");
+      res.redirect("http://localhost:4321/home");
     } else {
-      res.redirect("http://localhost:4321/");
+      res.redirect("http://localhost:4321/home");
     }
   }
   
