@@ -1,3 +1,194 @@
 ---
 import Layout from "../layouts/Layout.astro";
 ---
+
+<style>
+  .welcome-bg {
+    min-height: 100vh;
+    background: linear-gradient(120deg, #0f172a 60%, #38bdf8 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: "Inter", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    color: #f8fafc;
+    position: relative;
+    overflow: hidden;
+  }
+  .welcome-card {
+    background: rgba(22, 33, 62, 0.97);
+    border-radius: 32px;
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.22);
+    padding: 3.5rem 2.5rem 2.5rem 2.5rem;
+    max-width: 410px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    z-index: 2;
+  }
+  .welcome-logo {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 2.7rem;
+    font-weight: 800;
+    color: #00ffc3;
+    letter-spacing: 2px;
+    margin-bottom: 0.7rem;
+    text-shadow:
+      0 2px 24px #00ffc3,
+      0 1px 0 #fff2;
+    user-select: none;
+  }
+  .welcome-logo-icon {
+    width: 3rem;
+    height: 3rem;
+    background: linear-gradient(135deg, #00ffc3 60%, #2563eb 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 16px #00ffc3;
+  }
+  .welcome-tagline {
+    font-size: 1.15rem;
+    color: #bae6fd;
+    margin-bottom: 2.2rem;
+    letter-spacing: 0.5px;
+    text-align: center;
+  }
+  .welcome-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    width: 100%;
+    align-items: center;
+  }
+  .welcome-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 1rem 2.5rem;
+    background: linear-gradient(90deg, #00ffc3 60%, #2563eb 100%);
+    color: #222;
+    font-weight: 700;
+    font-size: 1.15rem;
+    border: none;
+    border-radius: 14px;
+    cursor: pointer;
+    box-shadow: 0 2px 12px rgba(0, 255, 195, 0.15);
+    transition:
+      background 0.3s,
+      color 0.3s,
+      transform 0.2s;
+    outline: none;
+    text-decoration: none;
+    margin-bottom: 0.5rem;
+  }
+  .welcome-btn:hover,
+  .welcome-btn:focus {
+    background: linear-gradient(90deg, #fff 60%, #00ffc3 100%);
+    color: #2563eb;
+    transform: translateY(-2px) scale(1.04);
+  }
+  .welcome-btn .icon {
+    width: 1.6rem;
+    height: 1.6rem;
+    display: inline-block;
+  }
+  .welcome-links {
+    margin-top: 1.2rem;
+    font-size: 1rem;
+    color: #94a3b8;
+    text-align: center;
+  }
+  .welcome-links a {
+    color: #38bdf8;
+    text-decoration: underline;
+    margin: 0 0.5rem;
+    transition: color 0.2s;
+  }
+  .welcome-links a:hover {
+    color: #facc15;
+  }
+  @media (max-width: 500px) {
+    .welcome-card {
+      padding: 2rem 1rem;
+      max-width: 98vw;
+    }
+    .welcome-logo {
+      font-size: 2rem;
+    }
+    .welcome-logo-icon {
+      width: 2.2rem;
+      height: 2.2rem;
+    }
+  }
+  /* Decorative background circles */
+  .welcome-bg::before,
+  .welcome-bg::after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    z-index: 1;
+    opacity: 0.18;
+  }
+  .welcome-bg::before {
+    width: 320px;
+    height: 320px;
+    background: #38bdf8;
+    top: 10%;
+    left: 5%;
+  }
+  .welcome-bg::after {
+    width: 220px;
+    height: 220px;
+    background: #00ffc3;
+    bottom: 8%;
+    right: 8%;
+  }
+</style>
+
+<Layout>
+  <div class="welcome-bg">
+    <div class="welcome-card">
+      <div class="welcome-logo">
+        <span class="welcome-logo-icon">
+          <svg width="32" height="32" viewBox="0 0 28 28" fill="none">
+            <path
+              d="M14 3L24 7V13C24 19 19 23 14 25C9 23 4 19 4 13V7L14 3Z"
+              fill="#00ffc3"
+              stroke="#2563eb"
+              stroke-width="2"></path>
+          </svg>
+        </span>
+        TraceVault
+      </div>
+      <div class="welcome-tagline">
+        Lost something? Found something?<br />
+        TraceVault connects you to your campus community.<br />
+        <span style="color:#facc15;font-weight:600;"
+          >Secure the lost. Connect the found.</span
+        >
+      </div>
+      <div class="welcome-actions">
+        <a
+          href="http://localhost:5000/auth/google"
+          id="google-signin"
+          target="_top"
+          class="welcome-btn"
+        >
+          <span class="icon">
+            <svg width="24" height="24" fill="none"
+              ><path
+                d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm0 2c-4.418 0-8 1.79-8 4v2h16v-2c0-2.21-3.582-4-8-4z"
+                fill="#2563eb"></path></svg
+            >
+          </span>
+          Login / Connect
+        </a>
+      </div>
+    </div>
+  </div>
+</Layout>

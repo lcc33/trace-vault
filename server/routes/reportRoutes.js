@@ -6,7 +6,9 @@ const {
   getReports,
   updateReport,
   deleteReport,
-} = require("../controllers/reportController"); // Import new controllers
+} = require("../controllers/reportController");
+
+const Report = require("../models/Report"); // ✅ FIX: import model
 
 // Multer config (keep your existing setup)
 const storage = multer.diskStorage({
@@ -28,28 +30,31 @@ function ensureAuth(req, res, next) {
 // --- Routes ---
 
 // POST new report (keep your existing upload logic)
-router.post("/api/report", ensureAuth, upload.single("itemImage"), async (req, res) => {
-  try {
-    const { itemName, category, location, description, contact } = req.body;
+router.post(
+  "/api/report",
+  ensureAuth,
+  upload.single("itemImage"),
+  async (req, res) => {
+    try {
+      const { category, description, contact } = req.body;
 
-    const newReport = new Report({
-      name: itemName,
-      category,
-      location,
-      description,
-      contact,
-      image: req.file?.filename || null, // Handle case where no file is uploaded
-      user: req.user._id,
-    });
+      const newReport = new Report({
+        category,
+        description,
+        contact,
+        image: req.file?.filename || null,
+        user: req.user._id,
+      });
 
-    await newReport.save();
-    req.app.get("io").emit("newReport", newReport);
-    res.json({ message: "Report added successfully", report: newReport });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Failed to add report" });
+      await newReport.save();
+      req.app.get("io").emit("newReport", newReport);
+      res.json({ message: "Report added successfully", report: newReport });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: "Failed to add report" });
+    }
   }
-});
+);
 
 // GET all reports (unchanged)
 router.get("/reports", ensureAuth, getReports);

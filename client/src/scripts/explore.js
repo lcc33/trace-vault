@@ -41,8 +41,8 @@ getCurrentUser().then(() => {
       renderReports(allReports);
     })
     .catch((err) => {
-      hideLoader();
       console.error(err);
+      hideLoader();
     });
 });
 
@@ -86,32 +86,36 @@ function renderReports(reports) {
 
     card.innerHTML = `
       <div class="user-header">
-      <img src="${profilePic}" alt="${username}" class="profile-pic"/>
-      <span class="username">${username}</span>
-      ${
-        isOwner
-        ? `<span class='actions'>
-          <img src='https://cdn-icons-png.flaticon.com/128/1828/1828911.png' class='edit-btn' data-id='${report._id}' title='Edit'/>
-          <img src='https://cdn-icons-png.flaticon.com/128/3405/3405244.png' class='delete-btn' data-id='${report._id}' title='Delete'/>
-          </span>`
-        : ""
-      }
+        <img src="${profilePic}" alt="${username}" class="profile-pic"/>
+        <span class="username">${username}</span>
+        ${
+          isOwner
+            ? `<span class='actions'>
+                <img src='https://cdn-icons-png.flaticon.com/128/1828/1828911.png' class='edit-btn' data-id='${report._id}' title='Edit'/>
+                <img src='https://cdn-icons-png.flaticon.com/128/3405/3405244.png' class='delete-btn' data-id='${report._id}' title='Delete'/>
+              </span>`
+            : ""
+        }
       </div>
       <h3>${report.name}</h3>
       ${
-      report.image
-        ? `<img src="http://localhost:5000/uploads/${report.image}" class="item-img" alt="${report.name}" />`
-        : ""
+        report.image
+          ? `<img src="http://localhost:5000/uploads/${report.image}" class="item-img" alt="${report.name}" />`
+          : ""
       }
       <p>Description: ${report.description || ""}</p>
       <div class="tag">Location: ${report.location || ""}</div>
-      <button class="claim-btn">Claim</button>
+      ${!isOwner ? "" : `<button class="claim-btn">Claim</button>`}
       <div class='edit-form' style='display:none;'>
-      <input type='text' class='edit-name' value='${report.name}' />
-      <textarea class='edit-description'>${report.description || ""}</textarea>
-      <input class='edit-location' type='text' value='${report.location || ""}' />
-      <button class='save-edit'>Save Changes</button>
-      <button class='cancel-edit'>Cancel</button>
+        <input type='text' class='edit-name' value='${report.name}' />
+        <textarea class='edit-description'>${
+          report.description || ""
+        }</textarea>
+        <input class='edit-location' type='text' value='${
+          report.location || ""
+        }' />
+        <button class='save-edit'>Save Changes</button>
+        <button class='cancel-edit'>Cancel</button>
       </div>
     `;
 
@@ -225,7 +229,7 @@ function protectedPage() {
     .then((data) => {
       if (!data.user) {
         check.innerHTML =
-          "<h1>Unauthorized access denied pls <a href='/Login'>login!</a></h1>";
+          "<h1>Unauthorized access denied pls <a href='./'>login!</a></h1>";
       }
     });
 }

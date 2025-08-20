@@ -2,19 +2,10 @@ const mongoose = require("mongoose");
 
 const ReportSchema = new mongoose.Schema({
   id: Number,
-  name: {
-    type: String,
-    required: [true, "name is required!"],
-    trim: true,
-  },
+  
   category: {
     type: String,
     required: [true, "category is required!"],
-    trim: true,
-  },
-  location: {
-    type: String,
-    required: [true, "location is required!"],
     trim: true,
   },
   description: {

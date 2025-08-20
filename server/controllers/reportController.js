@@ -24,7 +24,7 @@ exports.updateReport = async (req, res) => {
   const { name, description, location } = req.body;
   const { id } = req.params;
 
-  Report.findByIdAndUpdate(id, { name, description, location }, { new: true })
+  Report.findByIdAndUpdate(id, {  description }, { new: true })
     .then((updatedReport) => res.json(updatedReport))
     .catch((err) => res.status(500).json({ error: "Failed to update Report" }));
 };
