@@ -1,5 +1,63 @@
+
+//protected page
+function protectedPage() {
+  const check = document.querySelector(".check");
+  fetch("https://trace-vault.onrender.com/api/user", {
+    credentials: "include",
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      if (!data.user) {
+        location.href = "./";
+      }
+    });
+}
+// protectedPage();
+
+// Report form logic
+const reportForm = document.getElementById("reportForm");
+const popup = document.getElementById("popup");
+
+function showPopup(message, success = true) {
+  popup.textContent = message;
+  popup.className = "popup " + (success ? "success" : "error");
+  popup.style.display = "block";
+  setTimeout(() => {
+    popup.style.display = "none";
+  }, 2500);
+}
+
+reportForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const formData = new FormData(reportForm);
+
+  fetch("http://localhost:5000/api/report", {
+    method: "POST",
+    body: formData,
+    credentials: "include",
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      if (
+        data &&
+        data.message &&
+        data.message.toLowerCase().includes("success")
+      ) {
+        showPopup("Report sent successfully!", true);
+        reportForm.reset();
+      } else {
+        showPopup("Failed to send report.", false);
+      }
+    })
+    .catch((err) => {
+      showPopup("Failed to send report.", false);
+      console.error(err);
+    });
+});
+
+//feed logic
 import { io } from "socket.io-client";
-const socket = io("http://localhost:5000/");
+const socket = io("https://trace-vault.onrender.com/");
 const cover = document.getElementById("cover");
 const searchInput = document.getElementById("searchInput");
 const filterSelect = document.getElementById("filterSelect");
@@ -9,7 +67,7 @@ let currentUserId = null;
 
 // Get current user ID for owner checks
 function getCurrentUser() {
-  return fetch("http://localhost:5000/api/user", { credentials: "include" })
+  return fetch("https://trace-vault.onrender.com/api/user", { credentials: "include" })
     .then((res) => res.json())
     .then((data) => {
       currentUserId = data.user?._id || null;
@@ -30,7 +88,7 @@ function hideLoader() {
 showLoader();
 
 getCurrentUser().then(() => {
-  fetch("http://localhost:5000/reports", {
+  fetch("https://trace-vault.onrender.com/reports", {
     method: "GET",
     credentials: "include",
   })
@@ -86,7 +144,7 @@ function renderReports(reports) {
 
     card.innerHTML = `
       <div class="user-header">
-        <img src="${profilePic}" alt="${username}" class="profile-pic"/>
+        <img src="${profilePic}"   alt="" class="profile-pic"/>
         <span class="username">${username}</span>
         ${
           isOwner
@@ -97,23 +155,21 @@ function renderReports(reports) {
             : ""
         }
       </div>
-      <h3>${report.name}</h3>
+      
       ${
         report.image
-          ? `<img src="http://localhost:5000/uploads/${report.image}" class="item-img" alt="${report.name}" />`
+          ? `<img src="https://trace-vault.onrender.com/uploads/${report.image}" class="item-img" alt="${report.description}" />`
           : ""
       }
       <p>Description: ${report.description || ""}</p>
-      <div class="tag">Location: ${report.location || ""}</div>
-      ${!isOwner ? "" : `<button class="claim-btn">Claim</button>`}
+      
+      ${!isOwner ? `<button class="claim-btn">Claim</button>` :  ""}
       <div class='edit-form' style='display:none;'>
-        <input type='text' class='edit-name' value='${report.name}' />
+        
         <textarea class='edit-description'>${
           report.description || ""
         }</textarea>
-        <input class='edit-location' type='text' value='${
-          report.location || ""
-        }' />
+       
         <button class='save-edit'>Save Changes</button>
         <button class='cancel-edit'>Cancel</button>
       </div>
@@ -136,25 +192,19 @@ function renderReports(reports) {
       });
 
       saveEdit.addEventListener("click", () => {
-        const updatedName = card.querySelector(".edit-name").value;
         const updatedDesc = card.querySelector(".edit-description").value;
-        const updatedLocation = card.querySelector(".edit-location").value;
 
-        fetch(`http://localhost:5000/reports/${report._id}`, {
+        fetch(`https://trace-vault.onrender.com/reports/${report._id}`, {
           method: "PUT",
           credentials: "include",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            name: updatedName,
             description: updatedDesc,
-            location: updatedLocation,
           }),
         })
           .then((res) => res.json())
           .then((updatedReport) => {
-            report.name = updatedName;
             report.description = updatedDesc;
-            report.location = updatedLocation;
             renderReports(allReports);
             showActionPopup("Changes saved!", true);
           })
@@ -171,7 +221,7 @@ function renderReports(reports) {
           "Are you sure you want to delete this report?"
         );
         if (confirmDelete) {
-          fetch(`http://localhost:5000/reports/${report._id}`, {
+          fetch(`https://trace-vault.onrender.com/reports/${report._id}`, {
             method: "DELETE",
             credentials: "include",
           })
@@ -206,10 +256,7 @@ function filterItems() {
   const searchTerm = searchInput.value.toLowerCase();
   const selectedCategory = filterSelect.value;
   const filtered = allReports.filter((report) => {
-    const matchesSearch =
-      report.name.toLowerCase().includes(searchTerm) ||
-      report.description.toLowerCase().includes(searchTerm) ||
-      report.location.toLowerCase().includes(searchTerm);
+    const matchesSearch = report.description.toLowerCase().includes(searchTerm);
     const matchesCategory =
       selectedCategory === "all" || report.category === selectedCategory;
     return matchesSearch && matchesCategory;
@@ -220,17 +267,3 @@ function filterItems() {
 searchInput.addEventListener("input", filterItems);
 filterSelect.addEventListener("change", filterItems);
 
-function protectedPage() {
-  const check = document.querySelector(".check");
-  fetch("http://localhost:5000/api/user", {
-    credentials: "include",
-  })
-    .then((res) => res.json())
-    .then((data) => {
-      if (!data.user) {
-        check.innerHTML =
-          "<h1>Unauthorized access denied pls <a href='./'>login!</a></h1>";
-      }
-    });
-}
-protectedPage();

@@ -10,12 +10,12 @@ router.get(
 
 router.get(
   "/google/callback",
-  passport.authenticate("google", { failureRedirect: "/" }),
+  passport.authenticate("google", { failureRedirect: "./" }),
   (req, res) => {
     if (req.user && req.user.email === "bryanedwarding@gmail.com") {
-      res.redirect("http://localhost:4321/home");
+      res.redirect("http://tracevault.vercel.app/dashboard");
     } else {
-      res.redirect("http://localhost:4321/home");
+      res.redirect("http://tracevault.vercel.app/home");
     }
   }
   

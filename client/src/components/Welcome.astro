@@ -5,8 +5,10 @@ import Layout from "../layouts/Layout.astro";
 <style>
   .welcome-bg {
     min-height: 100vh;
+    width: 100%;
     background: linear-gradient(120deg, #0f172a 60%, #38bdf8 100%);
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     font-family: "Inter", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
@@ -17,6 +19,7 @@ import Layout from "../layouts/Layout.astro";
   .welcome-card {
     background: rgba(22, 33, 62, 0.97);
     border-radius: 32px;
+    margin-bottom: 50px;
     box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.22);
     padding: 3.5rem 2.5rem 2.5rem 2.5rem;
     max-width: 410px;
@@ -174,7 +177,7 @@ import Layout from "../layouts/Layout.astro";
       </div>
       <div class="welcome-actions">
         <a
-          href="http://localhost:5000/auth/google"
+          href="https://trace-vault.onrender.com/auth/google"
           id="google-signin"
           target="_top"
           class="welcome-btn"

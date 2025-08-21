@@ -1,510 +1,107 @@
 ---
-import "../styles/explore.css";
+import "../styles/home.css";
 import Layout from "../layouts/Layout.astro";
+import Navbar from "../components/Navbar.astro";
 ---
 
 <Layout>
-  <header class="header">
-    <h1>Trace<span>Vault</span></h1>
-    <p>Lost something? Found something? Post it below.</p>
-  </header>
-
+  <Navbar />
   <!-- MAIN CONTENT -->
-  <main class="container home-feed">
-    <!-- "Tweet" style post/report section (above the feed) -->
+  <main class="home-feed">
+    <!-- Twitter-style Compose Section -->
     <section class="report-box">
       <form id="reportForm" method="post" action="">
         <div class="report-row">
-          <input
-            type="text"
-            id="description"
-            name="description"
-            class="report-input"
-            placeholder="What's lost or found? (e.g. Black wallet near library)"
-            required
-          />
-          <select id="itemCategory" name="category" class="report-select" required>
-            <option value="">Category</option>
-            <option value="phone">Phone</option>
-            <option value="id">ID Card</option>
-            <option value="bag">Bag</option>
-            <option value="wallet">Wallet</option>
-            <option value="other">Other</option>
-          </select>
-          <!-- Custom image icon for file input -->
-          <label for="itemImage" class="image-upload-label" title="Add image">
-            <img src="https://cdn-icons-png.flaticon.com/512/1828/1828925.png" alt="Upload" class="image-upload-icon"/>
-            <input
-              type="file"
-              id="itemImage"
-              name="itemImage"
-              accept="image/*"
-              class="report-file"
-              required
-              style="display:none;"
-            />
-          </label>
-          <input
-            type="text"
-            id="contact"
-            name="contact"
-            class="report-input"
-            placeholder="Contact info"
-            required
-          />
-          <button type="submit" class="send-btn" title="Send">
-            <img src="https://cdn-icons-png.flaticon.com/128/10426/10426419.png" alt="Send" width="28" height="28" />
-          </button>
+          <div class="report-input-wrapper">
+            <div class="avatar">U</div>
+            <div class="input-content">
+              <textarea
+                id="description"
+                name="description"
+                class="report-input"
+                placeholder="What's lost or found?"
+                required
+                rows="1"
+              ></textarea>
+            </div>
+          </div>
+          
+          <div class="report-controls">
+            <div class="report-left-controls">
+              <select
+                id="itemCategory"
+                name="category"
+                class="report-select"
+                required
+              >
+                <option value="">Category</option>
+                <option value="phone">📱 Phone</option>
+                <option value="id">🆔 ID Card</option>
+                <option value="bag">🎒 Bag</option>
+                <option value="wallet">💰 Wallet</option>
+                <option value="other">📦 Other</option>
+              </select>
+              
+              <label for="itemImage" class="image-upload-label" title="Add image">
+                <img
+                  src="https://cdn-icons-png.flaticon.com/512/1828/1828925.png"
+                  alt="Upload"
+                  class="image-upload-icon"
+                />
+                <input
+                  type="file"
+                  id="itemImage"
+                  name="itemImage"
+                  accept="image/*"
+                  class="report-file"
+                  required
+                  style="display:none;"
+                />
+              </label>
+            </div>
+            
+            <div class="report-right-controls">
+              <input
+                type="text"
+                id="contact"
+                name="contact"
+                class="contact-input"
+                placeholder="Contact info"
+                required
+              />
+              <button type="submit" class="send-btn">
+                Post
+              </button>
+            </div>
+          </div>
         </div>
       </form>
     </section>
 
+    <!-- Popup for notifications -->
     <div id="popup" class="popup"></div>
 
-    <!-- EXPLORE SECTION (feed) -->
+    <!-- Search and Filter Section -->
+    <section class="search-filter">
+      <input type="text" id="searchInput" placeholder="Search reports..." />
+      <select id="filterSelect">
+        <option value="all">All Categories</option>
+        <option value="phone">📱 Phone</option>
+        <option value="id">🆔 ID Card</option>
+        <option value="bag">🎒 Bag</option>
+        <option value="wallet">💰 Wallet</option>
+        <option value="other">📦 Other</option>
+      </select>
+    </section>
+
+    <!-- Feed Section -->
     <section class="check">
-      <section class="search-filter">
-        <input type="text" id="searchInput" placeholder="Search items..." />
-        <select id="filterSelect">
-          <option value="all">All Categories</option>
-          <option value="phone">Phone</option>
-          <option value="id">ID Card</option>
-          <option value="bag">Bag</option>
-          <option value="wallet">Wallet</option>
-          <option value="other">Other</option>
-        </select>
-      </section>
       <main class="container" id="cover">
         <div id="loader" class="loader"></div>
       </main>
     </section>
   </main>
 
-  <!-- POPUP STYLES & CUSTOM ICON STYLES -->
-  <style>
-    .home-feed {
-      max-width: 600px;
-      margin: 0 auto;
-      padding-top: 2rem;
-    }
-    .report-box {
-      background: #1e293b;
-      border-radius: 18px;
-      box-shadow: 0 2px 16px rgba(56,189,248,0.08);
-      padding: 1.2rem 1.5rem;
-      margin-bottom: 2rem;
-      display: flex;
-      flex-direction: column;
-      align-items: stretch;
-    }
-    .report-row {
-      display: flex;
-      gap: 0.7rem;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-    .report-input, .report-select {
-      background: #334155;
-      color: #f8fafc;
-      border: none;
-      border-radius: 12px;
-      padding: 0.8rem 1rem;
-      font-size: 1rem;
-      margin: 0;
-      flex: 1 1 160px;
-      min-width: 0;
-      outline: none;
-      transition: background 0.2s;
-    }
-    .report-input:focus, .report-select:focus {
-      background: #38bdf8;
-      color: #0f172a;
-    }
-    .image-upload-label {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      background: #334155;
-      border-radius: 12px;
-      width: 44px;
-      height: 44px;
-      transition: background 0.2s;
-      margin: 0;
-      border: none;
-      padding: 0;
-    }
-    .image-upload-label:hover,
-    .image-upload-label:focus {
-      background: #38bdf8;
-    }
-    .image-upload-icon {
-      width: 28px;
-      height: 28px;
-      display: block;
-      margin: auto;
-    }
-    .report-file {
-      display: none;
-    }
-    .send-btn {
-      background: #38bdf8;
-      border: none;
-      border-radius: 50%;
-      width: 44px;
-      height: 44px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: background 0.2s, transform 0.2s;
-      margin-left: 0.2rem;
-      box-shadow: 0 2px 8px rgba(56,189,248,0.12);
-      padding: 0;
-    }
-    .send-btn img {
-      width: 28px;
-      height: 28px;
-      display: block;
-    }
-    .send-btn:hover, .send-btn:focus {
-      background: #2563eb;
-      transform: scale(1.08);
-    }
-    .popup {
-      display: none;
-      position: fixed;
-      top: 2rem;
-      left: 50%;
-      transform: translateX(-50%);
-      min-width: 220px;
-      max-width: 90vw;
-      padding: 1rem 2rem;
-      border-radius: 10px;
-      font-size: 1.1rem;
-      font-weight: 600;
-      text-align: center;
-      z-index: 2000;
-      box-shadow: 0 4px 24px rgba(56, 189, 248, 0.18);
-      transition: opacity 0.3s;
-    }
-    .popup.success {
-      background: #22c55e;
-      color: #fff;
-      border: 2px solid #38bdf8;
-    }
-    .popup.error {
-      background: #ef4444;
-      color: #fff;
-      border: 2px solid #facc15;
-    }
-    @media (max-width: 700px) {
-      .home-feed {
-        padding: 0.5rem;
-      }
-      .report-box {
-        padding: 0.7rem 0.5rem;
-      }
-      .report-row {
-        gap: 0.4rem;
-      }
-      .send-btn {
-        width: 38px;
-        height: 38px;
-      }
-      .image-upload-label {
-        width: 38px;
-        height: 38px;
-      }
-      .image-upload-icon {
-        width: 22px;
-        height: 22px;
-      }
-    }
-  </style>
-
   <!-- SCRIPTS -->
   <script src="../scripts/explore.js"></script>
-  <script is:inline>
-    // Report form logic
-    const reportForm = document.getElementById("reportForm");
-    const popup = document.getElementById("popup");
-
-    function showPopup(message, success = true) {
-      popup.textContent = message;
-      popup.className = "popup " + (success ? "success" : "error");
-      popup.style.display = "block";
-      setTimeout(() => {
-        popup.style.display = "none";
-      }, 2500);
-    }
-
-    reportForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const formData = new FormData(reportForm);
-
-      fetch("http://localhost:5000/api/report", {
-        method: "POST",
-        body: formData,
-        credentials: "include",
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          if (
-            data &&
-            data.message &&
-            data.message.toLowerCase().includes("success")
-          ) {
-            showPopup("Report sent successfully!", true);
-            reportForm.reset();
-          } else {
-            showPopup("Failed to send report.", false);
-          }
-        })
-        .catch((err) => {
-          showPopup("Failed to send report.", false);
-          console.error(err);
-        });
-    });
-
-    //feed logic
-    import { io } from "socket.io-client";
-const socket = io("http://localhost:5000/");
-const cover = document.getElementById("cover");
-const searchInput = document.getElementById("searchInput");
-const filterSelect = document.getElementById("filterSelect");
-const loader = document.getElementById("loader");
-let allReports = [];
-let currentUserId = null;
-
-// Get current user ID for owner checks
-function getCurrentUser() {
-  return fetch("http://localhost:5000/api/user", { credentials: "include" })
-    .then((res) => res.json())
-    .then((data) => {
-      currentUserId = data.user?._id || null;
-    });
-}
-
-socket.on("connect", () => {
-  console.log("connected to socket.io");
-});
-
-function showLoader() {
-  loader.style.display = "block";
-}
-function hideLoader() {
-  loader.style.display = "none";
-}
-
-showLoader();
-
-getCurrentUser().then(() => {
-  fetch("http://localhost:5000/reports", {
-    method: "GET",
-    credentials: "include",
-  })
-    .then((res) => res.json())
-    .then((reports) => {
-      hideLoader();
-      allReports = reports;
-      renderReports(allReports);
-    })
-    .catch((err) => {
-      console.error(err);
-      hideLoader();
-    });
-});
-
-socket.on("newReport", (newReport) => {
-  allReports.unshift(newReport);
-  renderReports(allReports);
-});
-
-// Add popup markup to the page
-if (!document.getElementById("action-popup")) {
-  const popupDiv = document.createElement("div");
-  popupDiv.id = "action-popup";
-  popupDiv.className = "action-popup";
-  document.body.appendChild(popupDiv);
-}
-
-// Popup function
-function showActionPopup(message, success = true) {
-  const popup = document.getElementById("action-popup");
-  popup.textContent = message;
-  popup.className = "action-popup " + (success ? "success" : "error");
-  popup.style.opacity = "1";
-  popup.style.transform = "translateY(0)";
-  popup.style.pointerEvents = "auto";
-  setTimeout(() => {
-    popup.style.opacity = "0";
-    popup.style.transform = "translateY(-40px)";
-    popup.style.pointerEvents = "none";
-  }, 2000);
-}
-
-function renderReports(reports) {
-  cover.innerHTML = "";
-  reports.forEach((report) => {
-    const card = document.createElement("div");
-    card.classList.add("item-card");
-
-    const username = report.user?.name || "Anonymous";
-    const profilePic = report.user?.profilePic || "default-avatar-url";
-    const isOwner = currentUserId && report.user?._id === currentUserId;
-
-    card.innerHTML = `
-      <div class="user-header">
-        <img src="${profilePic}" alt="${username}" class="profile-pic"/>
-        <span class="username">${username}</span>
-        ${
-          isOwner
-            ? `<span class='actions'>
-                <img src='https://cdn-icons-png.flaticon.com/128/1828/1828911.png' class='edit-btn' data-id='${report._id}' title='Edit'/>
-                <img src='https://cdn-icons-png.flaticon.com/128/3405/3405244.png' class='delete-btn' data-id='${report._id}' title='Delete'/>
-              </span>`
-            : ""
-        }
-      </div>
-      <h3>${report.name}</h3>
-      ${
-        report.image
-          ? `<img src="http://localhost:5000/uploads/${report.image}" class="item-img" alt="${report.name}" />`
-          : ""
-      }
-      <p>Description: ${report.description || ""}</p>
-      <div class="tag">Location: ${report.location || ""}</div>
-      ${!isOwner ? "" : `<button class="claim-btn">Claim</button>`}
-      <div class='edit-form' style='display:none;'>
-        <input type='text' class='edit-name' value='${report.name}' />
-        <textarea class='edit-description'>${
-          report.description || ""
-        }</textarea>
-        <input class='edit-location' type='text' value='${
-          report.location || ""
-        }' />
-        <button class='save-edit'>Save Changes</button>
-        <button class='cancel-edit'>Cancel</button>
-      </div>
-    `;
-
-    // Owner actions
-    const editBtn = card.querySelector(".edit-btn");
-    const editForm = card.querySelector(".edit-form");
-    const saveEdit = card.querySelector(".save-edit");
-    const cancelEdit = card.querySelector(".cancel-edit");
-    const deleteBtn = card.querySelector(".delete-btn");
-
-    if (editBtn && editForm && saveEdit && cancelEdit) {
-      editBtn.addEventListener("click", () => {
-        editForm.style.display = "block";
-      });
-
-      cancelEdit.addEventListener("click", () => {
-        editForm.style.display = "none";
-      });
-
-      saveEdit.addEventListener("click", () => {
-        const updatedName = card.querySelector(".edit-name").value;
-        const updatedDesc = card.querySelector(".edit-description").value;
-        const updatedLocation = card.querySelector(".edit-location").value;
-
-        fetch(`http://localhost:5000/reports/${report._id}`, {
-          method: "PUT",
-          credentials: "include",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name: updatedName,
-            description: updatedDesc,
-            location: updatedLocation,
-          }),
-        })
-          .then((res) => res.json())
-          .then((updatedReport) => {
-            report.name = updatedName;
-            report.description = updatedDesc;
-            report.location = updatedLocation;
-            renderReports(allReports);
-            showActionPopup("Changes saved!", true);
-          })
-          .catch((err) => {
-            console.error("error saving edit:", err);
-            showActionPopup("Failed to save changes.", false);
-          });
-      });
-    }
-
-    if (deleteBtn) {
-      deleteBtn.addEventListener("click", () => {
-        const confirmDelete = window.confirm(
-          "Are you sure you want to delete this report?"
-        );
-        if (confirmDelete) {
-          fetch(`http://localhost:5000/reports/${report._id}`, {
-            method: "DELETE",
-            credentials: "include",
-          })
-            .then((res) => res.json())
-            .then(() => {
-              allReports = allReports.filter((r) => r._id !== report._id);
-              renderReports(allReports);
-              showActionPopup("Report deleted!", true);
-            })
-            .catch((err) => {
-              console.error("Error deleting report:", err);
-              showActionPopup("Failed to delete report.", false);
-            });
-        }
-      });
-    }
-
-    // Claim button
-    const claimBtn = card.querySelector(".claim-btn");
-    if (claimBtn) {
-      claimBtn.addEventListener("click", () => {
-        claimBtn.textContent = "Claimed";
-        claimBtn.disabled = true;
-      });
-    }
-
-    cover.append(card);
-  });
-}
-
-function filterItems() {
-  const searchTerm = searchInput.value.toLowerCase();
-  const selectedCategory = filterSelect.value;
-  const filtered = allReports.filter((report) => {
-    const matchesSearch =
-      report.name.toLowerCase().includes(searchTerm) ||
-      report.description.toLowerCase().includes(searchTerm) ||
-      report.location.toLowerCase().includes(searchTerm);
-    const matchesCategory =
-      selectedCategory === "all" || report.category === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
-  renderReports(filtered);
-}
-
-searchInput.addEventListener("input", filterItems);
-filterSelect.addEventListener("change", filterItems);
-
-//protected page
-function protectedPage() {
-  const check = document.querySelector(".check");
-  fetch("http://localhost:5000/api/user", {
-    credentials: "include",
-  })
-    .then((res) => res.json())
-    .then((data) => {
-      if (!data.user) {
-        check.innerHTML =
-          "<h1>Unauthorized access denied pls <a href='./'>login!</a></h1>";
-      }
-    });
-}
-// protectedPage();
-
-  </script>
 </Layout>

@@ -1,191 +1,198 @@
 ---
-import Layout from "../layouts/Layout.astro";
-const currentPath =
-  typeof window !== "undefined" ? window.location.pathname : "";
+// Navbar.astro
 ---
+
+<nav class="navbar">
+  <div class="nav-container">
+    <!-- Logo/Brand -->
+    <div class="nav-brand">
+      <a href="/" class="brand-link">
+        <span class="brand-text">Trace<span class="brand-accent">Vault</span></span>
+      </a>
+    </div>
+    
+    <!-- Navigation Links -->
+    <div class="nav-links">
+      <a href="/home" class="nav-link" id="nav-home">
+        <img src="https://cdn-icons-png.flaticon.com/128/1946/1946488.png" alt="Home" class="nav-icon">
+        <span>Home</span>
+      </a>
+      <a href="/notifications" class="nav-link" id="nav-notifications">
+        <img src="https://cdn-icons-png.flaticon.com/128/1827/1827349.png" alt="Notifications" class="nav-icon">
+        <span>Notifications</span>
+      </a>
+      <a href="/profile" class="nav-link" id="nav-profile">
+        <img src="https://cdn-icons-png.flaticon.com/128/3135/3135715.png" alt="Profile" class="nav-icon">
+        <span>Profile</span>
+      </a>
+    </div>
+    
+    <!-- User Actions -->
+    <div class="nav-actions">
+      <button id="logoutBtn" class="logout-btn">
+        <img src="https://cdn-icons-png.flaticon.com/128/1828/1828490.png" alt="Logout" class="nav-icon">
+        <span>Logout</span>
+      </button>
+    </div>
+  </div>
+</nav>
 
 <style>
   .navbar {
-    position: fixed;
+    background: #1e293b;
+    border-bottom: 1px solid #334155;
+    padding: 0.75rem 0;
+    position: sticky;
     top: 0;
-    right: 0;
-    height: 100vh;
-    width: 86px;
-    background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 2.2rem;
-    padding: 2.5rem 0 1.5rem 0;
-    z-index: 1200;
-    box-shadow: -4px 0 24px rgba(16, 24, 40, 0.18);
-    border-top-left-radius: 24px;
-    border-bottom-left-radius: 24px;
-    border-left: 3px solid #facc15;
-    transition: width 0.2s;
-    margin-left: 24px;
+    z-index: 1000;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   }
-
+  
+  .nav-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  .nav-brand .brand-link {
+    text-decoration: none;
+    color: inherit;
+  }
+  
+  .brand-text {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #f8fafc;
+  }
+  .brand-sth {
+    color: #facc15;
+  }
+  .brand-accent {
+    color: #38bdf8;
+  }
+  
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+  }
+  
+  .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    text-decoration: none;
+    color: #cbd5e1;
+    transition: all 0.2s;
+    font-weight: 500;
+  }
+  
+  .nav-link:hover {
+    color: #38bdf8;
+    background: #334155;
+  }
+  
+  .nav-link.active {
+    color: #38bdf8;
+    background: #334155;
+  }
+  
   .nav-icon {
-    width: 48px;
-    height: 48px;
-    background: #f8fafc;
-    border-radius: 16px;
-    padding: 0.5rem;
-    margin-bottom: 0.5rem;
-    cursor: pointer;
-    transition:
-      background 0.2s,
-      transform 0.2s,
-      box-shadow 0.2s;
+    width: 18px;
+    height: 18px;
+    opacity: 0.8;
+  }
+  
+  .nav-actions {
     display: flex;
     align-items: center;
-    justify-content: center;
-    box-shadow: 0 2px 12px rgba(56, 189, 248, 0.1);
-    border: 2px solid #38bdf8;
-    position: relative;
   }
-  .nav-icon:hover {
-    background: #facc15;
-    border-color: #facc15;
-    transform: scale(1.13) rotate(-8deg);
-    box-shadow: 0 4px 24px rgba(250, 204, 21, 0.18);
+  
+  .logout-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: #cbd5e1;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 500;
   }
-
-  .nav-icon.active {
-    background: #facc15 !important;
-    border-color: #facc15 !important;
-    box-shadow: 0 4px 24px rgba(250, 204, 21, 0.18);
+  
+  .logout-btn:hover {
+    color: #ef4444;
+    background: #334155;
   }
-
-  .nav-label {
-    display: none;
-    font-size: 0.85rem;
-    color: #0f172a;
-    font-weight: 600;
-    margin-top: 0.2rem;
-    text-align: center;
-    letter-spacing: 0.5px;
-  }
-
-  @media (max-width: 700px) {
-    .navbar {
-      top: unset;
-      bottom: 0;
-      right: 0;
-      /* left: 0; */
-      width: 100%;
-      height: 68px;
-      flex-direction: row;
-      justify-content: space-evenly;
-      align-items: center;
+  
+  /* Mobile Responsive */
+  @media (max-width: 768px) {
+    .nav-container {
       padding: 0 0.5rem;
-      box-shadow: 0 -2px 24px rgba(16, 24, 40, 0.18);
-      border-radius: 0;
-      border-left: none;
-      background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
-
+    }
+    
+    .nav-links {
+      gap: 1rem;
+    }
+    
+    .nav-link span,
+    .logout-btn span {
+      display: none;
+    }
+    
+    .nav-link,
+    .logout-btn {
+      padding: 0.5rem;
+    }
+    
+    .brand-text {
+      font-size: 1.25rem;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .nav-links {
       gap: 0.5rem;
     }
-    .nav-icon {
-      margin-bottom: 0;
-      border-radius: 14px;
-      width: 44px;
-      height: 44px;
-      padding: 0.4rem;
-    }
-     .nav-icon:hover {
-    background: #facc15;
-    border-color: #facc15;
-    
-    box-shadow: 0 4px 24px rgba(250, 204, 21, 0.18);
-  }
-    .nav-label {
-      display: block;
-    }
-  }
-
-  .nav-icon img {
-    width: 34px;
-    height: 34px;
-    
   }
 </style>
 
-<Layout>
-  <nav class="navbar">
-    <div
-      class="nav-icon"
-      id="nav-home"
-      title="Home"
-      onclick="location.href='/'"
-    >
-      <img
-        src="https://img.icons8.com/ios-glyphs/36/38bdf8/home.png"
-        alt="Home"
-      />
-    </div>
-    <div
-      class="nav-icon"
-      id="nav-notifications"
-      title="Notifications"
-      onclick="location.href='/notifications'"
-    >
-      <img
-        src="https://img.icons8.com/ios-glyphs/36/38bdf8/appointment-reminders--v1.png"
-        alt="Notifications"
-      />
-    </div>
-    <div
-      class="nav-icon"
-      id="nav-profile"
-      title="Profile"
-      onclick="location.href='/profile'"
-    >
-      <img
-        src="https://img.icons8.com/ios-glyphs/36/38bdf8/user--v1.png"
-        alt="Profile"
-      />
-    </div>
-    <div
-      class="nav-icon"
-      id="nav-about"
-      title="About"
-      onclick="location.href='/about'"
-    >
-      <img
-        src="https://img.icons8.com/ios-glyphs/36/38bdf8/info--v1.png"
-        alt="About"
-      />
-    </div>
-    <div class="nav-icon" id="nav-logout" title="Logout" onclick="logoutUser()">
-      <img
-        src="https://img.icons8.com/ios-glyphs/36/38bdf8/logout-rounded--v1.png"
-        alt="Logout"
-      />
-    </div>
-  </nav>
+<script is:inline>
+  // Highlight active nav link based on current path
+  const path = window.location.pathname;
+  document.querySelectorAll('.nav-link').forEach(link => {
+    link.classList.remove('active');
+  });
+  if (path === "/home" || path === "/") {
+    document.getElementById("nav-home").classList.add("active");
+  } else if (path.startsWith("/notifications")) {
+    document.getElementById("nav-notifications").classList.add("active");
+  } else if (path.startsWith("/profile")) {
+    document.getElementById("nav-profile").classList.add("active");
+  }
 
-  <script is:inline>
-    const path = window.location.pathname;
-    if (path === "/" || path === "/home") {
-      document.getElementById("nav-home").classList.add("active");
-    } else if (path.startsWith("/notifications")) {
-      document.getElementById("nav-notifications").classList.add("active");
-    } else if (path.startsWith("/profile")) {
-      document.getElementById("nav-profile").classList.add("active");
-    } else if (path.startsWith("/about")) {
-      document.getElementById("nav-about").classList.add("active");
+  // Logout functionality
+  const logoutBtn = document.getElementById('logoutBtn');
+  logoutBtn?.addEventListener('click', async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/logout', {
+        method: 'POST',
+        credentials: 'include',
+      });
+      if (response.ok) {
+        window.location.href = './';
+      } else {
+        console.error('Logout failed');
+      }
+    } catch (error) {
+      console.error('Logout error:', error);
     }
-
-    function logoutUser() {
-      fetch("http://localhost:5000/auth/logout", {
-        method: "GET",
-        credentials: "include",
-      })
-        .then(() => (window.location.href = "/"))
-        .catch((err) => console.error(err));
-    }
-  </script>
-</Layout>
+  });
+</script>

@@ -4,6 +4,7 @@ const path = require("path");
 const connectDB = require("./config/db");
 const session = require("express-session");
 const passport = require("passport");
+const MongoStore = require("connect-mongo");
 const app = express();
 connectDB();
 require("dotenv").config();
@@ -16,10 +17,18 @@ require("./config/passport")(passport);
 
 app.use(
   session({
-    secret: "tracevalla",
+    secret: process.env.SESSION_SECRET || "tracevalla",
     resave: false,
-    cookie: { secure: false }, 
     saveUninitialized: false,
+    cookie: {
+      secure: process.env.NODE_ENV === "production", // secure cookies in prod
+      httpOnly: true,
+      maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+    },
+    store: MongoStore.create({
+      mongoUrl: process.env.MONGO_URI,
+      collectionName: "sessions",
+    }),
   })
 );
 app.use(passport.initialize());
