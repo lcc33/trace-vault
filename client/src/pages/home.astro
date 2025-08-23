@@ -48,16 +48,18 @@ import Navbar from "../components/Navbar.astro";
                   alt="Upload"
                   class="image-upload-icon"
                 />
-                <input
+                 <input
                   type="file"
                   id="itemImage"
                   name="itemImage"
                   accept="image/*"
                   class="report-file"
                   required
-                  style="display:none;"
+                  style="display:none;" 
                 />
+               
               </label>
+               <span id="selectedImageName" class="selected-image-name"></span>
             </div>
             
             <div class="report-right-controls">
@@ -103,5 +105,19 @@ import Navbar from "../components/Navbar.astro";
   </main>
 
   <!-- SCRIPTS -->
+   <script is:inline>
+    const file = document.querySelector(".report-file");
+    file?.addEventListener('change', function showSelectedImageName(e) {
+    const fileInput = e.target;
+    const nameSpan = document.getElementById("selectedImageName");
+    if (fileInput.files && fileInput.files[0]) {
+      nameSpan.textContent = fileInput.files[0].name;
+    } else {
+      nameSpan.textContent = "";
+    }
+  })
+    
+
+   </script>
   <script src="../scripts/explore.js"></script>
 </Layout>

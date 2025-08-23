@@ -43,7 +43,7 @@ router.post(
         description,
         contact,
         image: req.file?.filename || null,
-        user: req.user._id,
+        // user: req.user._id,
       });
 
       await newReport.save();
@@ -57,18 +57,30 @@ router.post(
 );
 
 // GET all reports (unchanged)
-router.get("/reports", ensureAuth, getReports);
+router.get(
+  "/reports",
+  ensureAuth,
+  getReports
+);
 
 // --- NEW ROUTES ADDED ---
 
 // PUT update report (no file upload for edits)
-router.put("/reports/:id", ensureAuth, async (req, res) => {
-  await updateReport(req, res); // Uses controller logic
-});
+router.put(
+  "/reports/:id",
+  ensureAuth,
+  async (req, res) => {
+    await updateReport(req, res); // Uses controller logic
+  }
+);
 
 // DELETE report
-router.delete("/reports/:id", ensureAuth, async (req, res) => {
-  await deleteReport(req, res); // Uses controller logic
-});
+router.delete(
+  "/reports/:id",
+  ensureAuth,
+  async (req, res) => {
+    await deleteReport(req, res); // Uses controller logic
+  }
+);
 
 module.exports = router;

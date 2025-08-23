@@ -6,11 +6,28 @@
 }
 
 body {
-  background: #000;
+  background: linear-gradient(120deg, #0f172a 60%, #1d9bf0 100%);
   color: #e7e9ea;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   line-height: 1.4;
   overflow-x: hidden;
+}
+
+/* Show selected image filename */
+.selected-image-name {
+  color: #1d9bf0;
+  font-size: 0.85rem;
+  margin-left: 0.5rem;
+  font-weight: 500;
+  background: rgba(29,155,240,0.08);
+  border-radius: 12px;
+  padding: 0.2rem 1rem;
+  display: inline-block;
+  vertical-align: middle;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* Header */

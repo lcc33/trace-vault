@@ -1,8 +1,22 @@
 
+
+const localServer = "http://localhost:5000/";
+const hostedServerUrl = "https://trace-vault.onrender.com/";
+// if (deleteBtn) {
+//       deleteBtn.addEventListener("click", () => {
+//         const confirmDelete = window.confirm(
+//           "Are you sure you want to delete this report?"
+//         );
+//         if (confirmDelete) {
+//           fetch(`${serverUrl}${report._id}`, {
+//             method: "DELETE",
+//             credentials: "include",
+//           })}
+
 //protected page
 function protectedPage() {
   const check = document.querySelector(".check");
-  fetch("https://trace-vault.onrender.com/api/user", {
+  fetch(`${localServer}api/user`, {
     credentials: "include",
   })
     .then((res) => res.json())
@@ -12,7 +26,7 @@ function protectedPage() {
       }
     });
 }
-// protectedPage();
+protectedPage();
 
 // Report form logic
 const reportForm = document.getElementById("reportForm");
@@ -31,7 +45,7 @@ reportForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   const formData = new FormData(reportForm);
 
-  fetch("http://localhost:5000/api/report", {
+  fetch(`${hostedServerUrl}api/report`, {
     method: "POST",
     body: formData,
     credentials: "include",
@@ -57,7 +71,7 @@ reportForm.addEventListener("submit", async (e) => {
 
 //feed logic
 import { io } from "socket.io-client";
-const socket = io("https://trace-vault.onrender.com/");
+const socket = io(hostedServerUrl);
 const cover = document.getElementById("cover");
 const searchInput = document.getElementById("searchInput");
 const filterSelect = document.getElementById("filterSelect");
@@ -67,7 +81,7 @@ let currentUserId = null;
 
 // Get current user ID for owner checks
 function getCurrentUser() {
-  return fetch("https://trace-vault.onrender.com/api/user", { credentials: "include" })
+  return(`${hostedServerUrl}api/user`, { credentials: "include" })
     .then((res) => res.json())
     .then((data) => {
       currentUserId = data.user?._id || null;
@@ -88,7 +102,7 @@ function hideLoader() {
 showLoader();
 
 getCurrentUser().then(() => {
-  fetch("https://trace-vault.onrender.com/reports", {
+  fetch(`${hostedServerUrl}reports`, {
     method: "GET",
     credentials: "include",
   })
@@ -158,10 +172,10 @@ function renderReports(reports) {
       
       ${
         report.image
-          ? `<img src="https://trace-vault.onrender.com/uploads/${report.image}" class="item-img" alt="${report.description}" />`
+          ? `<img src="${hostedServerUrl}uploads/${report.image}" class="item-img" alt="${report.description}" />`
           : ""
       }
-      <p>Description: ${report.description || ""}</p>
+      <p>${report.description || ""}</p>
       
       ${!isOwner ? `<button class="claim-btn">Claim</button>` :  ""}
       <div class='edit-form' style='display:none;'>
@@ -194,7 +208,7 @@ function renderReports(reports) {
       saveEdit.addEventListener("click", () => {
         const updatedDesc = card.querySelector(".edit-description").value;
 
-        fetch(`https://trace-vault.onrender.com/reports/${report._id}`, {
+        fetch(`${hostedServerUrl}reports/${report._id}`, {
           method: "PUT",
           credentials: "include",
           headers: { "Content-Type": "application/json" },
@@ -221,7 +235,7 @@ function renderReports(reports) {
           "Are you sure you want to delete this report?"
         );
         if (confirmDelete) {
-          fetch(`https://trace-vault.onrender.com/reports/${report._id}`, {
+          fetch(`${hostedServerUrl}reports/${report._id}`, {
             method: "DELETE",
             credentials: "include",
           })
@@ -266,4 +280,3 @@ function filterItems() {
 
 searchInput.addEventListener("input", filterItems);
 filterSelect.addEventListener("change", filterItems);
-

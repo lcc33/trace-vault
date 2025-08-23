@@ -8,8 +8,10 @@ const MongoStore = require("connect-mongo");
 const app = express();
 connectDB();
 require("dotenv").config();
+const localFrontend = "http://localhost:4321";
+
 app.use(cors({
-  origin: "http://localhost:4321", 
+  origin: "http://tracevault.vercel.app/", 
   credentials: true,
 }));
 app.use(express.json());
