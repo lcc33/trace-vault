@@ -11,7 +11,10 @@ require("dotenv").config();
 const localFrontend = "http://localhost:4321";
 
 app.use(cors({
-  origin: "http://tracevault.vercel.app/", 
+  origin:  [
+  "http://localhost:4321",
+  "http://tracevault.vercel.app"
+], 
   credentials: true,
 }));
 app.use(express.json());

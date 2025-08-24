@@ -1,22 +1,11 @@
+import { API_URL } from "../config.js";
 
-
-const localServer = "http://localhost:5000/";
-const hostedServerUrl = "https://trace-vault.onrender.com/";
-// if (deleteBtn) {
-//       deleteBtn.addEventListener("click", () => {
-//         const confirmDelete = window.confirm(
-//           "Are you sure you want to delete this report?"
-//         );
-//         if (confirmDelete) {
-//           fetch(`${serverUrl}${report._id}`, {
-//             method: "DELETE",
-//             credentials: "include",
-//           })}
+// Remove hardcoded localServer and hostedServerUrl
 
 //protected page
 function protectedPage() {
   const check = document.querySelector(".check");
-  fetch(`${localServer}api/user`, {
+  fetch(`${API_URL}/api/user`, {
     credentials: "include",
   })
     .then((res) => res.json())
@@ -45,7 +34,7 @@ reportForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   const formData = new FormData(reportForm);
 
-  fetch(`${hostedServerUrl}api/report`, {
+  fetch(`${API_URL}/api/report`, {
     method: "POST",
     body: formData,
     credentials: "include",
@@ -71,7 +60,7 @@ reportForm.addEventListener("submit", async (e) => {
 
 //feed logic
 import { io } from "socket.io-client";
-const socket = io(hostedServerUrl);
+const socket = io(API_URL);
 const cover = document.getElementById("cover");
 const searchInput = document.getElementById("searchInput");
 const filterSelect = document.getElementById("filterSelect");
@@ -81,7 +70,7 @@ let currentUserId = null;
 
 // Get current user ID for owner checks
 function getCurrentUser() {
-  return(`${hostedServerUrl}api/user`, { credentials: "include" })
+  return fetch(`${API_URL}/api/user`, { credentials: "include" })
     .then((res) => res.json())
     .then((data) => {
       currentUserId = data.user?._id || null;
@@ -102,7 +91,7 @@ function hideLoader() {
 showLoader();
 
 getCurrentUser().then(() => {
-  fetch(`${hostedServerUrl}reports`, {
+  fetch(`${API_URL}/reports`, {
     method: "GET",
     credentials: "include",
   })
@@ -172,7 +161,7 @@ function renderReports(reports) {
       
       ${
         report.image
-          ? `<img src="${hostedServerUrl}uploads/${report.image}" class="item-img" alt="${report.description}" />`
+          ? `<img src="${API_URL}/uploads/${report.image}" class="item-img" alt="${report.description}" />`
           : ""
       }
       <p>${report.description || ""}</p>
@@ -208,7 +197,7 @@ function renderReports(reports) {
       saveEdit.addEventListener("click", () => {
         const updatedDesc = card.querySelector(".edit-description").value;
 
-        fetch(`${hostedServerUrl}reports/${report._id}`, {
+        fetch(`${API_URL}/reports/${report._id}`, {
           method: "PUT",
           credentials: "include",
           headers: { "Content-Type": "application/json" },
@@ -235,7 +224,7 @@ function renderReports(reports) {
           "Are you sure you want to delete this report?"
         );
         if (confirmDelete) {
-          fetch(`${hostedServerUrl}reports/${report._id}`, {
+          fetch(`${API_URL}/reports/${report._id}`, {
             method: "DELETE",
             credentials: "include",
           })
@@ -257,12 +246,63 @@ function renderReports(reports) {
     const claimBtn = card.querySelector(".claim-btn");
     if (claimBtn) {
       claimBtn.addEventListener("click", () => {
-        claimBtn.textContent = "Claimed";
-        claimBtn.disabled = true;
+        // Create claim form UI
+        const claimForm = document.createElement("div");
+        claimForm.className = "claim-form";
+        claimForm.innerHTML = `
+          <textarea class="claim-description" placeholder="Describe your item and how/where you lost it..." required></textarea>
+          <input type="file" class="claim-image" accept="image/*" required />
+          <button class="submit-claim">Submit Claim</button>
+          <button class="cancel-claim">Cancel</button>
+        `;
+
+        card.appendChild(claimForm);
+
+        const cancelBtn = claimForm.querySelector(".cancel-claim");
+        const submitBtn = claimForm.querySelector(".submit-claim");
+        const claimDesc = claimForm.querySelector(".claim-description");
+        const claimImage = claimForm.querySelector(".claim-image");
+
+        // Cancel claim
+        cancelBtn.addEventListener("click", () => {
+          claimForm.remove();
+        });
+
+        // Submit claim
+        submitBtn.addEventListener("click", async () => {
+          if (!claimDesc.value || !claimImage.files[0]) {
+            showActionPopup("Please fill all fields and upload an image", false);
+            return;
+          }
+
+          const formData = new FormData();
+          formData.append("description", claimDesc.value);
+          formData.append("image", claimImage.files[0]);
+
+          try {
+            const res = await fetch(`${API_URL}/claims/${report._id}`, {
+              method: "POST",
+              body: formData,
+              credentials: "include",
+            });
+
+            const data = await res.json();
+            if (data.success) {
+              showActionPopup("Claim submitted!", true);
+              claimBtn.textContent = "Pending";
+              claimBtn.disabled = true;
+              claimForm.remove();
+            } else {
+              showActionPopup("Failed to submit claim", false);
+            }
+          } catch (err) {
+            console.error(err);
+            showActionPopup("Error submitting claim", false);
+          }
+        });
       });
     }
-
-    cover.append(card);
+    cover.appendChild(card);
   });
 }
 
