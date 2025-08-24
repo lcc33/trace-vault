@@ -1,7 +1,5 @@
 import { API_URL } from "../config.js";
 
-// Remove hardcoded localServer and hostedServerUrl
-
 //protected page
 function protectedPage() {
   const check = document.querySelector(".check");
@@ -48,6 +46,11 @@ reportForm.addEventListener("submit", async (e) => {
       ) {
         showPopup("Report sent successfully!", true);
         reportForm.reset();
+        // Clear the selected image name
+        const imageNameSpan = document.getElementById("selectedImageName");
+        if (imageNameSpan) {
+          imageNameSpan.textContent = "";
+        }
       } else {
         showPopup("Failed to send report.", false);
       }
@@ -76,6 +79,20 @@ function getCurrentUser() {
       currentUserId = data.user?._id || null;
     });
 }
+
+function setCurrentUserAvatar() {
+  fetch(`${API_URL}/api/user`, { credentials: "include" })
+    .then((res) => res.json())
+    .then((data) => {
+      const avatarDiv = document.querySelector(".avatar");
+      if (avatarDiv) {
+        const profilePic = data.user?.profilePic || "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
+        avatarDiv.innerHTML = `<img src="${profilePic}" alt="Profile" class="avatar-img" />`;
+      }
+    });
+}
+
+document.addEventListener("DOMContentLoaded", setCurrentUserAvatar);
 
 socket.on("connect", () => {
   console.log("connected to socket.io");
@@ -135,6 +152,231 @@ function showActionPopup(message, success = true) {
   }, 2000);
 }
 
+// Modal management functions
+function createModalOverlay() {
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.innerHTML = `
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title"></h3>
+        <button class="modal-close" aria-label="Close">×</button>
+      </div>
+      <div class="modal-body"></div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  return overlay;
+}
+
+function showModal(overlay) {
+  document.body.style.overflow = 'hidden';
+  overlay.classList.add('active');
+}
+
+function hideModal(overlay) {
+  document.body.style.overflow = '';
+  overlay.classList.remove('active');
+  setTimeout(() => {
+    if (overlay.parentNode) {
+      overlay.parentNode.removeChild(overlay);
+    }
+  }, 300);
+}
+
+function createEditModal(report, onSave) {
+  const overlay = createModalOverlay();
+  const title = overlay.querySelector('.modal-title');
+  const body = overlay.querySelector('.modal-body');
+  const closeBtn = overlay.querySelector('.modal-close');
+  
+  title.textContent = 'Edit Report';
+  body.innerHTML = `
+    <div class="edit-form-modal">
+      <textarea class="edit-description" placeholder="Describe what you found or lost...">${report.description || ''}</textarea>
+      <div class="modal-actions">
+        <button class="cancel-edit">Cancel</button>
+        <button class="save-edit">Save Changes</button>
+      </div>
+    </div>
+  `;
+  
+  const textarea = body.querySelector('.edit-description');
+  const saveBtn = body.querySelector('.save-edit');
+  const cancelBtn = body.querySelector('.cancel-edit');
+  
+  // Auto-focus and select all text
+  setTimeout(() => {
+    textarea.focus();
+    textarea.select();
+  }, 100);
+  
+  // Handle save
+  saveBtn.addEventListener('click', () => {
+    const updatedDesc = textarea.value.trim();
+    if (!updatedDesc) {
+      showActionPopup('Please enter a description', false);
+      return;
+    }
+    
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Saving...';
+    
+    onSave(updatedDesc)
+      .then(() => {
+        hideModal(overlay);
+        showActionPopup('Changes saved!', true);
+      })
+      .catch((err) => {
+        console.error('Error saving edit:', err);
+        showActionPopup('Failed to save changes.', false);
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Save Changes';
+      });
+  });
+  
+  // Handle cancel
+  const handleCancel = () => hideModal(overlay);
+  cancelBtn.addEventListener('click', handleCancel);
+  closeBtn.addEventListener('click', handleCancel);
+  
+  // Handle overlay click
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) {
+      handleCancel();
+    }
+  });
+  
+  // Handle escape key
+  const handleEscape = (e) => {
+    if (e.key === 'Escape') {
+      handleCancel();
+      document.removeEventListener('keydown', handleEscape);
+    }
+  };
+  document.addEventListener('keydown', handleEscape);
+  
+  showModal(overlay);
+}
+
+function createClaimModal(report, onSubmit) {
+  const overlay = createModalOverlay();
+  const title = overlay.querySelector('.modal-title');
+  const body = overlay.querySelector('.modal-body');
+  const closeBtn = overlay.querySelector('.modal-close');
+  
+  title.textContent = 'Claim This Item';
+  body.innerHTML = `
+    <div class="claim-form-modal">
+      <div class="form-group">
+        <label class="form-label">Describe your item and how/where you lost it</label>
+        <textarea class="claim-description" placeholder="Please provide details about your item, when and where you lost it, and any identifying features..." required></textarea>
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label">Upload proof of ownership</label>
+        <div class="file-upload-wrapper">
+          <label class="file-upload-label" for="claim-image-input">
+            <svg class="file-upload-icon" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd" />
+            </svg>
+            <div class="file-upload-text">
+              <div>Click to upload an image</div>
+              <div style="font-size: 0.8rem; opacity: 0.7; margin-top: 4px;">PNG, JPG up to 10MB</div>
+            </div>
+          </label>
+          <input type="file" id="claim-image-input" class="claim-image" accept="image/*" required />
+        </div>
+      </div>
+      
+      <div class="modal-actions">
+        <button class="cancel-claim">Cancel</button>
+        <button class="submit-claim">Submit Claim</button>
+      </div>
+    </div>
+  `;
+  
+  const textarea = body.querySelector('.claim-description');
+  const fileInput = body.querySelector('.claim-image');
+  const fileLabel = body.querySelector('.file-upload-label');
+  const fileText = body.querySelector('.file-upload-text');
+  const submitBtn = body.querySelector('.submit-claim');
+  const cancelBtn = body.querySelector('.cancel-claim');
+  
+  // Handle file selection
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files[0]) {
+      fileLabel.classList.add('has-file');
+      fileText.innerHTML = `
+        <div>✓ ${fileInput.files[0].name}</div>
+        <div style="font-size: 0.8rem; opacity: 0.7; margin-top: 4px;">Click to change</div>
+      `;
+    } else {
+      fileLabel.classList.remove('has-file');
+      fileText.innerHTML = `
+        <div>Click to upload an image</div>
+        <div style="font-size: 0.8rem; opacity: 0.7; margin-top: 4px;">PNG, JPG up to 10MB</div>
+      `;
+    }
+  });
+  
+  // Auto-focus textarea
+  setTimeout(() => {
+    textarea.focus();
+  }, 100);
+  
+  // Handle submit
+  submitBtn.addEventListener('click', () => {
+    const description = textarea.value.trim();
+    if (!description || !fileInput.files[0]) {
+      showActionPopup('Please fill all fields and upload an image', false);
+      return;
+    }
+    
+    submitBtn.disabled = true;
+    submitBtn.classList.add('loading');
+    
+    const formData = new FormData();
+    formData.append('description', description);
+    formData.append('image', fileInput.files[0]);
+    
+    onSubmit(formData)
+      .then(() => {
+        hideModal(overlay);
+        showActionPopup('Claim submitted!', true);
+      })
+      .catch((err) => {
+        console.error('Error submitting claim:', err);
+        showActionPopup('Error submitting claim', false);
+        submitBtn.disabled = false;
+        submitBtn.classList.remove('loading');
+      });
+  });
+  
+  // Handle cancel
+  const handleCancel = () => hideModal(overlay);
+  cancelBtn.addEventListener('click', handleCancel);
+  closeBtn.addEventListener('click', handleCancel);
+  
+  // Handle overlay click
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) {
+      handleCancel();
+    }
+  });
+  
+  // Handle escape key
+  const handleEscape = (e) => {
+    if (e.key === 'Escape') {
+      handleCancel();
+      document.removeEventListener('keydown', handleEscape);
+    }
+  };
+  document.addEventListener('keydown', handleEscape);
+  
+  showModal(overlay);
+}
+
 function renderReports(reports) {
   cover.innerHTML = "";
   reports.forEach((report) => {
@@ -147,7 +389,7 @@ function renderReports(reports) {
 
     card.innerHTML = `
       <div class="user-header">
-        <img src="${profilePic}"   alt="" class="profile-pic"/>
+        <img src="${profilePic}" alt="" class="profile-pic"/>
         <span class="username">${username}</span>
         ${
           isOwner
@@ -166,55 +408,30 @@ function renderReports(reports) {
       }
       <p>${report.description || ""}</p>
       
-      ${!isOwner ? `<button class="claim-btn">Claim</button>` :  ""}
-      <div class='edit-form' style='display:none;'>
-        
-        <textarea class='edit-description'>${
-          report.description || ""
-        }</textarea>
-       
-        <button class='save-edit'>Save Changes</button>
-        <button class='cancel-edit'>Cancel</button>
-      </div>
+      ${!isOwner ? `<button class="claim-btn">Claim</button>` : ""}
     `;
 
     // Owner actions
     const editBtn = card.querySelector(".edit-btn");
-    const editForm = card.querySelector(".edit-form");
-    const saveEdit = card.querySelector(".save-edit");
-    const cancelEdit = card.querySelector(".cancel-edit");
     const deleteBtn = card.querySelector(".delete-btn");
 
-    if (editBtn && editForm && saveEdit && cancelEdit) {
+    if (editBtn) {
       editBtn.addEventListener("click", () => {
-        editForm.style.display = "block";
-      });
-
-      cancelEdit.addEventListener("click", () => {
-        editForm.style.display = "none";
-      });
-
-      saveEdit.addEventListener("click", () => {
-        const updatedDesc = card.querySelector(".edit-description").value;
-
-        fetch(`${API_URL}/reports/${report._id}`, {
-          method: "PUT",
-          credentials: "include",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            description: updatedDesc,
-          }),
-        })
+        createEditModal(report, (updatedDesc) => {
+          return fetch(`${API_URL}/reports/${report._id}`, {
+            method: "PUT",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              description: updatedDesc,
+            }),
+          })
           .then((res) => res.json())
           .then((updatedReport) => {
             report.description = updatedDesc;
             renderReports(allReports);
-            showActionPopup("Changes saved!", true);
-          })
-          .catch((err) => {
-            console.error("error saving edit:", err);
-            showActionPopup("Failed to save changes.", false);
           });
+        });
       });
     }
 
@@ -246,62 +463,25 @@ function renderReports(reports) {
     const claimBtn = card.querySelector(".claim-btn");
     if (claimBtn) {
       claimBtn.addEventListener("click", () => {
-        // Create claim form UI
-        const claimForm = document.createElement("div");
-        claimForm.className = "claim-form";
-        claimForm.innerHTML = `
-          <textarea class="claim-description" placeholder="Describe your item and how/where you lost it..." required></textarea>
-          <input type="file" class="claim-image" accept="image/*" required />
-          <button class="submit-claim">Submit Claim</button>
-          <button class="cancel-claim">Cancel</button>
-        `;
-
-        card.appendChild(claimForm);
-
-        const cancelBtn = claimForm.querySelector(".cancel-claim");
-        const submitBtn = claimForm.querySelector(".submit-claim");
-        const claimDesc = claimForm.querySelector(".claim-description");
-        const claimImage = claimForm.querySelector(".claim-image");
-
-        // Cancel claim
-        cancelBtn.addEventListener("click", () => {
-          claimForm.remove();
-        });
-
-        // Submit claim
-        submitBtn.addEventListener("click", async () => {
-          if (!claimDesc.value || !claimImage.files[0]) {
-            showActionPopup("Please fill all fields and upload an image", false);
-            return;
-          }
-
-          const formData = new FormData();
-          formData.append("description", claimDesc.value);
-          formData.append("image", claimImage.files[0]);
-
-          try {
-            const res = await fetch(`${API_URL}/claims/${report._id}`, {
-              method: "POST",
-              body: formData,
-              credentials: "include",
-            });
-
-            const data = await res.json();
+        createClaimModal(report, (formData) => {
+          return fetch(`${API_URL}/claims/${report._id}`, {
+            method: "POST",
+            body: formData,
+            credentials: "include",
+          })
+          .then((res) => res.json())
+          .then((data) => {
             if (data.success) {
-              showActionPopup("Claim submitted!", true);
               claimBtn.textContent = "Pending";
               claimBtn.disabled = true;
-              claimForm.remove();
             } else {
-              showActionPopup("Failed to submit claim", false);
+              throw new Error('Failed to submit claim');
             }
-          } catch (err) {
-            console.error(err);
-            showActionPopup("Error submitting claim", false);
-          }
+          });
         });
       });
     }
+    
     cover.appendChild(card);
   });
 }
