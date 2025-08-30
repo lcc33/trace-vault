@@ -1,0 +1,958 @@
+/* Reset and Base Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: #0f172a;
+  color: #e7e9ea;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  line-height: 1.4;
+  overflow-x: hidden;
+}
+
+/* Show selected image filename */
+.selected-image-name {
+  color: #1d9bf0;
+  font-size: 0.85rem;
+  margin-left: 0.5rem;
+  font-weight: 500;
+  background: rgba(29,155,240,0.08);
+  border-radius: 12px;
+  padding: 0.2rem 1rem;
+  display: inline-block;
+  vertical-align: middle;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Header */
+.header {
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid #2f3336;
+  padding: 1rem 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header h1 {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #e7e9ea;
+  text-align: center;
+}
+
+.header span {
+  color: #1d9bf0;
+}
+
+.header p {
+  font-size: 0.9rem;
+  color: #71767b;
+  text-align: center;
+  margin-top: 0.25rem;
+  font-weight: 400;
+}
+
+/* Main Container */
+.container {
+  max-width: 600px;
+  margin: 0 auto;
+  min-height: 100vh;
+}
+
+.home-feed {
+  max-width: 600px;
+  margin: 0 auto;
+  border-left: 1px solid #2f3336;
+  border-right: 1px solid #2f3336;
+  min-height: 100vh;
+  background: rgba(0, 0, 0, 0.4);
+}
+
+/* Report Box (Compose Tweet Style) */
+.report-box {
+  background: transparent;
+  border-bottom: 1px solid #2f3336;
+  padding: 1rem;
+  position: relative;
+}
+
+.report-box::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: #2f3336;
+}
+
+.report-row {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.report-input-wrapper {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+
+.report-input-wrapper .avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #1d9bf0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+  flex-shrink: 0;
+  margin-top: 0.25rem;
+}
+
+.input-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.report-input {
+  background: transparent;
+  color: #e7e9ea;
+  border: none;
+  font-size: 1.25rem;
+  font-weight: 400;
+  resize: none;
+  min-height: 50px;
+  outline: none;
+  font-family: inherit;
+  line-height: 1.4;
+  padding: 0.75rem 0;
+}
+
+.report-input::placeholder {
+  color: #71767b;
+  font-size: 1.25rem;
+}
+
+.report-input:focus::placeholder {
+  opacity: 0.6;
+}
+
+.report-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 0 0.25rem 0;
+  border-top: 1px solid #2f3336;
+}
+
+.report-left-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.report-select {
+  background: transparent;
+  color: #1d9bf0;
+  border: 1px solid #1d9bf0;
+  border-radius: 20px;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.report-select:hover {
+  background: rgba(29, 155, 240, 0.1);
+}
+
+.report-select:focus {
+  background: rgba(29, 155, 240, 0.1);
+}
+
+.image-upload-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  transition: background 0.2s;
+  padding: 0;
+}
+
+.image-upload-label:hover {
+  background: rgba(29, 155, 240, 0.1);
+}
+
+.image-upload-icon {
+  width: 20px;
+  height: 20px;
+  filter: invert(42%) sepia(93%) saturate(1352%) hue-rotate(187deg) brightness(119%) contrast(109%);
+}
+
+.report-right-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.contact-input {
+  background: transparent;
+  color: #e7e9ea;
+  border: 1px solid #2f3336;
+  border-radius: 20px;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.875rem;
+  outline: none;
+  width: 140px;
+  transition: border-color 0.2s;
+}
+
+.contact-input:focus {
+  border-color: #1d9bf0;
+}
+
+.contact-input::placeholder {
+  color: #71767b;
+}
+
+.send-btn {
+  background: #1d9bf0;
+  border: none;
+  border-radius: 20px;
+  height: 36px;
+  padding: 0 1rem;
+  color: white;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  min-width: 70px;
+}
+
+.send-btn:hover:not(:disabled) {
+  background: #1a8cd8;
+}
+
+.send-btn:disabled {
+  background: #0f4e78;
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Search and Filter */
+.search-filter {
+  background: transparent;
+  border-bottom: 1px solid #2f3336;
+  padding: 0.75rem 1rem;
+  display: flex;
+  gap: 0.75rem;
+  position: sticky;
+  top: 73px;
+  backdrop-filter: blur(12px);
+  z-index: 50;
+}
+
+#searchInput {
+  flex: 1;
+  background: #202327;
+  color: #e7e9ea;
+  border: 1px solid #2f3336;
+  border-radius: 20px;
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+#searchInput:focus {
+  border-color: #1d9bf0;
+  background: #000;
+}
+
+#searchInput::placeholder {
+  color: #71767b;
+}
+
+#filterSelect {
+  background: #202327;
+  color: #e7e9ea;
+  border: 1px solid #2f3336;
+  border-radius: 20px;
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+  outline: none;
+  cursor: pointer;
+  min-width: 120px;
+  transition: border-color 0.2s;
+}
+
+#filterSelect:focus {
+  border-color: #1d9bf0;
+}
+
+/* Feed Container */
+#cover {
+  background: transparent;
+}
+
+/* Item Cards (Tweet Style) */
+.item-card {
+  background: transparent;
+  border-bottom: 1px solid #2f3336;
+  padding: 1rem;
+  transition: background-color 0.2s;
+  cursor: pointer;
+}
+
+.item-card:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.user-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.profile-pic {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.username {
+  color: #e7e9ea;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.actions {
+  margin-left: auto;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.edit-btn, .delete-btn {
+  width: 20px;
+  height: 20px;
+  opacity: 0.6;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  filter: invert(1);
+}
+
+.edit-btn:hover, .delete-btn:hover {
+  opacity: 1;
+}
+
+.item-img {
+  width: 100%;
+  max-height: 400px;
+  object-fit: cover;
+  border-radius: 16px;
+  margin: 0.75rem 0;
+  border: 1px solid #2f3336;
+}
+
+.item-card p {
+  color: #e7e9ea;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  margin: 0.5rem 0;
+  word-wrap: break-word;
+}
+
+.claim-btn {
+  background: transparent;
+  color: #1d9bf0;
+  border: 1px solid #1d9bf0;
+  border-radius: 20px;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 0.75rem;
+}
+
+.claim-btn:hover:not(:disabled) {
+  background: rgba(29, 155, 240, 0.1);
+}
+
+.claim-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Hide original inline forms - replaced with modals */
+.edit-form, .claim-form {
+  display: none !important;
+}
+
+/* Modal Overlay Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.modal-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.modal-content {
+  background: #15202b;
+  border: 1px solid #2f3336;
+  border-radius: 16px;
+  padding: 1.5rem;
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  transform: scale(0.9) translateY(20px);
+  transition: transform 0.3s ease;
+  position: relative;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.modal-overlay.active .modal-content {
+  transform: scale(1) translateY(0);
+}
+
+/* Modal Header */
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #2f3336;
+}
+
+.modal-title {
+  color: #e7e9ea;
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.modal-close {
+  background: transparent;
+  border: none;
+  color: #71767b;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.modal-close:hover {
+  background: rgba(239, 243, 244, 0.1);
+  color: #e7e9ea;
+}
+
+/* Edit Form Modal Styles */
+.edit-form-modal {
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+
+.edit-form-modal .edit-description {
+  width: 100%;
+  background: #202327;
+  color: #e7e9ea;
+  border: 1px solid #2f3336;
+  border-radius: 12px;
+  padding: 1rem;
+  font-size: 1rem;
+  resize: vertical;
+  min-height: 120px;
+  outline: none;
+  font-family: inherit;
+  margin-bottom: 1.5rem;
+  transition: border-color 0.2s;
+}
+
+.edit-form-modal .edit-description:focus {
+  border-color: #1d9bf0;
+  background: #000;
+}
+
+.edit-form-modal .modal-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
+.edit-form-modal .save-edit,
+.edit-form-modal .cancel-edit {
+  background: #1d9bf0;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 80px;
+}
+
+.edit-form-modal .cancel-edit {
+  background: transparent;
+  color: #e7e9ea;
+  border: 1px solid #2f3336;
+}
+
+.edit-form-modal .save-edit:hover {
+  background: #1a8cd8;
+}
+
+.edit-form-modal .cancel-edit:hover {
+  background: rgba(239, 243, 244, 0.1);
+}
+
+/* Claim Form Modal Styles */
+.claim-form-modal {
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+
+.claim-form-modal .form-group {
+  margin-bottom: 1.5rem;
+}
+
+.claim-form-modal .form-label {
+  display: block;
+  color: #e7e9ea;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.claim-form-modal .claim-description {
+  width: 100%;
+  background: #202327;
+  color: #e7e9ea;
+  border: 1px solid #2f3336;
+  border-radius: 12px;
+  padding: 1rem;
+  font-size: 1rem;
+  resize: vertical;
+  min-height: 100px;
+  outline: none;
+  font-family: inherit;
+  transition: border-color 0.2s;
+}
+
+.claim-form-modal .claim-description:focus {
+  border-color: #1d9bf0;
+  background: #000;
+}
+
+.claim-form-modal .claim-description::placeholder {
+  color: #71767b;
+}
+
+.claim-form-modal .file-upload-wrapper {
+  position: relative;
+  display: block;
+}
+
+.claim-form-modal .file-upload-label {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: #202327;
+  color: #e7e9ea;
+  border: 2px dashed #2f3336;
+  border-radius: 12px;
+  padding: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+  min-height: 60px;
+}
+
+.claim-form-modal .file-upload-label:hover {
+  border-color: #1d9bf0;
+  background: rgba(29, 155, 240, 0.05);
+}
+
+.claim-form-modal .file-upload-label.has-file {
+  border-style: solid;
+  border-color: #00ba7c;
+  background: rgba(0, 186, 124, 0.1);
+  color: #00ba7c;
+}
+
+.claim-form-modal .file-upload-icon {
+  width: 24px;
+  height: 24px;
+  opacity: 0.7;
+}
+
+.claim-form-modal .file-upload-text {
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.claim-form-modal .claim-image {
+  display: none;
+}
+
+.claim-form-modal .modal-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  margin-top: 1.5rem;
+}
+
+.claim-form-modal .submit-claim,
+.claim-form-modal .cancel-claim {
+  background: #1d9bf0;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 100px;
+}
+
+.claim-form-modal .cancel-claim {
+  background: transparent;
+  color: #e7e9ea;
+  border: 1px solid #2f3336;
+}
+
+.claim-form-modal .submit-claim:hover:not(:disabled) {
+  background: #1a8cd8;
+}
+
+.claim-form-modal .submit-claim:disabled {
+  background: #0f4e78;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.claim-form-modal .cancel-claim:hover {
+  background: rgba(239, 243, 244, 0.1);
+}
+
+/* Loading state for submit button */
+.claim-form-modal .submit-claim.loading {
+  position: relative;
+  color: transparent;
+}
+
+.claim-form-modal .submit-claim.loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 16px;
+  height: 16px;
+  border: 2px solid #ffffff40;
+  border-top: 2px solid #ffffff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* Loader */
+.loader {
+  display: none;
+  width: 32px;
+  height: 32px;
+  border: 3px solid #2f3336;
+  border-top: 3px solid #1d9bf0;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 2rem auto;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Popup Styles */
+.popup {
+  display: none;
+  position: fixed;
+  top: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 220px;
+  max-width: 90vw;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-align: center;
+  z-index: 2000;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  transition: opacity 0.3s;
+}
+
+.popup.success {
+  background: #00ba7c;
+  color: #fff;
+}
+
+.popup.error {
+  background: #f4212e;
+  color: #fff;
+}
+
+.action-popup {
+  position: fixed;
+  top: 2rem;
+  left: 50%;
+  transform: translateX(-50%) translateY(-40px);
+  min-width: 200px;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-align: center;
+  z-index: 2000;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.3s ease;
+}
+
+.action-popup.success {
+  background: #00ba7c;
+  color: #fff;
+}
+
+.action-popup.error {
+  background: #f4212e;
+  color: #fff;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .home-feed {
+    border-left: none;
+    border-right: none;
+  }
+  
+  .header {
+    padding: 0.75rem 1rem;
+  }
+  
+  .report-box {
+    padding: 0.75rem 1rem;
+  }
+  
+  .report-input-wrapper .avatar {
+    width: 32px;
+    height: 32px;
+    font-size: 0.8rem;
+  }
+  
+  .report-input {
+    font-size: 1.1rem;
+  }
+  
+  .report-input::placeholder {
+    font-size: 1.1rem;
+  }
+  
+  .report-controls {
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: stretch;
+  }
+  
+  .report-left-controls {
+    justify-content: space-between;
+  }
+  
+  .report-right-controls {
+    justify-content: space-between;
+  }
+  
+  .contact-input {
+    flex: 1;
+    width: auto;
+  }
+  
+  .search-filter {
+    flex-direction: column;
+    gap: 0.5rem;
+    top: 65px;
+  }
+  
+  .item-card {
+    padding: 0.75rem 1rem;
+  }
+  
+  .user-header {
+    gap: 0.5rem;
+  }
+  
+  .profile-pic {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .username {
+    font-size: 0.85rem;
+  }
+
+  /* Modal mobile styles */
+  .modal-content {
+    padding: 1.25rem;
+    width: 95%;
+    max-height: 85vh;
+  }
+  
+  .modal-title {
+    font-size: 1.1rem;
+  }
+  
+  .edit-form-modal .edit-description,
+  .claim-form-modal .claim-description {
+    font-size: 0.95rem;
+    padding: 0.875rem;
+    min-height: 100px;
+  }
+  
+  .claim-form-modal .file-upload-label {
+    padding: 0.875rem;
+    font-size: 0.85rem;
+  }
+  
+  .edit-form-modal .save-edit,
+  .edit-form-modal .cancel-edit,
+  .claim-form-modal .submit-claim,
+  .claim-form-modal .cancel-claim {
+    padding: 0.625rem 1.25rem;
+    font-size: 0.85rem;
+    min-width: 70px;
+  }
+}
+
+@media (max-width: 480px) {
+  .header h1 {
+    font-size: 1.1rem;
+  }
+  
+  .header p {
+    font-size: 0.8rem;
+  }
+  
+  .report-input {
+    font-size: 1rem;
+    min-height: 40px;
+  }
+  
+  .report-input::placeholder {
+    font-size: 1rem;
+  }
+  
+  .report-select,
+  .contact-input {
+    font-size: 0.8rem;
+  }
+  
+  .send-btn {
+    font-size: 0.8rem;
+    padding: 0 0.75rem;
+    min-width: 60px;
+  }
+  
+  #searchInput,
+  #filterSelect {
+    font-size: 0.85rem;
+    padding: 0.625rem 0.875rem;
+  }
+  
+  .item-card p {
+    font-size: 0.85rem;
+  }
+
+  /* Mobile modal styles */
+  .modal-content {
+    padding: 1rem;
+    width: 98%;
+  }
+  
+  .modal-header {
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.75rem;
+  }
+  
+  .modal-actions {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .edit-form-modal .save-edit,
+  .edit-form-modal .cancel-edit,
+  .claim-form-modal .submit-claim,
+  .claim-form-modal .cancel-claim {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+.avatar-img {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #38bdf8;
+  background: #fff;
+  display: block;
+}

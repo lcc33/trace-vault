@@ -1,0 +1,10 @@
+.astro
+.vscode
+
+
+e2eee-4a32c5614a-8bde0c0e8b-28e9f1d808-f0bbc8a4da-d28cf7443e-a246fe8a05-83cb3754c0-7cd5115b25-f06bc5588b-c9c54f6adc-80350b9086-177dc1aa66-0a071f05f3-01180dd7d5-a64293b658-9e923
+
+server/.env
+client/.vscode
+client/.env
+client/.astro

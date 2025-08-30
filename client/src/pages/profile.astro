@@ -1,0 +1,31 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Navbar from "../components/Navbar.astro";
+import "../styles/profile.css";
+---
+<Layout>
+  <Navbar />
+
+  <div id="loading-screen" class="loading-screen">
+    <div class="spinner"></div>
+    <p>Loading your profile...</p>
+  </div>
+
+  <div id="profile-content" style="display: none;">
+    <section class="profile-header" id="profile-header">
+      Loading profile...
+    </section>
+
+    <section class="profile-tabs">
+      <button id="tab-reports" class="active">My Reports</button>
+      <button id="tab-claims">Claim Requests</button>
+    </section>
+
+    <section id="reports-section">Loading reports...</section>
+    <section id="claims-section" style="display:none;">
+      Loading claim requests...
+    </section>
+  </div>
+
+  <script src="../scripts/profile.js"></script>
+</Layout>
