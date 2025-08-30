@@ -1,11 +1,202 @@
 body {
   background: #0f172a;
   color: #e7e9ea;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+    Arial, sans-serif;
   line-height: 1.4;
   overflow-x: hidden;
 }
- .loading-screen {
+.loading-screen {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: calc(100vh - 80px);
+  gap: 1rem;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid #334155;
+  border-top: 4px solid #2563eb;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.loading-screen p {
+  font-size: 1.1rem;
+  color: #94a3b8;
+}
+
+/* Profile Header */
+.profile-header {
+  background: #1a202c;
+  border-radius: 0 0 24px 24px;
+  padding: 2rem 2rem 1.5rem;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  max-width: 600px;
+  margin: 0 auto;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+}
+
+.profile-header .avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #2563eb;
+  margin-bottom: 1rem;
+}
+
+.profile-header h2 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 0.2rem;
+  margin-left: 1.5rem;
+}
+
+/* Tabs */
+.profile-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin: 2rem auto 0 auto;
+  max-width: 600px;
+}
+
+.profile-tabs button {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-size: 1.1rem;
+  font-weight: 600;
+  padding: 0.7rem 1.5rem;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+}
+
+.profile-tabs button.active {
+  color: #2563eb;
+  border-bottom: 3px solid #2563eb;
+}
+
+/* Sections */
+#reports-section,
+#claims-section {
+  max-width: 600px;
+  margin: 2rem auto;
+  min-height: 120px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: #94a3b8;
+}
+
+.empty-state h3 {
+  margin-bottom: 0.5rem;
+}
+
+/* Cards */
+
+.quoted-report {
+  border-left: 3px solid #1d9bf0;
+  background: #f8f9fa;
+  padding: 0.75rem;
+  margin-top: 0.75rem;
+  border-radius: 6px;
+}
+
+.quoted-report .report-desc {
+  font-size: 0.9rem;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.quoted-report .report-thumb {
+  max-height: 150px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.report-card,
+.claim-card {
+  background: #1a202c;
+  border-radius: 16px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  border: 1px solid #ddd;
+}
+
+.report-card img,
+.claim-card img {
+  width: 100%;
+  max-height: 400px;
+  object-fit: cover;
+  border-radius: 16px;
+  margin: 0.75rem;
+  border: 1px solid #2f3336;
+}
+
+.report-card button,
+.claim-card button {
+  padding: 0.4rem 0.8rem;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-right: 0.5rem;
+}
+
+.report-card button {
+  background: #2563eb;
+  color: #fff;
+}
+.report-card button.delete-btn {
+  background: #dc2626;
+  color: #fff;
+}
+
+.claim-card button.accept-btn {
+  background: #16a34a;
+  color: #fff;
+}
+.claim-card button.decline-btn {
+  background: #dc2626;
+  color: #fff;
+}
+
+/* Responsive */
+@media (max-width: 700px) {
+  .profile-header,
+  .profile-tabs,
+  #reports-section,
+  #claims-section {
+    max-width: 98vw;
+  }
+  .profile-header .avatar {
+    width: 80px;
+    height: 80px;
+  }
+
+  /* Loading Screen */
+  .loading-screen {
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -18,7 +209,7 @@ body {
     width: 50px;
     height: 50px;
     border: 4px solid #334155;
-    border-top: 4px solid #2563eb;
+    border-top: 4px solid #38bdf8;
     border-radius: 50%;
     animation: spin 1s linear infinite;
   }
@@ -39,49 +230,65 @@ body {
 
   /* Profile Header */
   .profile-header {
-    background: #1a202c;
+    background: #1e293b;
     border-radius: 0 0 24px 24px;
-    padding: 2rem 1.5rem 1.5rem;
+    padding: 2.5rem 1.5rem 1.5rem 1.5rem;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
+    position: relative;
     max-width: 600px;
     margin: 0 auto;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 2px 16px rgba(56, 189, 248, 0.08);
   }
 
   .profile-header .avatar {
-    width: 100px;
-    height: 100px;
+    width: 120px;
+    height: 120px;
     border-radius: 50%;
     object-fit: cover;
-    border: 3px solid #2563eb;
-    margin-bottom: 1rem;
+    border: 4px solid #38bdf8;
+    background: #fff;
+    margin-bottom: 1.2rem;
+    margin-top: -60px;
+    box-shadow: 0 2px 12px rgba(56, 189, 248, 0.12);
   }
 
   .profile-header h2 {
-    font-size: 1.8rem;
+    font-size: 2rem;
     font-weight: 700;
     margin-bottom: 0.2rem;
+    color: #f8fafc;
   }
 
   .profile-header p {
-    font-size: 1rem;
+    font-size: 1.1rem;
     color: #94a3b8;
-    margin-bottom: 0.3rem;
+    margin-bottom: 0.2rem;
   }
 
   .profile-header button {
-    background: #2563eb;
+    background: #38bdf8;
     color: #fff;
     border: none;
-    border-radius: 16px;
-    padding: 0.5rem 1rem;
-    margin-right: 0.5rem;
+    border-radius: 18px;
+    padding: 0.5rem 1.2rem;
+    font-size: 1rem;
+    font-weight: 600;
+    margin-right: 0.7rem;
+    margin-top: 1rem;
     cursor: pointer;
+    transition: background 0.2s;
+  }
+  .profile-header button:hover {
+    background: #2563eb;
   }
 
   .profile-header button.logout-btn {
+    background: #ef4444;
+  }
+
+  .profile-header button.logout-btn:hover {
     background: #dc2626;
   }
 
@@ -103,41 +310,54 @@ body {
     padding: 0.7rem 1.5rem;
     border-bottom: 3px solid transparent;
     cursor: pointer;
+    transition: color 0.2s, border-bottom 0.2s;
   }
 
   .profile-tabs button.active {
-    color: #2563eb;
-    border-bottom: 3px solid #2563eb;
+    color: #38bdf8;
+    border-bottom: 3px solid #38bdf8;
   }
 
-  /* Sections */
+  .profile-tabs button:hover:not(.active) {
+    color: #cbd5e1;
+  }
+
+  /* Content Sections */
   #reports-section,
   #claims-section {
     max-width: 600px;
-    margin: 2rem auto;
+    margin: 2rem auto 0 auto;
     min-height: 120px;
   }
 
   .empty-state {
     text-align: center;
-    padding: 2rem 1rem;
+    padding: 3rem 1rem;
     color: #94a3b8;
   }
 
   .empty-state h3 {
+    font-size: 1.5rem;
     margin-bottom: 0.5rem;
+    color: #cbd5e1;
+  }
+
+  .empty-state p {
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
   }
 
   /* Cards */
   .report-card,
   .claim-card {
-    background: #1a202c;
-    border-radius: 16px;
-    padding: 1rem 1.2rem;
-    margin-bottom: 1rem;
+    background: #1e293b;
+    border-radius: 18px;
+    box-shadow: 0 2px 12px rgba(56, 189, 248, 0.08);
+    padding: 1.2rem 1.5rem;
+    margin-bottom: 1.5rem;
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.7rem;
   }
 
   .report-card img,
@@ -145,403 +365,229 @@ body {
     width: 100%;
     max-width: 320px;
     border-radius: 12px;
+    margin-bottom: 0.7rem;
     object-fit: cover;
-    border: 2px solid #2563eb;
+    background: #fff;
+    border: 2px solid #38bdf8;
+  }
+
+  .report-card p,
+  .claim-card p {
+    font-size: 1.05rem;
+    color: #e7e9ea;
+    margin: 0;
   }
 
   .report-card button,
   .claim-card button {
-    padding: 0.4rem 0.8rem;
+    background: #38bdf8;
+    color: #fff;
     border: none;
     border-radius: 12px;
+    padding: 0.4rem 1rem;
+    font-size: 0.98rem;
     font-weight: 600;
-    cursor: pointer;
     margin-right: 0.5rem;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .report-card button:hover,
+  .claim-card button:hover {
+    background: #2563eb;
   }
 
-  .report-card button {
-    background: #2563eb;
-    color: #fff;
+  .report-card button.delete-btn,
+  .claim-card button.decline-btn {
+    background: #ef4444;
   }
-  .report-card button.delete-btn {
+
+  .report-card button.delete-btn:hover,
+  .claim-card button.decline-btn:hover {
     background: #dc2626;
-    color: #fff;
   }
 
   .claim-card button.accept-btn {
+    background: #22c55e;
+  }
+
+  .claim-card button.accept-btn:hover {
     background: #16a34a;
-    color: #fff;
-  }
-  .claim-card button.decline-btn {
-    background: #dc2626;
-    color: #fff;
   }
 
-  /* Responsive */
-  @media (max-width: 700px) {
-    .profile-header,
-    .profile-tabs,
-    #reports-section,
-    #claims-section {
-      max-width: 98vw;
-    }
-    .profile-header .avatar {
-      width: 80px;
-      height: 80px;
-    }
+  /* Modal */
+  .modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
 
-    /* Loading Screen */
-    .loading-screen {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      height: calc(100vh - 80px);
-      gap: 1rem;
-    }
+  .modal-content {
+    background: #1e293b;
+    border-radius: 20px;
+    padding: 0;
+    max-width: 500px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    border: 1px solid #334155;
+  }
 
-    .spinner {
-      width: 50px;
-      height: 50px;
-      border: 4px solid #334155;
-      border-top: 4px solid #38bdf8;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 2rem 1rem 2rem;
+    border-bottom: 1px solid #334155;
+  }
 
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
+  .modal-header h3 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: #f8fafc;
+  }
 
-    .loading-screen p {
-      font-size: 1.1rem;
-      color: #94a3b8;
-    }
+  .close-btn {
+    background: none;
+    border: none;
+    color: #94a3b8;
+    font-size: 2rem;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 
-    /* Profile Header */
-    .profile-header {
-      background: #1e293b;
-      border-radius: 0 0 24px 24px;
-      padding: 2.5rem 1.5rem 1.5rem 1.5rem;
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      position: relative;
-      max-width: 600px;
-      margin: 0 auto;
-      box-shadow: 0 2px 16px rgba(56, 189, 248, 0.08);
-    }
+  .close-btn:hover {
+    color: #f8fafc;
+  }
 
-    .profile-header .avatar {
-      width: 120px;
-      height: 120px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 4px solid #38bdf8;
-      background: #fff;
-      margin-bottom: 1.2rem;
-      margin-top: -60px;
-      box-shadow: 0 2px 12px rgba(56, 189, 248, 0.12);
-    }
+  #edit-form {
+    padding: 1.5rem 2rem 2rem 2rem;
+  }
 
-    .profile-header h2 {
-      font-size: 2rem;
-      font-weight: 700;
-      margin-bottom: 0.2rem;
-      color: #f8fafc;
-    }
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
 
-    .profile-header p {
-      font-size: 1.1rem;
-      color: #94a3b8;
-      margin-bottom: 0.2rem;
-    }
+  .form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #f8fafc;
+  }
 
-    .profile-header button {
-      background: #38bdf8;
-      color: #fff;
-      border: none;
-      border-radius: 18px;
-      padding: 0.5rem 1.2rem;
-      font-size: 1rem;
-      font-weight: 600;
-      margin-right: 0.7rem;
-      margin-top: 1rem;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-    .profile-header button:hover {
-      background: #2563eb;
-    }
+  .form-group input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    background: #0f172a;
+    color: #e7e9ea;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+  }
 
-    .profile-header button.logout-btn {
-      background: #ef4444;
-    }
+  .form-group input:focus {
+    outline: none;
+    border-color: #38bdf8;
+  }
 
-    .profile-header button.logout-btn:hover {
-      background: #dc2626;
-    }
+  .form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+  }
 
-    /* Tabs */
-    .profile-tabs {
-      display: flex;
-      justify-content: center;
-      gap: 2rem;
-      margin: 2rem auto 0 auto;
-      max-width: 600px;
-    }
+  .form-actions button {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
 
-    .profile-tabs button {
-      background: none;
-      border: none;
-      color: #94a3b8;
-      font-size: 1.1rem;
-      font-weight: 600;
-      padding: 0.7rem 1.5rem;
-      border-bottom: 3px solid transparent;
-      cursor: pointer;
-      transition: color 0.2s, border-bottom 0.2s;
-    }
+  .form-actions button[type="submit"] {
+    background: #38bdf8;
+    color: #fff;
+  }
 
-    .profile-tabs button.active {
-      color: #38bdf8;
-      border-bottom: 3px solid #38bdf8;
-    }
+  .form-actions button[type="submit"]:hover {
+    background: #2563eb;
+  }
 
-    .profile-tabs button:hover:not(.active) {
-      color: #cbd5e1;
-    }
+  .form-actions button[type="button"] {
+    background: #334155;
+    color: #e7e9ea;
+  }
 
-    /* Content Sections */
-    #reports-section,
-    #claims-section {
-      max-width: 600px;
-      margin: 2rem auto 0 auto;
-      min-height: 120px;
-    }
+  .form-actions button[type="button"]:hover {
+    background: #475569;
+  }
+}
+/* Responsive */
+@media (max-width: 700px) {
+  .profile-header,
+  .profile-tabs,
+  #reports-section,
+  #claims-section {
+    max-width: 98vw;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
 
-    .empty-state {
-      text-align: center;
-      padding: 3rem 1rem;
-      color: #94a3b8;
-    }
+  .profile-header .avatar {
+    width: 80px;
+    height: 80px;
+    margin-top: -40px;
+  }
+}
 
-    .empty-state h3 {
-      font-size: 1.5rem;
-      margin-bottom: 0.5rem;
-      color: #cbd5e1;
-    }
+/* Lightbox overlay */
+.lightbox {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
 
-    .empty-state p {
-      font-size: 1rem;
-      margin-bottom: 1.5rem;
-    }
+/* Hide by default */
+.hidden {
+  display: none;
+}
 
-    /* Cards */
-    .report-card,
-    .claim-card {
-      background: #1e293b;
-      border-radius: 18px;
-      box-shadow: 0 2px 12px rgba(56, 189, 248, 0.08);
-      padding: 1.2rem 1.5rem;
-      margin-bottom: 1.5rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.7rem;
-    }
+.lightbox img {
+  max-width: 90%;
+  max-height: 85%;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+}
 
-    .report-card img,
-    .claim-card img {
-      width: 100%;
-      max-width: 320px;
-      border-radius: 12px;
-      margin-bottom: 0.7rem;
-      object-fit: cover;
-      background: #fff;
-      border: 2px solid #38bdf8;
-    }
-
-    .report-card p,
-    .claim-card p {
-      font-size: 1.05rem;
-      color: #e7e9ea;
-      margin: 0;
-    }
-
-    .report-card button,
-    .claim-card button {
-      background: #38bdf8;
-      color: #fff;
-      border: none;
-      border-radius: 12px;
-      padding: 0.4rem 1rem;
-      font-size: 0.98rem;
-      font-weight: 600;
-      margin-right: 0.5rem;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-    .report-card button:hover,
-    .claim-card button:hover {
-      background: #2563eb;
-    }
-
-    .report-card button.delete-btn,
-    .claim-card button.decline-btn {
-      background: #ef4444;
-    }
-
-    .report-card button.delete-btn:hover,
-    .claim-card button.decline-btn:hover {
-      background: #dc2626;
-    }
-
-    .claim-card button.accept-btn {
-      background: #22c55e;
-    }
-
-    .claim-card button.accept-btn:hover {
-      background: #16a34a;
-    }
-
-    /* Modal */
-    .modal {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.7);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
-    }
-
-    .modal-content {
-      background: #1e293b;
-      border-radius: 20px;
-      padding: 0;
-      max-width: 500px;
-      width: 90%;
-      max-height: 90vh;
-      overflow-y: auto;
-      border: 1px solid #334155;
-    }
-
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 1.5rem 2rem 1rem 2rem;
-      border-bottom: 1px solid #334155;
-    }
-
-    .modal-header h3 {
-      margin: 0;
-      font-size: 1.5rem;
-      color: #f8fafc;
-    }
-
-    .close-btn {
-      background: none;
-      border: none;
-      color: #94a3b8;
-      font-size: 2rem;
-      cursor: pointer;
-      padding: 0;
-      width: 30px;
-      height: 30px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .close-btn:hover {
-      color: #f8fafc;
-    }
-
-    #edit-form {
-      padding: 1.5rem 2rem 2rem 2rem;
-    }
-
-    .form-group {
-      margin-bottom: 1.5rem;
-    }
-
-    .form-group label {
-      display: block;
-      margin-bottom: 0.5rem;
-      font-weight: 600;
-      color: #f8fafc;
-    }
-
-    .form-group input {
-      width: 100%;
-      padding: 0.75rem;
-      border: 1px solid #334155;
-      border-radius: 12px;
-      background: #0f172a;
-      color: #e7e9ea;
-      font-size: 1rem;
-      transition: border-color 0.2s;
-    }
-
-    .form-group input:focus {
-      outline: none;
-      border-color: #38bdf8;
-    }
-
-    .form-actions {
-      display: flex;
-      gap: 1rem;
-      justify-content: flex-end;
-    }
-
-    .form-actions button {
-      padding: 0.75rem 1.5rem;
-      border: none;
-      border-radius: 12px;
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .form-actions button[type="submit"] {
-      background: #38bdf8;
-      color: #fff;
-    }
-
-    .form-actions button[type="submit"]:hover {
-      background: #2563eb;
-    }
-
-    .form-actions button[type="button"] {
-      background: #334155;
-      color: #e7e9ea;
-    }
-
-    .form-actions button[type="button"]:hover {
-      background: #475569;
-    }
-
-    /* Responsive */
-    @media (max-width: 700px) {
-      .profile-header,
-      .profile-tabs,
-      #reports-section,
-      #claims-section {
-        max-width: 98vw;
-        padding-left: 0.5rem;
-        padding-right: 0.5rem;
-      }
-
-      .profile-header .avatar {
-        width: 80px;
-        height: 80px;
-        margin-top: -40px;
-      }
-    }
-
+.lightbox-close {
+  position: absolute;
+  top: 20px;
+  right: 35px;
+  font-size: 40px;
+  color: white;
+  cursor: pointer;
+}
+.lightbox-close:hover {
+  color: #ddd;
+}

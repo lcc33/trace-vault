@@ -107,14 +107,9 @@ app.get("/api/user", (req, res) => {
   }
 });
 
-app.get("/api/claims", async (req, res) => {
-  const ownerId = req.query.ownerId;
-  const claims = await Claim.find({ reportOwner: ownerId }); // only claims on user's reports
-  res.json(claims);
-});
 
 app.use("/claims", require("./routes/claimRoutes"));
-app.use("/notifications", require("./routes/notifications"));
+// app.use("/notifications", require("./routes/notificationsRoutes"));
 // app.use("/profile", require("./routes/profileRoutes"));
 
 

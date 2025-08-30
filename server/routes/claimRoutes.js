@@ -59,4 +59,31 @@ router.get("/report/:reportId", async (req, res) => {
   }
 });
 
+// GET /claims?ownerId=xxx → get all claims on reports owned by a user
+router.get("/", async (req, res) => {
+  try {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ success: false, error: "Unauthorized" });
+    }
+
+    const { ownerId } = req.query;
+    if (!ownerId) {
+      return res.status(400).json({ success: false, error: "ownerId required" });
+    }
+
+    // Find reports created by this owner
+    const reports = await Report.find({ user: ownerId }).select("_id");
+
+    // Get all claims targeting those reports
+    const claims = await Claim.find({ report: { $in: reports } })
+      .populate("claimer", "name username profilePic")
+      .populate("report", "description image");
+
+    res.json({ success: true, claims });
+  } catch (err) {
+    console.error("Fetch claims error:", err);
+    res.status(500).json({ success: false, error: "Server error" });
+  }
+});
+
 module.exports = router;

@@ -13,7 +13,7 @@ function protectedPage() {
       }
     });
 }
-// protectedPage();
+protectedPage();
 
 async function fetchProfile() {
   try {
@@ -25,19 +25,16 @@ async function fetchProfile() {
 
     const res = await fetch(`${API_URL}/api/user`, { credentials: "include" });
     currentUser = await res.json();
+    const defaultAvatar =
+      "https://i.pinimg.com/736x/21/f6/fc/21f6fc4abd29ba736e36e540a787e7da.jpg";
+    const profilePic = currentUser.user?.profilePic || defaultAvatar;
 
     loadingScreen.style.display = "none";
     profileContent.style.display = "block";
 
     profileHeader.innerHTML = `
-          <img src="${currentUser.user.profilePic}" alt="Avatar" class="avatar" />
+          <img src="${profilePic}" alt="Avatar" class="avatar" />
           <h2>${currentUser.user.name}</h2>
-          <p>@${currentUser.user.username}</p>
-          <p>${currentUser.user.email}</p>
-          <div>
-            <button id="edit-profile-btn">Edit</button>
-            <button id="logout-btn" class="logout-btn">Logout</button>
-          </div>
         `;
 
     // Fetch reports (only user's)
@@ -69,36 +66,43 @@ async function fetchProfile() {
     }
 
     // Fetch claims for user's reports
-    const claimsRes = await fetch(`${API_URL}/claims/report/${reportId}`, {
-      credentials: "include",
-    });
-    const myClaims = await claimsRes.json();
+const claimsRes = await fetch(
+  `${API_URL}/claims?ownerId=${currentUser.user._id}`,
+  { credentials: "include" }
+);
+const claimsData = await claimsRes.json();
+const myClaims = claimsData.claims || [];
 
-    if (!myClaims.length) {
-      claimsSection.innerHTML = `<div class="empty-state"><h3>No Claim Requests</h3><p>No one has submitted claims for your reports yet.</p></div>`;
-    } else {
-      claimsSection.innerHTML = myClaims
-        .map(
-          (c) => `
-            <div class="claim-card">
-              <p><strong>${c.user.name}</strong> (@${
-            c.user.username
-          }) wants to claim your report</p>
-              <p>${c.description}</p>
-              ${c.image ? `<img src="${API_URL}/uploads/${c.image}" />` : ""}
-              <div>
-                <button class="accept-btn" onclick="acceptClaim('${
-                  c._id
-                }')">Accept</button>
-                <button class="decline-btn" onclick="declineClaim('${
-                  c._id
-                }')">Decline</button>
-              </div>
-            </div>
-          `
-        )
-        .join("");
-    }
+if (!myClaims.length) {
+  claimsSection.innerHTML = `<div class="empty-state"><h3>No Claim Requests</h3><p>No one has submitted claims for your reports yet.</p></div>`;
+} else {
+  claimsSection.innerHTML = myClaims
+    .map(
+      (c) => `
+      <div class="claim-card">
+        <p><strong>${c.claimer.name}</strong> wants to claim your report</p>
+        <p>Description: ${c.description}</p>
+        ${c.image ? `<img src="${API_URL}/uploads/claims/${c.image}" />` : ""}
+
+        
+        <div class="quoted-report">
+          <p class="report-desc">${c.report.description}</p>
+          ${
+            c.report.image
+              ? `<img src="${API_URL}/uploads/${c.report.image}" class="report-thumb" />`
+              : ""
+          }
+        </div>
+
+        <div class="claim-actions">
+          <button class="accept-btn" onclick="acceptClaim('${c._id}')">Accept</button>
+          <button class="decline-btn" onclick="declineClaim('${c._id}')">Decline</button>
+        </div>
+      </div>
+    `
+    )
+    .join("");
+}
 
     setupEvents();
   } catch (err) {
@@ -129,16 +133,7 @@ function setupEvents() {
     claimsTab.classList.add("active");
   });
 
-  const logoutBtn = document.getElementById("logout-btn");
-  logoutBtn.addEventListener("click", async () => {
-    if (confirm("Logout?")) {
-      await fetch(`${API_URL}/api/logout`, {
-        method: "POST",
-        credentials: "include",
-      });
-      window.location.href = "/";
-    }
-  });
+  
 }
 
 // Global actions
@@ -172,3 +167,37 @@ window.declineClaim = async (id) => {
 };
 
 fetchProfile();
+
+// Setup lightbox
+function setupLightbox() {
+  const lightbox = document.getElementById("lightbox");
+  const lightboxImg = document.getElementById("lightbox-img");
+  const closeBtn = document.getElementById("lightbox-close");
+
+  // Event delegation for all report & claim images
+  document.body.addEventListener("click", (e) => {
+    if (e.target.tagName === "IMG" && e.target.closest(".report-card, .claim-card, .quoted-report")) {
+      lightboxImg.src = e.target.src;
+      lightbox.classList.remove("hidden");
+    }
+  });
+
+  closeBtn.addEventListener("click", () => {
+    lightbox.classList.add("hidden");
+  });
+
+  lightbox.addEventListener("click", (e) => {
+    if (e.target === lightbox) {
+      lightbox.classList.add("hidden");
+    }
+  });
+
+  // Close with Escape key
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      lightbox.classList.add("hidden");
+    }
+  });
+}
+
+setupLightbox();

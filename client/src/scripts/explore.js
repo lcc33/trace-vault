@@ -382,8 +382,9 @@ function renderReports(reports) {
     const card = document.createElement("div");
     card.classList.add("item-card");
 
+    const defaultAvatar = "https://i.pinimg.com/736x/21/f6/fc/21f6fc4abd29ba736e36e540a787e7da.jpg";
     const username = report.user?.name || "Anonymous";
-    const profilePic = report.user?.profilePic || "default-avatar-url";
+    const profilePic = report.user?.profilePic || defaultAvatar;
     const isOwner = currentUserId && report.user?._id === currentUserId;
 
     card.innerHTML = `
