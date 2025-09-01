@@ -2,7 +2,7 @@ const Report = require("../models/Report");
 
 exports.addReport = async (req, res) => {
   try {
-    const newReport = req.body.newReport || req.body;
+    const newReport = await req.body.newReport || req.body;
     const report = await Report.create(newReport);
     res.json({ message: "Report added successfully" });
   } catch (err) {
@@ -21,12 +21,12 @@ exports.getReports = async (req, res) => {
 };
 
 exports.updateReport = async (req, res) => {
-  const { name, description, location } = req.body;
+  const { description } = req.body;
   const { id } = req.params;
 
   Report.findByIdAndUpdate(id, {  description }, { new: true })
     .then((updatedReport) => res.json(updatedReport))
-    .catch((err) => res.status(500).json({ error: "Failed to update Report" }));
+    .catch((err) => res.status(500).json({ error: err }));
 };
 
 exports.deleteReport = async (req, res) => {
@@ -34,7 +34,7 @@ exports.deleteReport = async (req, res) => {
 
   Report.findByIdAndDelete(id)
     .then(() => res.json({ message: "Report Deleted" }))
-    .catch((err) => res.status(500).json({ error: "Failed to delete report" }));
+    .catch((err) => res.status(500).json({ error: err }));
 };
 
 exports.getUserReports = async (req, res) => {

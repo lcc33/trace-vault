@@ -11,7 +11,7 @@ import Layout from "../layouts/Layout.astro";
   .welcome-bg {
     min-height: 100vh;
     width: 100%;
-    background:  #0f172a ;
+    background: #0f172a;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -93,7 +93,7 @@ import Layout from "../layouts/Layout.astro";
     justify-content: center;
     gap: 0.8rem;
     padding: 1.2rem 3rem;
-    background: linear-gradient(90deg, #00ffc3 60%, #2563eb 100%);
+    background: linear-gradient(90deg, #00ffc3 60%, #2564eb 100%);
     color: #222;
     font-weight: 700;
     font-size: 1.15rem;
@@ -110,8 +110,11 @@ import Layout from "../layouts/Layout.astro";
   .welcome-btn:hover,
   .welcome-btn:focus {
     background: linear-gradient(90deg, #fff 60%, #00ffc3 100%);
-    color: #2563eb;
-    transform: translateY(-2px) scale(1.04);
+    transform: scale(0.9);
+  }
+  .welcome-btn:active {
+    background: linear-gradient(90deg, #fff 60%, #01d0a0cf 100%);
+    transform: scale(0.8);
   }
 
   .welcome-btn .icon {
@@ -368,7 +371,6 @@ import Layout from "../layouts/Layout.astro";
           lost belongings with their rightful owners.
         </div>
 
-        <!-- Google Sign-In Button -->
         <button id="google-signin" class="welcome-btn">
           <span class="icon">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
@@ -391,7 +393,6 @@ import Layout from "../layouts/Layout.astro";
         <p id="redirect-msg">Redirecting to Google…</p>
       </div>
 
-      <!-- Features Section -->
       <div class="features-section">
         <h2 class="features-title">How TraceVault Works</h2>
         <div class="features-grid">
@@ -399,7 +400,7 @@ import Layout from "../layouts/Layout.astro";
             <div class="feature-icon">
               <svg width="24" height="24" fill="white" viewBox="0 0 24 24">
                 <path
-                  d="M12 2L2 7v10c0 5.55 3.84 9.95 9 11 5.16-1.05 9-5.45 9-11V7L12 2z"
+                  d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
                 ></path>
               </svg>
             </div>
@@ -442,7 +443,6 @@ import Layout from "../layouts/Layout.astro";
         </div>
       </div>
 
-      <!-- Privacy Section -->
       <div class="privacy-section">
         <h2 class="privacy-title">Your Privacy & Data Security</h2>
         <div class="privacy-content">
@@ -494,7 +494,8 @@ import Layout from "../layouts/Layout.astro";
           <a href="/help" target="_blank">Help & Support</a>
         </div>
       </div>
+      &copy; Tracevault || Kindra
     </div>
   </div>
-  <script src="../scripts/well.js" ></script>
+  <script src="../scripts/well.js"></script>
 </Layout>

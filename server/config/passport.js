@@ -3,17 +3,13 @@ const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const User = require("../models/User");
 
 module.exports = function (passport) {
-  // const callbackURL =
-  //   process.env.NODE_ENV === "development"
-  //      "http://localhost:5000/auth/google/callback"
-  //      "https://tracevault.vercel.app/auth/google/callback";
 
   passport.use(
     new GoogleStrategy(
       {
         clientID: process.env.GOOGLE_CLIENT_ID,
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        callbackURL: "/auth/google/callback", // <-- dynamic based on dev/prod
+        callbackURL: "/auth/google/callback", 
         passReqToCallback: true,
       },
       async (req, accessToken, refreshToken, profile, done) => {

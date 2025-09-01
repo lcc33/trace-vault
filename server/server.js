@@ -52,7 +52,6 @@ app.use(passport.session());
 const http = require("http");
 const server = http.createServer(app);
 const { Server } = require("socket.io");
-// const { Socket } = require("dgram");
 
 const io = new Server(server, {
   cors: { origin: "*" },
@@ -80,13 +79,13 @@ io.on("connection", (socket) => {
 });
 
 // helper you can reuse in routes:
-app.set("notifyUser", (userId, event, payload) => {
-  if (!userId) return;
-  io.to(`user:${userId}`).emit(event, payload);
-});
+// app.set("notifyUser", (userId, event, payload) => {
+//   if (!userId) return;
+//   io.to(`user:${userId}`).emit(event, payload);
+// });
 
 // Also good to broadcast report resolved:
-app.set("broadcast", (event, payload) => io.emit(event, payload));
+// app.set("broadcast", (event, payload) => io.emit(event, payload));
 
 
 // Routes
@@ -110,7 +109,6 @@ app.get("/api/user", (req, res) => {
 
 app.use("/claims", require("./routes/claimRoutes"));
 // app.use("/notifications", require("./routes/notificationsRoutes"));
-// app.use("/profile", require("./routes/profileRoutes"));
 
 
 const PORT = process.env.PORT || 5000;

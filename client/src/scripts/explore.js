@@ -1,8 +1,7 @@
 import { API_URL } from "../config.js";
 
-//protected page
+//protect page
 function protectedPage() {
-  
   fetch(`${API_URL}/api/user`, {
     credentials: "include",
   })

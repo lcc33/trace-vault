@@ -37,7 +37,7 @@ import { API_URL } from "../config.js";
     .then((data) => {
       const avatarDiv = document.getElementById("img");
       if (avatarDiv) {
-        const profilePic = data.user?.profilePic || "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
+        const profilePic = data.user?.profilePic || "https://i.pinimg.com/736x/21/f6/fc/21f6fc4abd29ba736e36e540a787e7da.jpg";
         avatarDiv.src = profilePic;
       }
     });

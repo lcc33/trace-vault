@@ -1,7 +1,7 @@
 import { API_URL } from "../config.js";
 let currentUser = null;
 
-//protected page
+//protect page
 function protectedPage() {
   fetch(`${API_URL}/api/user`, {
     credentials: "include",
@@ -66,19 +66,19 @@ async function fetchProfile() {
     }
 
     // Fetch claims for user's reports
-const claimsRes = await fetch(
-  `${API_URL}/claims?ownerId=${currentUser.user._id}`,
-  { credentials: "include" }
-);
-const claimsData = await claimsRes.json();
-const myClaims = claimsData.claims || [];
+    const claimsRes = await fetch(
+      `${API_URL}/claims?ownerId=${currentUser.user._id}`,
+      { credentials: "include" }
+    );
+    const claimsData = await claimsRes.json();
+    const myClaims = claimsData.claims || [];
 
-if (!myClaims.length) {
-  claimsSection.innerHTML = `<div class="empty-state"><h3>No Claim Requests</h3><p>No one has submitted claims for your reports yet.</p></div>`;
-} else {
-  claimsSection.innerHTML = myClaims
-    .map(
-      (c) => `
+    if (!myClaims.length) {
+      claimsSection.innerHTML = `<div class="empty-state"><h3>No Claim Requests</h3><p>No one has submitted claims for your reports yet.</p></div>`;
+    } else {
+      claimsSection.innerHTML = myClaims
+        .map(
+          (c) => `
       <div class="claim-card">
         <p><strong>${c.claimer.name}</strong> wants to claim your report</p>
         <p>Description: ${c.description}</p>
@@ -95,14 +95,14 @@ if (!myClaims.length) {
         </div>
 
         <div class="claim-actions">
-          <button class="accept-btn" onclick="acceptClaim('${c._id}')">Accept</button>
-          <button class="decline-btn" onclick="declineClaim('${c._id}')">Decline</button>
+          <button class="accept-btn" onclick="acceptClaim()">Accept</button>
+          <button class="decline-btn" onclick="declineClaim()">Decline</button>
         </div>
       </div>
     `
-    )
-    .join("");
-}
+        )
+        .join("");
+    }
 
     setupEvents();
   } catch (err) {
@@ -132,8 +132,6 @@ function setupEvents() {
     reportsTab.classList.remove("active");
     claimsTab.classList.add("active");
   });
-
-  
 }
 
 // Global actions
@@ -147,7 +145,7 @@ window.deleteReport = async (id) => {
     location.reload();
   }
 };
-window.acceptClaim = async (id) => {
+const acceptClaim = async (id) => {
   if (confirm("Accept claim?")) {
     await fetch(`${API_URL}/api/claims/${id}/accept`, {
       method: "POST",
@@ -156,7 +154,8 @@ window.acceptClaim = async (id) => {
     location.reload();
   }
 };
-window.declineClaim = async (id) => {
+
+const declineClaim = async (id) => {
   if (confirm("Decline claim?")) {
     await fetch(`${API_URL}/api/claims/${id}/decline`, {
       method: "POST",
@@ -176,7 +175,10 @@ function setupLightbox() {
 
   // Event delegation for all report & claim images
   document.body.addEventListener("click", (e) => {
-    if (e.target.tagName === "IMG" && e.target.closest(".report-card, .claim-card, .quoted-report")) {
+    if (
+      e.target.tagName === "IMG" &&
+      e.target.closest(".report-card, .claim-card, .quoted-report")
+    ) {
       lightboxImg.src = e.target.src;
       lightbox.classList.remove("hidden");
     }
@@ -192,7 +194,6 @@ function setupLightbox() {
     }
   });
 
-  // Close with Escape key
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
       lightbox.classList.add("hidden");
