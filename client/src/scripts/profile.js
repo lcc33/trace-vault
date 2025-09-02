@@ -77,13 +77,10 @@ async function fetchProfile() {
       claimsSection.innerHTML = `<div class="empty-state"><h3>No Claim Requests</h3><p>No one has submitted claims for your reports yet.</p></div>`;
     } else {
       claimsSection.innerHTML = myClaims
-        .map(
-          (c) => `
-      <div class="claim-card">
-        <p><strong>${c.claimer.name}</strong> wants to claim your report</p>
-        <p>Description: ${c.description}</p>
-        ${c.image ? `<img src="${API_URL}/uploads/claims/${c.image}" />` : ""}
-
+  .map(
+    (c) => `
+      <div class="claim-report-card">
+        <p><strong>${c.claimer.name}</strong> submitted a claim on your report</p>
         
         <div class="quoted-report">
           <p class="report-desc">${c.report.description}</p>
@@ -95,13 +92,15 @@ async function fetchProfile() {
         </div>
 
         <div class="claim-actions">
-          <button class="accept-btn" onclick="acceptClaim()">Accept</button>
-          <button class="decline-btn" onclick="declineClaim()">Decline</button>
+          <button class="claim-request-btn" onclick="openClaimOverlay('${c._id}', '${c.description}', '${c.image || ""}', '${c.claimer.name}')">
+            Claim Request
+          </button>
         </div>
       </div>
     `
-        )
-        .join("");
+  )
+  .join("");
+
     }
 
     setupEvents();
@@ -202,3 +201,24 @@ function setupLightbox() {
 }
 
 setupLightbox();
+
+window.openClaimOverlay = (id, description, image, claimerName) => {
+  document.getElementById("claim-overlay").classList.remove("hidden");
+  document.getElementById("claimer-name").textContent = `${claimerName}’s Claim`;
+  document.getElementById("claim-description").textContent = description;
+
+  const claimImage = document.getElementById("claim-image");
+  if (image) {
+    claimImage.src = `${API_URL}/uploads/claims/${image}`;
+    claimImage.style.display = "block";
+  } else {
+    claimImage.style.display = "none";
+  }
+
+  document.getElementById("accept-btn").onclick = () => acceptClaim(id);
+  document.getElementById("decline-btn").onclick = () => declineClaim(id);
+};
+
+window.closeClaimOverlay = () => {
+  document.getElementById("claim-overlay").classList.add("hidden");
+};

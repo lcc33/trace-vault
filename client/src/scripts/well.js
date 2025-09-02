@@ -8,6 +8,6 @@ btn.addEventListener("click", () => {
   btn.style.opacity = 0.7;
   msg.style.display = "block";
 
-  // Redirect user to backend OAuth route
+  btn.target = "_blank";
   window.location.href = `${API_URL}/auth/google`;
 });

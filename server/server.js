@@ -10,20 +10,20 @@ connectDB();
 require("dotenv").config();
 const allowedOrigins = [
   "http://localhost:4321",
-  "http://tracevault.vercel.app"
+  "https://tracevault.vercel.app"
 ];
 app.use(cors({
   origin: function (origin, callback) {
-    // allow requests with no origin (like mobile apps, Postman)
-    if (!origin) return callback(null, true);
+    if (!origin) return callback(null, true); // allow Postman, curl, etc.
     if (allowedOrigins.includes(origin)) {
       return callback(null, true);
     } else {
       return callback(new Error("Not allowed by CORS"));
     }
   },
-  credentials: true
+  credentials: true, // ✅ allow cookies/sessions across domains
 }));
+
 
 app.use(express.json());
 require("./config/passport")(passport);

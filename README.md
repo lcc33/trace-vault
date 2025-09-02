@@ -23,7 +23,115 @@ TraceVault provides a simple, user-friendly interface for students to:
 - **Backend/Database**: Firebase (Authentication, Firestore, Storage)
 - **Design**: Clean, minimal, mobile-first approach
 
-## 📦 Folder Structure
+## 📦 Folder StructureTraceVault 🔍
+
+TraceVault is an open-source lost & found platform that makes it easy to report lost items, discover found items, and connect owners with finders.
+
+Whether you lost your phone, wallet, or bag — TraceVault helps you report, track, and reclaim your belongings seamlessly.
+
+🚀 Features (MVP)
+
+Google Authentication – quick and secure sign-in.
+
+Report Items – submit details of lost or found items.
+
+View Reports – browse reports from other users.
+
+Claims – request to claim an item (coming soon).
+
+User Profile – view your reports and claims (in progress).
+
+Notifications – get alerts when your item is matched (planned).
+
+📦 Tech Stack
+
+Frontend: HTML, CSS, JavaScript (Vanilla for MVP)
+
+Backend: Node.js, Express
+
+Database: Firebase (for reports & user data)
+
+Authentication: Google OAuth 2.0
+
+🛠️ Installation & Setup
+
+Clone the repo:
+
+git clone https://github.com/<your-username>/tracevault.git
+cd tracevault
+
+
+Install dependencies:
+
+npm install
+
+
+Create a .env file in the root directory and add your config:
+
+GOOGLE_CLIENT_ID=your-client-id
+GOOGLE_CLIENT_SECRET=your-client-secret
+CALLBACK_URL=http://localhost:5000/auth/google/callback
+SESSION_SECRET=your-random-secret
+FIREBASE_CONFIG=your-firebase-config
+
+
+Run locally:
+
+npm start
+
+
+Visit http://localhost:5000
+
+🌍 Deployment
+
+Currently deployed on Render:
+TraceVault App
+
+Make sure to add both your local and production callback URLs to Google Cloud Console → OAuth 2.0 Redirect URIs.
+
+🤝 Contributing
+
+We’re open to contributions!
+
+Fork the repo
+
+Create your feature branch:
+
+git checkout -b feature/awesome-feature
+
+
+Commit your changes:
+
+git commit -m "Add awesome feature"
+
+
+Push to the branch:
+
+git push origin feature/awesome-feature
+
+
+Open a Pull Request
+
+📌 Roadmap
+
+ Google OAuth setup
+
+ Report & view items
+
+ Claim logic
+
+ Profile with reports & claims
+
+ Notifications system
+
+ Improved UI/UX
+
+📄 License
+
+This project is licensed under the MIT License – feel free to use, modify, and share.
+
+🔥 Built with ❤️ by Muhammad Is’haq
+ & the community.
 TraceVault/
 │
 ├── index.html # Landing page
