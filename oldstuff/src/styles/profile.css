@@ -1,0 +1,279 @@
+/* =========================
+   General Layout
+========================= */
+body {
+  background: #0f172a;
+  color: #e7e9ea;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+    Arial, sans-serif;
+  line-height: 1.5;
+  overflow-x: hidden;
+}
+
+/* =========================
+   Loading Screen
+========================= */
+.loading-screen {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: calc(100vh - 80px);
+  gap: 1rem;
+}
+.spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid #334155;
+  border-top: 4px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+.loading-screen p {
+  font-size: 1.1rem;
+  color: #94a3b8;
+}
+
+/* =========================
+   Profile Header
+========================= */
+.profile-header {
+  background: #1e293b;
+  border-radius: 16px;
+  padding: 2rem;
+  max-width: 640px;
+  margin: 1rem auto;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+}
+.profile-header .avatar {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  border: 3px solid #3b82f6;
+  object-fit: cover;
+}
+.profile-header h2 {
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+
+/* =========================
+   Tabs
+========================= */
+.profile-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin: 1.5rem auto;
+}
+.profile-tabs button {
+  background: none;
+  border: none;
+  padding: 0.6rem 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #94a3b8;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: 0.2s;
+}
+.profile-tabs button.active {
+  color: #3b82f6;
+  border-bottom: 3px solid #3b82f6;
+}
+.profile-tabs button:hover:not(.active) {
+  color: #cbd5e1;
+}
+
+/* =========================
+   Sections
+========================= */
+#reports-section,
+#claims-section {
+  max-width: 640px;
+  margin: 0 auto;
+  min-height: 120px;
+}
+.empty-state {
+  text-align: center;
+  color: #94a3b8;
+  padding: 2rem;
+}
+.empty-state h3 {
+  margin-bottom: 0.5rem;
+  color: #cbd5e1;
+}
+
+/* =========================
+   Cards
+========================= */
+.report-card,
+.claim-card {
+  background: #1e293b;
+  border-radius: 14px;
+  padding: 1rem;
+  margin-bottom: 1.2rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.report-card:hover,
+.claim-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+.report-card img,
+.claim-card img {
+  width: 100%;
+  border-radius: 12px;
+  margin-top: 0.8rem;
+  object-fit: cover;
+  max-height: 320px;
+  border: 1px solid #334155;
+}
+.report-card p,
+.claim-card p {
+  margin: 0.3rem 0;
+}
+
+/* Quoted Report */
+.quoted-report {
+  border-left: 3px solid #3b82f6;
+  background: #273449;
+  padding: 0.75rem;
+  margin-top: 0.75rem;
+  border-radius: 6px;
+}
+.quoted-report .report-desc {
+  font-size: 0.9rem;
+  color: #cbd5e1;
+  margin-bottom: 0.5rem;
+}
+.quoted-report .report-thumb {
+  max-height: 150px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+/* =========================
+   Buttons
+========================= */
+button {
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, opacity 0.2s;
+}
+button:hover { opacity: 0.9; }
+
+.report-card button {
+  background: #3b82f6;
+  color: white;
+}
+.report-card button.delete-btn {
+  background: #dc2626;
+}
+
+.claim-card .accept-btn {
+  background: #22c55e;
+  color: white;
+}
+.claim-card .decline-btn {
+  background: #dc2626;
+  color: white;
+}
+
+/* =========================
+   Overlay (Claim Modal)
+========================= */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.overlay.hidden { display: none; }
+.overlay-content {
+  background: #1e293b;
+  padding: 1.5rem;
+  border-radius: 12px;
+  max-width: 500px;
+  width: 90%;
+  text-align: center;
+  color: #e7e9ea;
+}
+.overlay-content img {
+  width: 100%;
+  margin-top: 1rem;
+  border-radius: 10px;
+}
+.overlay-actions {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 1.5rem;
+}
+
+/* =========================
+   Lightbox
+========================= */
+.lightbox {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+.hidden { display: none; }
+.lightbox img {
+  max-width: 90%;
+  max-height: 85%;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+}
+.lightbox-close {
+  position: absolute;
+  top: 20px;
+  right: 35px;
+  font-size: 40px;
+  color: white;
+  cursor: pointer;
+}
+.lightbox-close:hover { color: #ddd; }
+
+/* =========================
+   Responsive
+========================= */
+@media (max-width: 700px) {
+  .profile-header,
+  .profile-tabs,
+  #reports-section,
+  #claims-section {
+    max-width: 98vw;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+  .profile-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .profile-header .avatar {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 1rem;
+  }
+}

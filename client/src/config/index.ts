@@ -1,0 +1,38 @@
+import { Metadata } from "next";
+
+export const SITE_CONFIG: Metadata = {
+  title: {
+    default: "TraceVault – Lost It? Found It.",
+    template: `%s | TraceVault`
+  },
+  description: "TraceVault helps students and campus communities report and recover lost items seamlessly.",
+  icons: {
+    icon: [
+      {
+        url: "/icons/favicon.ico",
+        href: "/icons/favicon.ico",
+      }
+    ]
+  },
+  openGraph: {
+    title: "TraceVault – Lost It? Found It.",
+    description: "TraceVault is the smart, simple way to manage lost and found on campus.",
+    images: [
+      {
+        url: "/assets/og-image.png",
+      }
+    ]
+  },
+  twitter: {
+    card: "summary_large_image",
+    creator: "@tracevault",
+    title: "TraceVault – Lost It? Found It.",
+    description: "Lost something? Found something? TraceVault connects people to reunite items with their rightful owners.",
+    images: [
+      {
+        url: "/assets/og-image.png",
+      }
+    ]
+  },
+  metadataBase: new URL("https://tracevault.vercel.app"),
+};

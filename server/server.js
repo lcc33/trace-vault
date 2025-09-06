@@ -21,7 +21,7 @@ app.use(cors({
       return callback(new Error("Not allowed by CORS"));
     }
   },
-  credentials: true, // ✅ allow cookies/sessions across domains
+  credentials: true,
 }));
 
 
@@ -59,7 +59,7 @@ const io = new Server(server, {
 io.on("connection", (Socket) => {
   console.log("new client connected");
 
-  Socket.on("disconnet", () => {
+  Socket.on("disconnect", () => {
     console.log("client disconnected");
   });
 });
@@ -73,19 +73,8 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on("disconnect", () => {
-    // optional: cleanup
-  });
 });
 
-// helper you can reuse in routes:
-// app.set("notifyUser", (userId, event, payload) => {
-//   if (!userId) return;
-//   io.to(`user:${userId}`).emit(event, payload);
-// });
-
-// Also good to broadcast report resolved:
-// app.set("broadcast", (event, payload) => io.emit(event, payload));
 
 
 // Routes
@@ -107,8 +96,7 @@ app.get("/api/user", (req, res) => {
 });
 
 
-app.use("/claims", require("./routes/claimRoutes"));
-// app.use("/notifications", require("./routes/notificationsRoutes"));
+
 
 
 const PORT = process.env.PORT || 5000;

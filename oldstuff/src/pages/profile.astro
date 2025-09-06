@@ -1,0 +1,60 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Navbar from "../components/Navbar.astro";
+import "../styles/profile.css";
+---
+
+<Layout>
+  <Navbar />
+
+  <div id="loading-screen" class="loading-screen">
+    <div class="spinner"></div>
+    <p>Loading your profile...</p>
+  </div>
+
+  <div id="profile-content" style="display: none;">
+    <!-- Profile Header -->
+    <section class="profile-header" id="profile-header">
+      Loading profile...
+    </section>
+
+    <!-- Tabs -->
+    <section class="profile-tabs">
+      <button id="tab-reports" class="active">My Reports</button>
+      <button id="tab-claims">Claim Requests</button>
+    </section>
+
+    <!-- Reports -->
+    <section id="reports-section">Loading reports...</section>
+
+    <!-- Claims -->
+    <section id="claims-section" style="display:none;">
+      Loading claim requests...
+    </section>
+  </div>
+
+  <!-- Lightbox -->
+  <div id="lightbox" class="lightbox hidden">
+    <span id="lightbox-close" class="lightbox-close">&times;</span>
+    <img id="lightbox-img" src="" alt="Full View" />
+  </div>
+
+  <!-- Claim Overlay -->
+  <div id="claim-overlay" class="overlay hidden">
+    <div class="overlay-content">
+      <span class="overlay-close" onclick="closeClaimOverlay()">&times;</span>
+      <h3 id="claimer-name"></h3>
+      <p id="claim-description"></p>
+      <img id="claim-image" class="overlay-img" />
+
+      <div class="overlay-actions">
+        <button id="accept-btn" class="accept-btn">Accept</button>
+        <button id="decline-btn" class="decline-btn">Decline</button>
+      </div>
+    </div>
+  </div>
+  <script src="../scripts/profile.js"></script>
+</Layout>
+
+
+  
