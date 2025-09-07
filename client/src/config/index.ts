@@ -19,18 +19,18 @@ export const SITE_CONFIG: Metadata = {
     description: "TraceVault is the smart, simple way to manage lost and found on campus.",
     images: [
       {
-        url: "/assets/og-image.png",
+        url: "/assets/logo.jpeg",
       }
     ]
   },
   twitter: {
     card: "summary_large_image",
-    creator: "@tracevault",
+    creator: "@kindra",
     title: "TraceVault – Lost It? Found It.",
     description: "Lost something? Found something? TraceVault connects people to reunite items with their rightful owners.",
     images: [
       {
-        url: "/assets/og-image.png",
+        url: "/assets/logo.jpeg",
       }
     ]
   },

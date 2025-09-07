@@ -1,5 +1,4 @@
-import Icons from "@/components/global/icons"
-import { Heart } from "lucide-react"
+import Image from "next/image"
 import Link from "next/link"
 
 const Footer = () => {
@@ -13,7 +12,7 @@ const Footer = () => {
 
         <div className="flex flex-col items-start justify-start md:max-w-[200px]">
           <div className="flex items-start">
-            <Icons.logo className="w-7 h-7" />
+            <Image src="/assets/logo.jpeg" alt="TraceVault Logo" width={28} height={28} />
           </div>
           <p className="text-muted-foreground mt-4 text-sm text-start">
             TraceVault helps people report, find, and return lost items—powered by the community.

@@ -1,4 +1,4 @@
-import { Container, Icons } from "@/components";
+import { Container } from "@/components";
 import Image from "next/image";
 // import { buttonVariants } from "@/components/ui/button";
 import Link from "next/link";
