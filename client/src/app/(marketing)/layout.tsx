@@ -8,7 +8,7 @@ interface Props {
 const MarketingLayout = ({ children }: Props) => {
     return (
         <div className="flex flex-col items-center w-full">
-            <Navbar />
+            {/* <Navbar /> */}
             {children}
             <Footer />
         </div>

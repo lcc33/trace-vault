@@ -50,7 +50,7 @@ const HomePage = () => {
                 A simple, open-source, community-driven lost & found platform. Report lost
                 items, explore found listings, and reconnect with what matters.
               </p>
-              <div className="hidden md:flex relative items-center justify-center mt-8 md:mt-12 w-full">
+              <div className=" md:flex relative items-center justify-center mt-8 md:mt-12 w-full">
                 <Link
                   href="#"
                   className="flex items-center justify-center w-max rounded-full border-t border-foreground/30 bg-white/20 backdrop-blur-lg px-2 py-1 md:py-2 gap-2 md:gap-8 shadow-3xl shadow-background/40 cursor-pointer select-none"
@@ -60,7 +60,7 @@ const HomePage = () => {
                   </p>
                   <Button
                     size="sm"
-                    className="rounded-full hidden lg:flex border border-foreground/20"
+                    className="rounded-full  lg:flex border border-foreground/20"
                   >
                     Get Started
                     <ArrowRight className="w-4 h-4 ml-1" />
@@ -141,7 +141,7 @@ const HomePage = () => {
         </Container>
         <Container>
           <div className="flex items-center justify-center mx-auto mt-8">
-            <Icons.feature className="w-auto h-80" />
+            {/* <Icons.feature className="w-auto h-80" /> */}
           </div>
         </Container>
         <Container>
