@@ -1,16 +1,15 @@
-import { Footer, Navbar } from "@/components";
+import { Footer } from "@/components";
 import { Inter } from "next/font/google";
 import { cn } from "@/lib/utils";
 import React from "react";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
-interface Props {
+export default function MarketingLayout({
+  children,
+}: {
   children: React.ReactNode;
-  showNavbar?: boolean;
-}
-
-const MarketingLayout = ({ children, showNavbar = true }: Props) => {
+}) {
   return (
     <div
       className={cn(
@@ -22,6 +21,4 @@ const MarketingLayout = ({ children, showNavbar = true }: Props) => {
       <Footer />
     </div>
   );
-};
-
-export default MarketingLayout;
+}
