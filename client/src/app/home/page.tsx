@@ -199,7 +199,7 @@ export default function Home() {
         {/* Popup */}
         {popup.isVisible && (
           <div
-            className={`fixed top-8 left-1/2 -translate-x-1/2 px-4 py-2 rounded-lg text-sm font-semibold shadow-lg ${
+            className={`fixed top-20 left-1/2 -translate-x-1/2 px-4 py-2 rounded-lg text-sm font-semibold shadow-lg ${
               popup.isSuccess ? "bg-green-500" : "bg-red-600"
             }`}
           >

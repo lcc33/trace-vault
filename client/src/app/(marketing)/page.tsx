@@ -1,20 +1,15 @@
 import { Container, Icons, Wrapper } from "@/components";
 import { BorderBeam } from "@/components/ui/border-beam";
 import { Button } from "@/components/ui/button";
-
-import { Input } from "@/components/ui/input";
 import { LampContainer } from "@/components/ui/lamp";
-
 import SectionBadge from "@/components/ui/section-badge";
 import { features, perks } from "@/constants";
-
 import { ArrowRight, ChevronRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import WaitlistForm from "@/components/waitlist"; // ✅ Import new client component
 
 const HomePage = () => {
-
-
   return (
     <section className="w-full relative flex items-center justify-center flex-col px-4 md:px-0 py-8">
       {/* hero */}
@@ -52,7 +47,7 @@ const HomePage = () => {
               </p>
               <div className=" md:flex relative items-center justify-center mt-8 md:mt-12 w-full">
                 <Link
-                  href="#"
+                  href="https://chat.whatsapp.com/EnKufYkDI5T8xiGdr5O5Ab"
                   className="flex items-center justify-center w-max rounded-full border-t border-foreground/30 bg-white/20 backdrop-blur-lg px-2 py-1 md:py-2 gap-2 md:gap-8 shadow-3xl shadow-background/40 cursor-pointer select-none"
                 >
                   <p className="text-foreground text-sm text-center md:text-base font-medium pl-4 pr-4 lg:pr-0">
@@ -76,7 +71,7 @@ const HomePage = () => {
                   src="/assets/logo.jpeg"
                   alt="TraceVault logo"
                   width={1200}
-                  height={1200}
+                  height={1000}
                   quality={100}
                   className="rounded-md lg:rounded-xl bg-foreground/10 shadow-2xl ring-1 ring-border"
                 />
@@ -152,9 +147,7 @@ const HomePage = () => {
                   key={feature.title}
                   className="flex flex-col items-start lg:items-start px-0 md:px-0"
                 >
-                  <div className="flex items-center justify-center">
-                    
-                  </div>
+                  <div className="flex items-center justify-center"></div>
                   <h3 className="text-lg font-medium mt-4">{feature.title}</h3>
                   <p className="text-muted-foreground mt-2 text-start lg:text-start">
                     {feature.info}
@@ -194,55 +187,38 @@ const HomePage = () => {
                 Get updates on new features, stories from the community, and
                 tips to keep your belongings safe.
               </p>
-              <Button variant="white" className="mt-6" asChild>
+              {/* <Button variant="white" className="mt-6" asChild>
                 <Link href="/sign-in">
                   Join Now
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Link>
-              </Button>
+              </Button> */}
             </div>
           </LampContainer>
         </Container>
-        <Container className="relative z-[999999]">
-  <div className="flex items-center justify-center w-full -mt-40">
-    <div className="flex flex-col md:flex-row items-start md:items-center justify-start md:justify-between w-full px-4 md:px-8 rounded-lg lg:rounded-2xl border border-border/80 py-4 md:py-8">
-      <div className="flex flex-col items-start gap-4 w-full">
-        <h4 className="text-xl md:text-2xl font-semibold">
-          Join the TraceVault Waitlist
-        </h4>
-        <p className="text-base text-muted-foreground">
-          Be the first to know when we launch.
-        </p>
-      </div>
-      <div className="flex flex-col items-start gap-2 md:min-w-80 mt-5 md:mt-0 w-full md:w-max">
-        <form
-          action="#"
-          className="flex flex-col md:flex-row items-center gap-2 w-full md:max-w-xs"
-        >
-          <Input
-            required
-            type="email"
-            placeholder="Enter your email"
-            className="focus-visible:ring-0 focus-visible:ring-transparent focus-visible:border-primary duration-300 w-full"
-          />
-          <Button
-            type="submit"
-            size="sm"
-            variant="secondary"
-            className="w-full md:w-max"
-          >
-            Join Waitlist
-          </Button>
-        </form>
-        <p className="text-xs text-muted-foreground">
-          By joining, you agree to our{" "}
-          <Link href="#">Privacy Policy</Link>
-        </p>
-      </div>
-    </div>
-  </div>
-</Container>
 
+        {/* ✅ replaced the form with WaitlistForm */}
+        <Container className="relative z-[999999]">
+          <div className="flex items-center justify-center w-full -mt-40">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-start md:justify-between w-full px-4 md:px-8 rounded-lg lg:rounded-2xl border border-border/80 py-4 md:py-8">
+              <div className="flex flex-col items-start gap-4 w-full">
+                <h4 className="text-xl md:text-2xl font-semibold">
+                  Join the TraceVault Waitlist
+                </h4>
+                <p className="text-base text-muted-foreground">
+                  Be the first to know when we launch.
+                </p>
+              </div>
+              <div className="flex flex-col items-start gap-2 md:min-w-80 mt-5 md:mt-0 w-full md:w-max">
+                <WaitlistForm /> {/* 👈 new client component */}
+                <p className="text-xs text-muted-foreground">
+                  By joining, you agree to our{" "}
+                  <Link href="/privacy">Privacy Policy</Link>
+                </p>
+              </div>
+            </div>
+          </div>
+        </Container>
       </Wrapper>
     </section>
   );
