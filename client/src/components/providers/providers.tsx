@@ -10,7 +10,7 @@ interface Props {
 
 const Providers = ({ children }: Props) => {
     return (
-        <ClerkProvider appearance={{ baseTheme: dark }}>
+        <ClerkProvider>
             {children}
         </ClerkProvider>
     )
