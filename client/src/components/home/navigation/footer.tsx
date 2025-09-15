@@ -36,7 +36,7 @@ const Footer = () => {
                   </Link>
                 </li>
                 <li className="mt-2">
-                  <Link href="https://chat.whatsapp.com/EnKufYkDI5T8xiGdr5O5Ab" className="hover:text-foreground transition-all duration-300">
+                  <Link href="/community" className="hover:text-foreground transition-all duration-300">
                     Community
                   </Link>
                 </li>

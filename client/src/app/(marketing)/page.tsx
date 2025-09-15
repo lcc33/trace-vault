@@ -71,7 +71,7 @@ const HomePage = () => {
                   src="/assets/logo.jpeg"
                   alt="TraceVault logo"
                   width={1200}
-                  height={1000}
+                  height={1200}
                   quality={100}
                   className="rounded-md lg:rounded-xl bg-foreground/10 shadow-2xl ring-1 ring-border"
                 />

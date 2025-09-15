@@ -13,11 +13,11 @@ export default function MarketingLayout({
   return (
     <div
       className={cn(
-        "flex flex-col min-h-screen items-center w-full font-sans",
+        " font-sans",
         inter.className
       )}
     >
-      <main className="flex-1 w-full">{children}</main>
+      <main >{children}</main>
       <Footer />
     </div>
   );
