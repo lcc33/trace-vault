@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 export default function FAQs() {
-  const [openIndex, setOpenIndex] = useState(null);
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   const faqs = [
     {
@@ -33,7 +33,7 @@ export default function FAQs() {
     },
   ];
 
-  const handleToggle = (index) => {
+  const handleToggle = (index: number) => {
     setOpenIndex(openIndex === index ? null : index);
   };
 

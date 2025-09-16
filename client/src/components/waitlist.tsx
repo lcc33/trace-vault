@@ -13,7 +13,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
-
 export default function Waitlist() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
@@ -44,7 +43,7 @@ export default function Waitlist() {
 
         setAlert({
           type: "success",
-          message: "🎉 Thanks for joining! Check your inbox soon.",
+          message: "🎉 Thanks for joining! You can also join our community below 👇",
         });
         setEmail("");
       }
@@ -82,17 +81,27 @@ export default function Waitlist() {
       {/* Custom alert */}
       {alert && (
         <div
-          className={`mt-3 text-sm px-4 py-2 rounded-lg ${
+          className={`mt-3 text-sm px-4 py-2 rounded-lg flex flex-col items-center gap-3 ${
             alert.type === "success"
               ? "bg-green-800 text-green-300 border border-green-600"
               : "bg-red-800 text-red-300 border border-red-600"
           }`}
         >
-          {alert.message}
+          <p>{alert.message}</p>
+
+          {alert.type === "success" && (
+            <a
+              href="https://chat.whatsapp.com/EnKufYkDI5T8xiGdr5O5Ab"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Button className="bg-white text-green-700 hover:bg-gray-200">
+                Join the Community
+              </Button>
+            </a>
+          )}
         </div>
       )}
-
-      
     </div>
   );
 }
