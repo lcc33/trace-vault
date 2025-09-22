@@ -9,6 +9,7 @@
     "lint": "next lint && pnpm lint"
   },
   "dependencies": {
+    "@auth/mongodb-adapter": "^3.10.0",
     "@clerk/nextjs": "^5.2.3",
     "@clerk/themes": "^2.1.7",
     "@hookform/resolvers": "^3.4.2",
@@ -50,7 +51,10 @@
     "framer-motion": "^11.2.6",
     "input-otp": "^1.2.4",
     "lucide-react": "^0.379.0",
+    "mongodb": "^6.20.0",
+    "mongoose": "^8.18.1",
     "next": "^15.5.2",
+    "next-auth": "^4.24.11",
     "next-themes": "^0.3.0",
     "react": "^18",
     "react-day-picker": "^8.10.1",

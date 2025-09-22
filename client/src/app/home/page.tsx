@@ -122,7 +122,7 @@ export default function Home() {
   });
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 font-sans leading-relaxed overflow-x-hidden">
+    <div className="min-h-screen bg-slate-900  text-slate-100 font-sans leading-relaxed overflow-x-hidden">
       <Navbar />
       <main className="max-w-3xl mx-auto min-h-screen border-x border-slate-700 bg-black/40">
         {/* Report form */}
