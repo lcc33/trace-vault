@@ -19,7 +19,11 @@ interface Report {
   };
 }
 
-export default function ReportsFeed({ initialReports }: { initialReports: Report[] }) {
+export default function ReportsFeed({
+  initialReports,
+}: {
+  initialReports: Report[];
+}) {
   const [reports, setReports] = useState(initialReports);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
@@ -28,7 +32,11 @@ export default function ReportsFeed({ initialReports }: { initialReports: Report
   const defaultAvatar =
     "https://i.pinimg.com/736x/21/f6/fc/21f6fc4abd29ba736e36e540a787e7da.jpg";
 
-  const [popup, setPopup] = useState({ isVisible: false, message: "", isSuccess: true });
+  const [popup, setPopup] = useState({
+    isVisible: false,
+    message: "",
+    isSuccess: true,
+  });
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [claimData, setClaimData] = useState({ image: "", description: "" });
@@ -36,7 +44,8 @@ export default function ReportsFeed({ initialReports }: { initialReports: Report
 
   const filteredReports = useMemo(() => {
     return reports.filter((report) => {
-      const matchesCategory = filterCategory === "all" || report.category === filterCategory;
+      const matchesCategory =
+        filterCategory === "all" || report.category === filterCategory;
       const matchesSearch =
         report.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
         report.contact.toLowerCase().includes(searchQuery.toLowerCase());
@@ -47,7 +56,11 @@ export default function ReportsFeed({ initialReports }: { initialReports: Report
   const handleShare = (reportId: string) => {
     const url = `${window.location.origin}/report/${reportId}`;
     navigator.clipboard.writeText(url);
-    setPopup({ isVisible: true, message: "Post link copied!", isSuccess: true });
+    setPopup({
+      isVisible: true,
+      message: "Post link copied!",
+      isSuccess: true,
+    });
     setTimeout(() => setPopup({ ...popup, isVisible: false }), 2000);
   };
 
@@ -110,7 +123,8 @@ export default function ReportsFeed({ initialReports }: { initialReports: Report
         ) : (
           filteredReports.map((report) => {
             const isOwner =
-              currentUser?.user?.email && report.user?.email === currentUser.user.email;
+              currentUser?.user?.email &&
+              report.user?.email === currentUser.user.email;
 
             return (
               <div
@@ -131,11 +145,11 @@ export default function ReportsFeed({ initialReports }: { initialReports: Report
                       {report.user?.name || "Anonymous"}
                     </p>
                     <p className="text-xs text-slate-400">
-                      {new Date(report.createdAt).toLocaleDateString()} • {report.category}
+                      {new Date(report.createdAt).toLocaleDateString()} •{" "}
+                      {report.category}
                     </p>
                   </div>
                 </div>
-
 
                 {/* Description */}
                 <p className="text-sm mb-2">{report.description}</p>
@@ -170,7 +184,9 @@ export default function ReportsFeed({ initialReports }: { initialReports: Report
                     <div className="relative">
                       <button
                         onClick={() =>
-                          setActiveMenu(activeMenu === report._id ? null : report._id)
+                          setActiveMenu(
+                            activeMenu === report._id ? null : report._id
+                          )
                         }
                         className="p-2 rounded-full hover:bg-white/10"
                       >
@@ -222,7 +238,9 @@ export default function ReportsFeed({ initialReports }: { initialReports: Report
               type="text"
               placeholder="Image URL (upload link)"
               value={claimData.image}
-              onChange={(e) => setClaimData({ ...claimData, image: e.target.value })}
+              onChange={(e) =>
+                setClaimData({ ...claimData, image: e.target.value })
+              }
               className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm mb-4 focus:border-sky-500 outline-none"
             />
 
@@ -246,7 +264,7 @@ export default function ReportsFeed({ initialReports }: { initialReports: Report
 
       {/* Enlarged Image Modal */}
       {enlargedImage && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-50 p-4"
           onClick={() => setEnlargedImage(null)}
         >
@@ -259,11 +277,11 @@ export default function ReportsFeed({ initialReports }: { initialReports: Report
               className="rounded-lg object-contain max-w-full max-h-[90vh]"
               unoptimized
             />
-            <button 
+            <button
               className="absolute -top-12 right-0 text-white text-lg bg-slate-800/50 hover:bg-slate-700/50 w-8 h-8 rounded-full flex items-center justify-center transition-colors"
               onClick={() => setEnlargedImage(null)}
             >
-            ×
+              ×
             </button>
           </div>
         </div>
