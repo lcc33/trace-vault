@@ -100,18 +100,41 @@ module.exports = {
           from: { transform: "translateX(0)" },
           to: { transform: "translateX(calc(-100% - var(--gap)))" },
         },
+        fadeIn: {
+          '0%': { opacity: '0', transform: 'translateY(10px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        blob: {
+          '0%': {
+            transform: 'translate(0px, 0px) scale(1)',
+          },
+          '33%': {
+            transform: 'translate(30px, -50px) scale(1.1)',
+          },
+          '66%': {
+            transform: 'translate(-20px, 20px) scale(0.9)',
+          },
+          '100%': {
+            transform: 'translate(0px, 0px) scale(1)',
+          },
+        },
       },
-      animation: {
-        'accordion-down': 'accordion-down 0.2s ease-out',
-        'accordion-up': 'accordion-up 0.2s ease-out',
-        'automation-zoom-in': 'automation-zoom-in 0.5s',
-        'flip': "flip 6s infinite steps(2, end)",
-        'rotate': "rotate 3s linear infinite both",
-        'rotate-new': 'rotate-new 20s linear infinite',
-        'shimmer': "shimmer 2s linear infinite",
-        "border-beam": "border-beam calc(var(--duration)*1s) infinite linear",
-        "marquee": "marquee var(--duration) linear infinite",
-      },
+    },
+    animation: {
+      'accordion-down': 'accordion-down 0.2s ease-out',
+      'accordion-up': 'accordion-up 0.2s ease-out',
+      'automation-zoom-in': 'automation-zoom-in 0.5s',
+      'flip': "flip 6s infinite steps(2, end)",
+      'rotate': "rotate 3s linear infinite both",
+      'rotate-new': 'rotate-new 20s linear infinite',
+      'shimmer': "shimmer 2s linear infinite",
+      "border-beam": "border-beam calc(var(--duration)*1s) infinite linear",
+      "marquee": "marquee var(--duration) linear infinite",
+      pulse: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+      // Custom fade-in for the text message
+      'fade-in': 'fadeIn 1.5s ease-out forwards',
+      // Custom "blob" animation for the background
+      blob: 'blob 7s infinite',
     },
   },
   plugins: [require('tailwindcss-animate')],

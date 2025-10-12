@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { MoreVertical } from "lucide-react";
+import { useRouter } from "next/navigation"; // Add this import
 
 interface Report {
   _id: string;
@@ -28,6 +29,7 @@ export default function ReportsFeed({
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
   const { data: currentUser } = useSession();
+  const router = useRouter(); // Initialize the router
 
   const defaultAvatar =
     "https://i.pinimg.com/736x/21/f6/fc/21f6fc4abd29ba736e36e540a787e7da.jpg";
@@ -52,6 +54,11 @@ export default function ReportsFeed({
       return matchesCategory && matchesSearch;
     });
   }, [reports, searchQuery, filterCategory]);
+
+  // Add this function to handle post clicks
+  const handlePostClick = (reportId: string) => {
+    router.push(`/report/${reportId}`);
+  };
 
   const handleShare = (reportId: string) => {
     const url = `${window.location.origin}/report/${reportId}`;
@@ -129,7 +136,8 @@ export default function ReportsFeed({
             return (
               <div
                 key={report._id}
-                className="border-b border-slate-700 p-4 hover:bg-white/5 relative"
+                className="border-b border-slate-700 p-4 hover:bg-white/5 relative cursor-pointer" // Added cursor-pointer
+                onClick={() => handlePostClick(report._id)} // Added click handler
               >
                 {/* User Header */}
                 <div className="flex items-center gap-3 mb-3">
@@ -164,13 +172,16 @@ export default function ReportsFeed({
                       height={300}
                       className="rounded-xl border border-slate-700 object-cover cursor-pointer max-w-[700px] max-h-[300px]"
                       unoptimized
-                      onClick={() => setEnlargedImage(report.imageUrl!)}
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevent navigation when clicking image
+                        setEnlargedImage(report.imageUrl!);
+                      }}
                     />
                   </div>
                 )}
 
                 {/* Actions */}
-                <div className="flex  items-center gap-2">
+                <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}> {/* Prevent navigation when clicking actions */}
                   {!isOwner && (
                     <button
                       onClick={() => setShowModal(true)}
@@ -183,11 +194,12 @@ export default function ReportsFeed({
                   {isOwner && (
                     <div className="relative">
                       <button
-                        onClick={() =>
+                        onClick={(e) => {
+                          e.stopPropagation();
                           setActiveMenu(
                             activeMenu === report._id ? null : report._id
-                          )
-                        }
+                          );
+                        }}
                         className="p-2 rounded-full hover:bg-white/10"
                       >
                         <MoreVertical size={18} />
@@ -196,13 +208,19 @@ export default function ReportsFeed({
                       {activeMenu === report._id && (
                         <div className="absolute left-7 bottom-12 mt-2 w-36 bg-slate-800 border border-slate-700 rounded-lg shadow-lg z-20">
                           <button
-                            onClick={() => handleDelete(report._id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDelete(report._id);
+                            }}
                             className="w-full text-left px-4 py-2 text-sm hover:bg-white/10"
                           >
                             Delete
                           </button>
                           <button
-                            onClick={() => handleShare(report._id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleShare(report._id);
+                            }}
                             className="w-full text-left px-4 py-2 text-sm hover:bg-white/10"
                           >
                             Share Post

@@ -5,7 +5,6 @@ import { useRef, useState } from "react";
 export default function ReportForm() {
   const descriptionRef = useRef<HTMLTextAreaElement>(null);
   const categoryRef = useRef<HTMLSelectElement>(null);
-  const contactRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
 
   const [file, setFile] = useState<File | null>(null);
@@ -23,20 +22,36 @@ export default function ReportForm() {
     e.preventDefault();
     setLoading(true);
 
+    // Add null checks for all refs
+    if (!descriptionRef.current || !categoryRef.current || !imageInputRef.current) {
+      alert("Please fill in all required fields");
+      setLoading(false);
+      return;
+    }
+
     const formData = new FormData();
-    formData.append("description", descriptionRef.current!.value);
-    formData.append("category", categoryRef.current!.value);
-    formData.append("contact", contactRef.current!.value);
+    formData.append("description", descriptionRef.current.value);
+    formData.append("category", categoryRef.current.value);
+    
 
     if (file) formData.append("image", file);
 
-    const res = await fetch("/api/reports", {
-      method: "POST",
-      body: formData,
-    });
+    try {
+      const res = await fetch("/api/reports", {
+        method: "POST",
+        body: formData,
+      });
 
-    setLoading(false);
-    if (res.ok) window.location.reload();
+      if (res.ok) {
+        window.location.reload();
+      } else {
+        alert("Failed to create report");
+      }
+    } catch (error) {
+      alert("Error creating report");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -48,6 +63,7 @@ export default function ReportForm() {
             className="flex-1 bg-transparent border-none resize-none min-h-[50px] p-2 text-lg outline-none placeholder:text-slate-400"
             placeholder="What's lost or found?"
             required
+            defaultValue="" // Ensure it has a value
           />
         </div>
         
@@ -58,6 +74,7 @@ export default function ReportForm() {
                 ref={categoryRef}
                 required
                 className="bg-transparent text-sky-500 border border-sky-500 rounded-full px-3 py-1.5 text-sm font-semibold"
+                defaultValue="" // Ensure it has a value
               >
                 <option value="">Category</option>
                 <option value="phone">📱 Phone</option>
@@ -66,8 +83,6 @@ export default function ReportForm() {
                 <option value="wallet">💰 Wallet</option>
                 <option value="other">📦 Other</option>
               </select>
-              
-              
               
               <label
                 htmlFor="itemImage"
