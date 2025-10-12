@@ -23,5 +23,12 @@ export const authOptions: NextAuthOptions = {
     async redirect({ url, baseUrl }) {
       return `${baseUrl}/home`;
     },
+    async session({ session, token }) {
+      // Send properties to the client
+      if (session.user) {
+        session.user.id = token.sub!;
+      }
+      return session;
+    },
   },
 };

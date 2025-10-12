@@ -2,9 +2,12 @@ import { Navbar } from "@/components";
 import ReportsFeed from "@/components/reports/ReportsFeed";
 import ReportForm from "@/components/reports/ReportsForm";
 
+// Determine the base URL based on the environment
+const baseUrl = process.env.NEXTAUTH_URL ;
+
 export default async function HomePage() {
-  // fetch initial reports from API
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/reports`, {
+  // Use the absolute URL when fetching
+  const res = await fetch(`${baseUrl}/api/reports`, {
     cache: "no-store",
   });
   const reports = await res.json();

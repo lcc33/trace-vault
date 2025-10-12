@@ -2,7 +2,7 @@ import { v2 as cloudinary } from "cloudinary";
 import { NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { authOptions } from "@/lib/auth"; // Create this file
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -21,6 +21,7 @@ export async function POST(req: Request) {
     const formData = await req.formData();
     const description = formData.get("description") as string;
     const category = formData.get("category") as string;
+    const contact = formData.get("contact") as string;
     const file = formData.get("image") as File | null;
 
     let imageUrl = null;
@@ -55,12 +56,13 @@ export async function POST(req: Request) {
     const report = { 
       description, 
       category, 
+      contact, 
       imageUrl, 
-      userId: user._id, // Store user reference
-      user: { // Denormalize user data for easy access
+      userId: user._id,
+      user: {
         name: user.name,
         email: user.email,
-        profilePic: user.image
+        profilePic: user.image || user.profilePic
       },
       createdAt: new Date() 
     };
@@ -77,7 +79,6 @@ export async function POST(req: Request) {
   }
 }
 
-// ✅ GET endpoint to fetch reports with user data
 export async function GET() {
   try {
     const client = await clientPromise;

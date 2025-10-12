@@ -5,13 +5,11 @@ import { useRef, useState } from "react";
 export default function ReportForm() {
   const descriptionRef = useRef<HTMLTextAreaElement>(null);
   const categoryRef = useRef<HTMLSelectElement>(null);
-
+  const contactRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
 
   const [file, setFile] = useState<File | null>(null);
-  const [selectedImageName, setSelectedImageName] = useState<string | null>(
-    null
-  );
+  const [selectedImageName, setSelectedImageName] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -28,6 +26,7 @@ export default function ReportForm() {
     const formData = new FormData();
     formData.append("description", descriptionRef.current!.value);
     formData.append("category", categoryRef.current!.value);
+    formData.append("contact", contactRef.current!.value);
 
     if (file) formData.append("image", file);
 
@@ -51,51 +50,57 @@ export default function ReportForm() {
             required
           />
         </div>
+        
         <div className="flex flex-col sm:flex-row justify-between items-center gap-3 pt-3 border-t border-slate-700">
-            <div className="flex flex-col sm:flex-row flex-1 items-center gap-3 w-full">
-              <div className="flex flex-1 items-center gap-3 w-full">
-                <select
-                  ref={categoryRef}
-                  required
-                  className="bg-transparent text-sky-500 border border-sky-500 rounded-full px-3 py-1.5 text-sm font-semibold"
-                >
-                  <option value="">Category</option>
-                  <option value="phone">📱 Phone</option>
-                  <option value="id">🆔 ID Card</option>
-                  <option value="bag">🎒 Bag</option>
-                  <option value="wallet">💰 Wallet</option>
-                  <option value="other">📦 Other</option>
-                </select>
-                <label
-                  htmlFor="itemImage"
-                  className="cursor-pointer p-2 rounded-full hover:bg-sky-500/10"
-                >
-                  📷
-                  <input
-                    ref={imageInputRef}
-                    id="itemImage"
-                    type="file"
-                    className="hidden"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                  />
-                </label>
-                {selectedImageName && (
-                  <span className="text-sky-500 text-xs bg-sky-500/10 rounded-full px-3 py-1">
-                    {selectedImageName}
-                  </span>
-                )}
-              </div>
-              <div className="flex justify-end w-full sm:w-auto">
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="bg-sky-500 rounded-full px-4 py-2 text-sm font-bold hover:bg-sky-600 disabled:opacity-50"
-                >
-                  {loading ? "Posting..." : "Post"}
-                </button>
-              </div>
+          <div className="flex flex-col sm:flex-row flex-1 items-center gap-3 w-full">
+            <div className="flex flex-1 items-center gap-3 w-full">
+              <select
+                ref={categoryRef}
+                required
+                className="bg-transparent text-sky-500 border border-sky-500 rounded-full px-3 py-1.5 text-sm font-semibold"
+              >
+                <option value="">Category</option>
+                <option value="phone">📱 Phone</option>
+                <option value="id">🆔 ID Card</option>
+                <option value="bag">🎒 Bag</option>
+                <option value="wallet">💰 Wallet</option>
+                <option value="other">📦 Other</option>
+              </select>
+              
+              
+              
+              <label
+                htmlFor="itemImage"
+                className="cursor-pointer p-2 rounded-full hover:bg-sky-500/10"
+              >
+                📷
+                <input
+                  ref={imageInputRef}
+                  id="itemImage"
+                  type="file"
+                  className="hidden"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                />
+              </label>
+              
+              {selectedImageName && (
+                <span className="text-sky-500 text-xs bg-sky-500/10 rounded-full px-3 py-1">
+                  {selectedImageName}
+                </span>
+              )}
             </div>
+            
+            <div className="flex justify-end w-full sm:w-auto">
+              <button
+                type="submit"
+                disabled={loading}
+                className="bg-sky-500 rounded-full px-4 py-2 text-sm font-bold hover:bg-sky-600 disabled:opacity-50"
+              >
+                {loading ? "Posting..." : "Post"}
+              </button>
+            </div>
+          </div>
         </div>
       </form>
     </section>

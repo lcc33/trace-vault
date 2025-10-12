@@ -118,16 +118,24 @@ export default function ReportsFeed({ initialReports }: { initialReports: Report
                 className="border-b border-slate-700 p-4 hover:bg-white/5 relative"
               >
                 {/* User Header */}
-                <div className="flex items-center gap-3 mb-2">
+                <div className="flex items-center gap-3 mb-3">
                   <Image
                     src={report.user?.profilePic || defaultAvatar}
                     alt={`${report.user?.name || "User"}'s profile`}
                     width={40}
                     height={40}
-                    className="w-10 h-10 rounded-full object-cover"
+                    className="w-10 h-10 rounded-full object-cover border border-slate-600"
                   />
-                  <span className="font-bold">{report.user?.name || "Anonymous"}</span>
+                  <div>
+                    <p className="font-bold text-slate-100">
+                      {report.user?.name || "Anonymous"}
+                    </p>
+                    <p className="text-xs text-slate-400">
+                      {new Date(report.createdAt).toLocaleDateString()} • {report.category}
+                    </p>
+                  </div>
                 </div>
+
 
                 {/* Description */}
                 <p className="text-sm mb-2">{report.description}</p>
@@ -170,7 +178,7 @@ export default function ReportsFeed({ initialReports }: { initialReports: Report
                       </button>
 
                       {activeMenu === report._id && (
-                        <div className="absolute right-0 mt-2 w-36 bg-slate-800 border border-slate-700 rounded-lg shadow-lg z-20">
+                        <div className="absolute left-7 bottom-12 mt-2 w-36 bg-slate-800 border border-slate-700 rounded-lg shadow-lg z-20">
                           <button
                             onClick={() => handleDelete(report._id)}
                             className="w-full text-left px-4 py-2 text-sm hover:bg-white/10"
