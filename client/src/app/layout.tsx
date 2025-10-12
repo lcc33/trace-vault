@@ -2,6 +2,7 @@ import { SITE_CONFIG } from "@/config";
 import { cn } from "@/lib/utils";
 import "@/styles/globals.css";
 
+
 export const metadata = SITE_CONFIG;
 
 export default function RootLayout({
@@ -24,6 +25,7 @@ export default function RootLayout({
           }}
         >
           {children}
+          
         </div>
       </body>
     </html>

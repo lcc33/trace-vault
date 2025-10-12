@@ -51,7 +51,7 @@ const HomePage = () => {
               {/* CTA */}
               <div className="">
                 <Link
-                  href="https://chat.whatsapp.com/EnKufYkDI5T8xiGdr5O5Ab"
+                  href="/login"
                   className="flex flex-col sm:flex-row items-center justify-center mt-4 sm:mt-7 gap-4 w-full shadow-md "
                 >
                   {/* <p className="text-sm sm:text-base font-extralight">
@@ -61,7 +61,7 @@ const HomePage = () => {
                     size="sm"
                     className="rounded-full p-5  bg-white/20 backdrop-blur-lg flex items-center"
                   >
-                    ✨ Join the community <ArrowRight className="w-4 h-4 ml-1" />
+                    ✨ Get Started <ArrowRight className="w-4 h-4 ml-1" />
                   </Button>
                 </Link>
               </div>

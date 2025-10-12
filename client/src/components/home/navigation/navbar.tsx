@@ -1,10 +1,15 @@
+"use client";
+
 import { Container } from "@/components";
 import Image from "next/image";
 import { buttonVariants } from "@/components/ui/button";
 import Link from "next/link";
 import LogoutButton from "./logout";
+import { useSession } from "next-auth/react";
 
 const Navbar = () => {
+  const { data: session, status } = useSession();
+
   return (
     <header className="px-4 h-14 sticky top-0 inset-x-0 font-sans w-full bg-background/40 backdrop-blur-lg border-b border-border z-50">
       <Container reverse>
@@ -44,22 +49,23 @@ const Navbar = () => {
               >
                 Profile
               </Link>
-              
             </ul>
           </nav>
 
           {/* Right Side Actions */}
           <div className="flex items-center gap-4">
-            <Link
-              href="/auth/sign-in"
-              className={buttonVariants({
-                size: "sm",
-                className: "hidden md:flex",
-              })}
-            >
-              Login
-            </Link>
-            <LogoutButton />
+            {!session && status !== "loading" && (
+              <Link
+                href="/login"
+                className={buttonVariants({
+                  size: "sm",
+                  className: "hidden md:flex",
+                })}
+              >
+                Login
+              </Link>
+            )}
+            {session && <LogoutButton />}
           </div>
         </div>
       </Container>
