@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-
+const baseUrl = process.env.NEXTAUTH_URL ;
 export default function ReportForm() {
   const descriptionRef = useRef<HTMLTextAreaElement>(null);
   const categoryRef = useRef<HTMLSelectElement>(null);
@@ -37,7 +37,7 @@ export default function ReportForm() {
     if (file) formData.append("image", file);
 
     try {
-      const res = await fetch("/api/reports", {
+      const res = await fetch(`${baseUrl}/api/reports`, {
         method: "POST",
         body: formData,
       });

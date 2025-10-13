@@ -2,7 +2,7 @@ import { v2 as cloudinary } from "cloudinary";
 import { NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth"; // Create this file
+import { authOptions } from "@/lib/auth";
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -44,7 +44,7 @@ export async function POST(req: Request) {
     const client = await clientPromise;
     const db = client.db("tracevault");
     
-    // Get user from database
+    // Get user from database using the session email
     const user = await db.collection("users").findOne({ 
       email: session.user.email 
     });
@@ -62,7 +62,7 @@ export async function POST(req: Request) {
       user: {
         name: user.name,
         email: user.email,
-        profilePic: user.image || user.profilePic
+        profilePic: user.image || user.profilePic // NextAuth uses 'image', MongoDB adapter uses 'profilePic'
       },
       createdAt: new Date() 
     };
@@ -90,7 +90,14 @@ export async function GET() {
       .sort({ createdAt: -1 })
       .toArray();
 
-    return NextResponse.json(reports);
+    // Convert MongoDB objects to plain objects
+    const serializedReports = reports.map(report => ({
+      ...report,
+      _id: report._id.toString(),
+      createdAt: report.createdAt.toISOString(),
+    }));
+
+    return NextResponse.json(serializedReports);
   } catch (error: any) {
     console.error("Error fetching reports:", error);
     return NextResponse.json({ error: "Failed to fetch reports" }, { status: 500 });

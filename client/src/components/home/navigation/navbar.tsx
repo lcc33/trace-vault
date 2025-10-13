@@ -51,22 +51,6 @@ const Navbar = () => {
               </Link>
             </ul>
           </nav>
-
-          {/* Right Side Actions */}
-          <div className="flex items-center gap-4">
-            {!session && status !== "loading" && (
-              <Link
-                href="/login"
-                className={buttonVariants({
-                  size: "sm",
-                  className: "hidden md:flex",
-                })}
-              >
-                Login
-              </Link>
-            )}
-            {session && <LogoutButton />}
-          </div>
         </div>
       </Container>
     </header>

@@ -25,7 +25,10 @@ export default function ReportsFeed({
 }: {
   initialReports: Report[];
 }) {
-  const [reports, setReports] = useState(initialReports);
+  // Ensure initialReports is always an array
+  const [reports, setReports] = useState(
+    Array.isArray(initialReports) ? initialReports : []
+  );
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
   const { data: currentUser } = useSession();
@@ -41,7 +44,7 @@ export default function ReportsFeed({
   });
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
-  const [claimData, setClaimData] = useState({ image: "", description: "" });
+  const [claimData, setClaimData] = useState<{ image: File | null; description: string }>({ image: null, description: "" });
   const [enlargedImage, setEnlargedImage] = useState<string | null>(null);
 
   const filteredReports = useMemo(() => {
@@ -71,10 +74,24 @@ export default function ReportsFeed({
     setTimeout(() => setPopup({ ...popup, isVisible: false }), 2000);
   };
 
-  const handleDelete = (reportId: string) => {
-    setReports((prev) => prev.filter((r) => r._id !== reportId));
-    setPopup({ isVisible: true, message: "Post deleted!", isSuccess: true });
-    setTimeout(() => setPopup({ ...popup, isVisible: false }), 2000);
+  const handleDelete = async (reportId: string) => {
+    const confirmed = window.confirm("Are you sure you want to delete this report? This action cannot be undone.");
+    if (!confirmed) return;
+    try {
+      const res = await fetch(`/api/reports/delete?id=${reportId}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        setReports((prev) => prev.filter((r) => r._id !== reportId));
+        setPopup({ isVisible: true, message: "Post deleted!", isSuccess: true });
+      } else {
+        const data = await res.json();
+        setPopup({ isVisible: true, message: data.error || "Failed to delete", isSuccess: false });
+      }
+    } catch (err) {
+      setPopup({ isVisible: true, message: "Failed to delete", isSuccess: false });
+    }
+    setTimeout(() => setPopup((p) => ({ ...p, isVisible: false })), 2000);
   };
 
   const handleClaimSubmit = () => {
@@ -83,7 +100,7 @@ export default function ReportsFeed({
       return;
     }
     setShowModal(false);
-    setClaimData({ image: "", description: "" });
+    setClaimData({ image: null, description: "" });
     setPopup({ isVisible: true, message: "Claim submitted!", isSuccess: true });
     setTimeout(() => setPopup({ ...popup, isVisible: false }), 2000);
   };
@@ -253,14 +270,25 @@ export default function ReportsFeed({
             />
 
             <input
-              type="text"
-              placeholder="Image URL (upload link)"
-              value={claimData.image}
-              onChange={(e) =>
-                setClaimData({ ...claimData, image: e.target.value })
-              }
+              type="file"
+              accept="image/*"
+              onChange={(e) => {
+                const file = e.target.files && e.target.files[0];
+                setClaimData({ ...claimData, image: file || null });
+              }}
               className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm mb-4 focus:border-sky-500 outline-none"
             />
+            {claimData.image && (
+              <div className="mb-4 flex justify-center">
+                <Image
+                  src={URL.createObjectURL(claimData.image)}
+                  alt="Preview"
+                  className="max-h-40 rounded-lg border border-slate-700"
+                  width={100}
+                  height={30}
+                />
+              </div>
+            )}
 
             <div className="flex justify-end gap-2">
               <button
