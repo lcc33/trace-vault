@@ -37,7 +37,7 @@ export default function ReportForm() {
     if (file) formData.append("image", file);
 
     try {
-      const res = await fetch(`${baseUrl}/api/reports`, {
+      const res = await fetch("/api/reports", {
         method: "POST",
         body: formData,
       });
