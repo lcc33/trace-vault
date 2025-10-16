@@ -116,7 +116,7 @@ const Navbar = () => {
 
           {/* Mobile Menu */}
           {menuOpen && (
-            <div className="md:hidden absolute top-14 left-0 w-full bg-background/95 shadow-lg z-50 animate-fade-in">
+            <div className="md:hidden absolute top-14 left-0 w-full bg-background/95 shadow-lg z-50 ">
               <ul className="flex flex-col items-center gap-4 py-4">
                 <Link
                   href="/home"

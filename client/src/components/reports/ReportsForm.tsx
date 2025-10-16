@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-const baseUrl = process.env.NEXTAUTH_URL ;
+const baseUrl = process.env.NEXTAUTH_URL!;
 export default function ReportForm() {
   const descriptionRef = useRef<HTMLTextAreaElement>(null);
   const categoryRef = useRef<HTMLSelectElement>(null);

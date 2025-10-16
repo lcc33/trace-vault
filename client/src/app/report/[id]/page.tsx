@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import { notFound } from "next/navigation";
@@ -28,6 +29,14 @@ export default function ReportPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [enlargedImage, setEnlargedImage] = useState<string | null>(null);
+  const { data: currentUser } = useSession();
+
+  // Claim modal state
+  const [showModal, setShowModal] = useState(false);
+  const [claimData, setClaimData] = useState<{ image: File | null; description: string }>({
+    image: null,
+    description: "",
+  });
 
   const defaultAvatar =
     "https://i.pinimg.com/736x/21/f6/fc/21f6fc4abd29ba736e36e540a787e7da.jpg";
@@ -70,6 +79,49 @@ export default function ReportPage() {
 
   const handleBack = () => {
     router.back();
+  };
+
+  const isOwner =
+    currentUser?.user?.email && report?.user?.email === currentUser.user.email;
+
+  const openClaimModal = () => {
+    setShowModal(true);
+    setClaimData({ image: null, description: "" });
+  };
+
+  const closeClaimModal = () => {
+    setShowModal(false);
+    setClaimData({ image: null, description: "" });
+  };
+
+  const handleClaimSubmit = async () => {
+    if (!claimData.description.trim()) {
+      alert("Please provide a claim description.");
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append("reportId", id);
+      formData.append("description", claimData.description);
+      if (claimData.image) formData.append("image", claimData.image);
+
+      const res = await fetch("/api/claims", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (res.ok) {
+        closeClaimModal();
+        alert("Claim submitted successfully!");
+      } else {
+        const data = await res.json();
+        alert(data.error || "Failed to submit claim");
+      }
+    } catch (err) {
+      console.error("Error submitting claim:", err);
+      alert("Error submitting claim");
+    }
   };
 
   if (loading) {
@@ -155,6 +207,14 @@ export default function ReportPage() {
             >
               Share Report
             </button>
+            {!isOwner && (
+              <button
+                onClick={openClaimModal}
+                className="px-4 py-2 text-sm rounded-full bg-sky-500 hover:bg-sky-600 text-white transition-colors"
+              >
+                Claim Item
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -179,6 +239,62 @@ export default function ReportPage() {
             >
               ×
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Claim Modal */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-slate-900 border border-slate-700 rounded-xl p-6 w-[90%] max-w-md">
+            <h2 className="text-lg font-semibold mb-4">Claim Item</h2>
+
+            <textarea
+              placeholder="Describe how you lost this item and provide any identifying details..."
+              value={claimData.description}
+              onChange={(e) => setClaimData({ ...claimData, description: e.target.value })}
+              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-400 mb-3 focus:border-sky-500 outline-none resize-none min-h-[100px]"
+              required
+            />
+
+            <div className="mb-4">
+              <label className="block text-sm text-slate-400 mb-2">Upload proof image (optional)</label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => {
+                  const file = e.target.files && e.target.files[0];
+                  setClaimData({ ...claimData, image: file || null });
+                }}
+                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:border-sky-500 outline-none"
+              />
+              {claimData.image && (
+                <div className="mt-2 flex justify-center">
+                  <Image
+                    src={URL.createObjectURL(claimData.image)}
+                    alt="Preview"
+                    width={150}
+                    height={100}
+                    className="max-h-32 rounded-lg border border-slate-700 object-cover"
+                  />
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={closeClaimModal}
+                className="px-4 py-2 text-sm rounded-full bg-slate-700 hover:bg-slate-600 text-white transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleClaimSubmit}
+                className="px-4 py-2 text-sm rounded-full bg-sky-500 hover:bg-sky-600 text-white transition-colors"
+              >
+                Submit Claim
+              </button>
+            </div>
           </div>
         </div>
       )}

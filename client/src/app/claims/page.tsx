@@ -71,7 +71,7 @@ export default function ClaimsPage() {
   }
 
   return (
-    <>
+    <div className="min-h-screen bg-slate-900 text-slate-100">
       <Navbar />
       <div className="min-h-screen bg-slate-900 text-slate-100 p-4">
         <div className="max-w-4xl mx-auto">
@@ -259,6 +259,6 @@ export default function ClaimsPage() {
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 }
