@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-const baseUrl = process.env.NEXTAUTH_URL!;
+
 export default function ReportForm() {
   const descriptionRef = useRef<HTMLTextAreaElement>(null);
   const categoryRef = useRef<HTMLSelectElement>(null);
@@ -10,6 +10,7 @@ export default function ReportForm() {
   const [file, setFile] = useState<File | null>(null);
   const [selectedImageName, setSelectedImageName] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
     if (e.target.files && e.target.files[0]) {
@@ -21,34 +22,52 @@ export default function ReportForm() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
-
-    // Add null checks for all refs
-    if (!descriptionRef.current || !categoryRef.current || !imageInputRef.current) {
-      alert("Please fill in all required fields");
-      setLoading(false);
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append("description", descriptionRef.current.value);
-    formData.append("category", categoryRef.current.value);
-    
-
-    if (file) formData.append("image", file);
+    setError(null);
 
     try {
+      const description = descriptionRef.current?.value?.trim();
+      const category = categoryRef.current?.value;
+
+      // Validate required fields
+      if (!description) {
+        setError("Please enter a description");
+        return;
+      }
+
+      if (!category) {
+        setError("Please select a category");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("description", description);
+      formData.append("category", category);
+
+      if (file) formData.append("image", file);
+
       const res = await fetch("/api/reports", {
         method: "POST",
         body: formData,
       });
 
+      const data = await res.json();
+
       if (res.ok) {
+        // Reset form on success
+        if (descriptionRef.current) descriptionRef.current.value = "";
+        if (categoryRef.current) categoryRef.current.value = "";
+        if (imageInputRef.current) imageInputRef.current.value = "";
+        setFile(null);
+        setSelectedImageName(null);
+        
+        // Refresh the page to show the new report
         window.location.reload();
       } else {
-        alert("Failed to create report");
+        setError(data.error || "Failed to create report");
       }
     } catch (error) {
-      alert("Error creating report");
+      console.error("Error creating report:", error);
+      setError("Network error: Unable to create report");
     } finally {
       setLoading(false);
     }
@@ -57,13 +76,18 @@ export default function ReportForm() {
   return (
     <section className="border-b border-slate-700 p-4">
       <form onSubmit={handleSubmit}>
+        {error && (
+          <div className="mb-4 p-3 bg-red-500/10 border border-red-500/50 rounded-lg text-red-400 text-sm">
+            {error}
+          </div>
+        )}
+        
         <div className="flex gap-3 items-start">
           <textarea
             ref={descriptionRef}
-            className="flex-1 bg-transparent border-none resize-none min-h-[50px] p-2 text-lg outline-none placeholder:text-slate-400"
+            className="flex-1 bg-transparent border-none resize-none min-h-[50px] p-2 text-lg outline-none placeholder:text-slate-400 text-white"
             placeholder="What's lost or found?"
             required
-            defaultValue="" // Ensure it has a value
           />
         </div>
         
@@ -74,7 +98,7 @@ export default function ReportForm() {
                 ref={categoryRef}
                 required
                 className="bg-transparent text-sky-500 border border-sky-500 rounded-full px-3 py-1.5 text-sm font-semibold"
-                defaultValue="" // Ensure it has a value
+                defaultValue=""
               >
                 <option value="">Category</option>
                 <option value="phone">📱 Phone</option>
@@ -86,7 +110,8 @@ export default function ReportForm() {
               
               <label
                 htmlFor="itemImage"
-                className="cursor-pointer p-2 rounded-full hover:bg-sky-500/10"
+                className="cursor-pointer p-2 rounded-full hover:bg-sky-500/10 transition-colors"
+                title="Add image"
               >
                 📷
                 <input
@@ -110,9 +135,16 @@ export default function ReportForm() {
               <button
                 type="submit"
                 disabled={loading}
-                className="bg-sky-500 rounded-full px-4 py-2 text-sm font-bold hover:bg-sky-600 disabled:opacity-50"
+                className="bg-sky-500 rounded-full px-4 py-2 text-sm font-bold hover:bg-sky-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
               >
-                {loading ? "Posting..." : "Post"}
+                {loading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
+                    Posting...
+                  </>
+                ) : (
+                  "Post"
+                )}
               </button>
             </div>
           </div>

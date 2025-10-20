@@ -54,13 +54,17 @@ export default function ReportsFeed({
   const [enlargedImage, setEnlargedImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  // FIXED: Added null checks for report properties
   const filteredReports = useMemo(() => {
     return reports.filter((report) => {
       const matchesCategory =
         filterCategory === "all" || report.category === filterCategory;
+      
+      // Added null checks for description
       const matchesSearch = report.description
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase());
+        ?.toLowerCase()
+        .includes(searchQuery.toLowerCase()) ?? false;
+      
       return matchesCategory && matchesSearch;
     });
   }, [reports, searchQuery, filterCategory]);
@@ -113,7 +117,6 @@ export default function ReportsFeed({
         setReports((prev) => prev.filter((r) => r._id !== reportId));
         showSuccess("Report deleted successfully!");
       } else {
-        // Enhanced error handling with server messages
         const errorMessage = data.error || data.message || "Failed to delete report";
         showError(`Delete failed: ${errorMessage}`);
       }
@@ -160,7 +163,6 @@ export default function ReportsFeed({
         setSelectedReportId(null);
         showSuccess("Claim submitted successfully!");
       } else {
-        // Enhanced error handling with server messages
         const errorMessage = data.error || data.message || "Failed to submit claim";
         
         // Handle specific error cases
@@ -241,13 +243,13 @@ export default function ReportsFeed({
           placeholder="Search reports..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="flex-1 bg-slate-800 border border-slate-700 rounded-full px-4 py-2 text-sm focus:border-sky-500 outline-none"
+          className="flex-1 bg-slate-800 border border-slate-700 rounded-full px-4 py-2 text-sm focus:border-sky-500 outline-none text-white placeholder-slate-400"
           disabled={loading}
         />
         <select
           value={filterCategory}
           onChange={(e) => setFilterCategory(e.target.value)}
-          className="bg-slate-800 border border-slate-700 rounded-full px-3 py-2 text-sm focus:border-sky-500 outline-none"
+          className="bg-slate-800 border border-slate-700 rounded-full px-3 py-2 text-sm focus:border-sky-500 outline-none text-white"
           disabled={loading}
         >
           <option value="all">All</option>
@@ -267,6 +269,7 @@ export default function ReportsFeed({
           </p>
         ) : (
           filteredReports.map((report) => {
+            // FIXED: Added null checks for user properties
             const isOwner =
               currentUser?.user?.email &&
               report.user?.email === currentUser.user.email;
@@ -357,7 +360,7 @@ export default function ReportsFeed({
                               handleDelete(report._id);
                             }}
                             disabled={loading}
-                            className="w-full text-left px-4 py-2 text-sm hover:bg-white/10 disabled:opacity-50 transition-colors"
+                            className="w-full text-left px-4 py-2 text-sm hover:bg-white/10 disabled:opacity-50 transition-colors text-red-400 hover:text-red-300"
                           >
                             Delete
                           </button>

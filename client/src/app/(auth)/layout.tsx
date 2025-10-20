@@ -1,11 +1,11 @@
-import React from "react";
+"use client";
 
-interface Props {
+import { SessionProvider } from "next-auth/react";
+
+export default function AuthLayout({
+  children,
+}: {
   children: React.ReactNode;
+}) {
+  return <SessionProvider>{children}</SessionProvider>;
 }
-
-const AuthLayout = ({ children }: Props) => {
-  return { children };
-};
-
-export default AuthLayout;

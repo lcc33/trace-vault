@@ -1,3 +1,4 @@
+//src/app/api/reports/user/route.ts
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -24,11 +25,15 @@ export async function GET() {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
+    console.log(`Fetching reports for user: ${user._id}`);
+
     // Fetch user's reports
     const reports = await db.collection("reports")
       .find({ userId: user._id })
       .sort({ createdAt: -1 })
       .toArray();
+
+    console.log(`Found ${reports.length} reports for user ${user._id}`);
 
     // Get claim counts for each report
     const reportsWithClaimCounts = await Promise.all(
@@ -47,6 +52,7 @@ export async function GET() {
       })
     );
 
+    console.log('Final response:', reportsWithClaimCounts);
     return NextResponse.json(reportsWithClaimCounts);
 
   } catch (error: any) {
