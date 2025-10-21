@@ -131,3 +131,13 @@
     transform: scale(1);
   }
 }
+
+/* Add this to your global CSS */
+.main-content {
+  margin-left: 16rem; /* 64 * 4 = 256px for expanded sidebar */
+  transition: margin-left 0.3s ease-in-out;
+}
+
+.sidebar-collapsed ~ .main-content {
+  margin-left: 4rem; /* 16 * 4 = 64px for collapsed sidebar */
+}

@@ -19,59 +19,83 @@ export default function ReportForm() {
     }
   }
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
+async function handleSubmit(e: React.FormEvent) {
+  e.preventDefault();
+  setLoading(true);
+  setError(null);
 
-    try {
-      const description = descriptionRef.current?.value?.trim();
-      const category = categoryRef.current?.value;
+  try {
+    const description = descriptionRef.current?.value?.trim();
+    const category = categoryRef.current?.value;
 
-      // Validate required fields
-      if (!description) {
-        setError("Please enter a description");
-        return;
-      }
-
-      if (!category) {
-        setError("Please select a category");
-        return;
-      }
-
-      const formData = new FormData();
-      formData.append("description", description);
-      formData.append("category", category);
-
-      if (file) formData.append("image", file);
-
-      const res = await fetch("/api/reports", {
-        method: "POST",
-        body: formData,
-      });
-
-      const data = await res.json();
-
-      if (res.ok) {
-        // Reset form on success
-        if (descriptionRef.current) descriptionRef.current.value = "";
-        if (categoryRef.current) categoryRef.current.value = "";
-        if (imageInputRef.current) imageInputRef.current.value = "";
-        setFile(null);
-        setSelectedImageName(null);
-        
-        // Refresh the page to show the new report
-        window.location.reload();
-      } else {
-        setError(data.error || "Failed to create report");
-      }
-    } catch (error) {
-      console.error("Error creating report:", error);
-      setError("Network error: Unable to create report");
-    } finally {
+    // Validate required fields
+    if (!description) {
+      setError("Please enter a description");
       setLoading(false);
+      return;
     }
+
+    if (!category) {
+      setError("Please select a category");
+      setLoading(false);
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("description", description);
+    formData.append("category", category);
+    if (file) formData.append("image", file);
+
+    console.log('🔄 Sending POST request to /api/reports');
+    console.log('📦 Form data:', {
+      description,
+      category,
+      hasFile: !!file
+    });
+
+    const res = await fetch("/api/reports", {
+      method: "POST",
+      body: formData,
+    });
+
+    console.log('📡 Response status:', res.status);
+    console.log('📡 Response ok:', res.ok);
+
+    // Check if we got any response at all
+    if (!res.ok) {
+      // Try to get error message from response
+      let errorData;
+      try {
+        errorData = await res.json();
+      } catch {
+        errorData = { error: `HTTP ${res.status}: ${res.statusText}` };
+      }
+      
+      console.error('❌ API error:', errorData);
+      setError(errorData.error || `Failed to create report: ${res.status}`);
+      return;
+    }
+
+    const data = await res.json();
+    console.log('✅ Success response:', data);
+
+    // Reset form on success
+    if (descriptionRef.current) descriptionRef.current.value = "";
+    if (categoryRef.current) categoryRef.current.value = "";
+    if (imageInputRef.current) imageInputRef.current.value = "";
+    setFile(null);
+    setSelectedImageName(null);
+    
+    // Refresh the page to show the new report
+    window.location.reload();
+
+  } catch (error) {
+    console.error("❌ Network error creating report:", error);
+    setError("Network error: Unable to create report. Check console for details.");
+  } finally {
+    setLoading(false);
   }
+}
 
   return (
     <section className="border-b border-slate-700 p-4">
@@ -79,7 +103,9 @@ export default function ReportForm() {
         {error && (
           <div className="mb-4 p-3 bg-red-500/10 border border-red-500/50 rounded-lg text-red-400 text-sm">
             {error}
+            
           </div>
+
         )}
         
         <div className="flex gap-3 items-start">

@@ -1,4 +1,3 @@
-import { Navbar } from "@/components";
 import ReportsFeed from "@/components/reports/ReportsFeed";
 import ReportForm from "@/components/reports/ReportsForm";
 
@@ -17,8 +16,8 @@ export default async function HomePage() {
 
     return (
       <div className="min-h-screen bg-slate-900 text-slate-100">
-        <Navbar />
-        <main className="max-w-3xl mx-auto border-x border-slate-700 bg-black/40">
+        {/* Remove Navbar since sidebar will be in layout */}
+        <main className="max-w-3xl mx-auto border-x border-slate-700 bg-black/40 ml-64">
           <ReportForm />
           <ReportsFeed initialReports={reports} />
         </main>
@@ -29,8 +28,8 @@ export default async function HomePage() {
     // Return empty array as fallback
     return (
       <div className="min-h-screen bg-slate-900 text-slate-100">
-        <Navbar />
-        <main className="max-w-3xl mx-auto border-x border-slate-700 bg-black/40">
+        {/* Remove Navbar since sidebar will be in layout */}
+        <main className="max-w-3xl mx-auto border-x border-slate-700 bg-black/40 ml-64">
           <ReportForm />
           <ReportsFeed initialReports={[]} />
         </main>

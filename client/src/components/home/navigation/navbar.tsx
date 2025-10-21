@@ -1,182 +1,180 @@
 "use client";
 
-import { Container } from "@/components";
 import Image from "next/image";
-import { buttonVariants } from "@/components/ui/button";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
+import { buttonVariants } from "@/components/ui/button";
+import { 
+  FaHome, 
+  FaBell, 
+  FaUser, 
+  FaFileAlt, 
+  FaSignOutAlt, 
+  FaSignInAlt,
+  FaCog
+} from 'react-icons/fa';
 
-const Navbar = () => {
+const Sidebar = () => {
   const { data: session, status } = useSession();
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [activeItem, setActiveItem] = useState("home");
+
+  const navItems = [
+    { id: "home", href: "/home", icon: FaHome, label: "Home" },
+    { id: "notifications", href: "/notifications", icon: FaBell, label: "Notifications" },
+    { id: "profile", href: "/profile", icon: FaUser, label: "Profile" },
+    { id: "claims", href: "/claims", icon: FaFileAlt, label: "Claims" },
+    { id: "settings", href: "/settings", icon: FaCog, label: "Settings" },
+  ];
+
+  const handleItemClick = (itemId: string) => {
+    setActiveItem(itemId);
+  };
 
   return (
-    <header className="px-4 h-14 sticky top-0 inset-x-0 font-sans w-full  backdrop-blur-lg border-b border-border z-50">
-      <Container reverse>
-        <div className="flex items-center justify-between h-full mx-auto md:max-w-screen-xl relative">
-          {/* Logo + Name */}
-          <div className="flex items-start">
-            <Link href="/" className="flex items-center gap-2">
-              <Image
-                src="/assets/logo.jpeg"
-                alt="TraceVault logo"
-                width={32}
-                height={32}
-                className="w-8 h-8"
-              />
-              <span className="text-lg font-semibold">TraceVault</span>
-            </Link>
-          </div>
-
-          {/* Hamburger for mobile */}
-          <button
-            className="md:hidden flex items-center justify-center p-2 rounded focus:outline-none"
-            onClick={() => setMenuOpen((open) => !open)}
-            aria-label="Toggle menu"
+    <>
+      {/* Desktop Sidebar (like X) */}
+      <aside className="hidden md:flex flex-col items-start xl:items-start h-screen sticky top-0 px-4 xl:px-8 py-3">
+        {/* Logo */}
+        <div className="mb-4 xl:mb-8">
+          <Link 
+            href="/" 
+            className="flex items-center justify-center xl:justify-start p-3 rounded-full hover:bg-slate-800 transition-colors duration-200"
           >
-            <svg
-              className="w-6 h-6 text-foreground"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              {menuOpen ? (
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
+            <Image
+              src="/assets/logo.jpeg"
+              alt="TraceVault logo"
+              width={32}
+              height={32}
+              className="w-8 h-8 rounded"
+            />
+          </Link>
+        </div>
+
+        {/* Navigation */}
+        <nav className="flex-1 w-full">
+          <ul className="space-y-1">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = activeItem === item.id;
+              
+              return (
+                <li key={item.id} className="w-full">
+                  <Link
+                    href={item.href}
+                    onClick={() => handleItemClick(item.id)}
+                    className={`
+                      flex items-center justify-center xl:justify-start gap-4 
+                      p-3 rounded-full transition-colors duration-200
+                      group w-full
+                      ${isActive 
+                        ? 'text-white font-semibold' 
+                        : 'text-slate-300 hover:text-white'
+                      }
+                      ${isActive 
+                        ? 'hover:bg-slate-800' 
+                        : 'hover:bg-slate-800/50'
+                      }
+                    `}
+                  >
+                    <Icon className={`w-7 h-7 ${isActive ? 'text-white' : 'text-slate-300'}`} />
+                    <span className="hidden xl:block text-xl">{item.label}</span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
+
+
+        {/* User Profile / Auth Section */}
+        <div className="mt-auto w-full py-4">
+          {session ? (
+            <div className="flex items-center justify-between gap-3 px-3">
+              
+              {/* Mobile profile icon */}
+              <div className="xl:hidden">
+                <Image
+                  src={session.user?.image || "/default-avatar.png"}
+                  alt="Profile"
+                  width={32}
+                  height={32}
+                  className="w-8 h-8 rounded-full"
                 />
-              ) : (
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
-              )}
-            </svg>
-          </button>
+              </div>
 
-          {/* Center Nav (desktop) */}
-          <div className="hidden md:block absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
-            <ul className="flex items-center justify-center gap-8 ">
-              <Link
-                href="/home"
-                className="hover:text-foreground/80 text-sm font-semibold font-sans"
-              >
-                Home
-              </Link>
-              <Link
-                href="/#report"
-                className="hover:text-foreground/80 text-sm font-semibold font-sans"
-              >
-                Notifications
-              </Link>
-              <Link
-                href="/profile"
-                className="hover:text-foreground/80 text-sm font-semibold font-sans"
-              >
-                Profile
-              </Link>
-              <Link
-                href="/claims"
-                className="hover:text-foreground/80 text-sm font-semibold font-sans"
-              >
-                Claims
-              </Link>
-            </ul>
-          </div>
-
-          {/* Right Side: Auth Buttons */}
-          <div className="hidden md:flex items-center gap-4">
-            {session ? (
-              <Link
-                href="#"
-                className={buttonVariants({ variant: "outline" })}
-                onClick={async (e) => {
-                  e.preventDefault();
-                  const { signOut } = await import("next-auth/react");
-                  signOut({ callbackUrl: "/" });
-                }}
-              >
-                Sign out
-              </Link>
-            ) : (
-              <Link
-                href="/login"
-                className={buttonVariants({ variant: "default" })}
-              >
-                Sign in
-              </Link>
-            )}
-          </div>
-
-          {/* Mobile Menu */}
-          {menuOpen && (
-            <div className="md:hidden absolute top-14 left-0 w-full bg-background/95 shadow-lg z-50 ">
-              <ul className="flex flex-col items-center gap-4 py-4">
-                <Link
-                  href="/home"
-                  className="w-full text-center py-2 hover:bg-foreground/10"
-                  onClick={() => setMenuOpen(false)}
+              {/* Sign out dropdown trigger */}
+              <div className="hidden xl:block">
+                <button
+                  onClick={async (e) => {
+                    e.preventDefault();
+                    const { signOut } = await import("next-auth/react");
+                    signOut({ callbackUrl: "/" });
+                  }}
+                  className="text-slate-400 hover:text-white"
                 >
-                  Home
-                </Link>
-                <Link
-                  href="/#report"
-                  className="w-full text-center py-2 hover:bg-foreground/10"
-                  onClick={() => setMenuOpen(false)}
-                >
-                  Notifications
-                </Link>
-                <Link
-                  href="/profile"
-                  className="w-full text-center py-2 hover:bg-foreground/10"
-                  onClick={() => setMenuOpen(false)}
-                >
-                  Profile
-                </Link>
-                <Link
-                  href="/claims"
-                  className="w-full text-center py-2 hover:bg-foreground/10"
-                  onClick={() => setMenuOpen(false)}
-                >
-                  Claims
-                </Link>
-                <div className="w-full flex flex-col items-center gap-2 mt-2">
-                  {session ? (
-                    <Link
-                      href="#"
-                      className={buttonVariants({ variant: "outline" })}
-                      onClick={async (e) => {
-                        e.preventDefault();
-                        const { signOut } = await import("next-auth/react");
-                        signOut({ callbackUrl: "/" });
-                        setMenuOpen(false);
-                      }}
-                    >
-                      Sign out
-                    </Link>
-                  ) : (
-                    <Link
-                      href="/login"
-                      className={buttonVariants({ variant: "default" })}
-                      onClick={() => setMenuOpen(false)}
-                    >
-                      Sign in
-                    </Link>
-                  )}
-                </div>
-              </ul>
+                  •••
+                </button>
+              </div>
             </div>
+          ) : (
+            <Link
+              href="/login"
+              className={`
+                flex items-center justify-center xl:justify-start gap-3
+                p-3 rounded-full transition-colors duration-200
+                bg-slate-800 hover:bg-slate-700 text-white
+                ${buttonVariants({ variant: "default" })}
+              `}
+            >
+              <FaSignInAlt className="w-5 h-5" />
+              <span className="hidden xl:block">Sign in</span>
+            </Link>
           )}
         </div>
-      </Container>
-    </header>
+      </aside>
+
+      {/* Mobile Bottom Navigation (like X mobile app) */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-700 z-50">
+        <div className="flex items-center justify-around py-2">
+          {navItems.slice(0, 4).map((item) => {
+            const Icon = item.icon;
+            const isActive = activeItem === item.id;
+            
+            return (
+              <Link
+                key={item.id}
+                href={item.href}
+                onClick={() => handleItemClick(item.id)}
+                className={`
+                  flex flex-col items-center justify-center p-3 rounded-lg
+                  transition-colors duration-200
+                  ${isActive 
+                    ? 'text-white' 
+                    : 'text-slate-400 hover:text-white'
+                  }
+                `}
+              >
+                <Icon className={`w-6 h-6 ${isActive ? 'text-sky-500' : ''}`} />
+                <span className="text-xs mt-1">{item.label}</span>
+              </Link>
+            );
+          })}
+          
+        
+        </div>
+      </nav>
+
+      {/* Add padding to main content for mobile bottom nav */}
+      <style jsx global>{`
+        @media (max-width: 768px) {
+          main {
+            padding-bottom: 80px;
+          }
+        }
+      `}</style>
+    </>
   );
 };
 
-export default Navbar;
+export default Sidebar;
