@@ -4,177 +4,177 @@ import Image from "next/image";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
-import { buttonVariants } from "@/components/ui/button";
-import { 
-  FaHome, 
-  FaBell, 
-  FaUser, 
-  FaFileAlt, 
-  FaSignOutAlt, 
-  FaSignInAlt,
-  FaCog
-} from 'react-icons/fa';
+import {
+  FaHome,
+  FaBell,
+  FaUser,
+  FaFileAlt,
+  FaQuestionCircle,
+} from "react-icons/fa";
+import { IoSettingsSharp } from "react-icons/io5";
 
-const Sidebar = () => {
+const Navbar = () => {
   const { data: session, status } = useSession();
   const [activeItem, setActiveItem] = useState("home");
 
+  // TraceVault-specific navigation items
   const navItems = [
     { id: "home", href: "/home", icon: FaHome, label: "Home" },
-    { id: "notifications", href: "/notifications", icon: FaBell, label: "Notifications" },
-    { id: "profile", href: "/profile", icon: FaUser, label: "Profile" },
+    {
+      id: "notifications",
+      href: "/notifications",
+      icon: FaBell,
+      label: "Notifications",
+      hasNotification: true,
+    },
+    //{ id: "profile", href: "/profile", icon: FaUser, label: "Profile" },
     { id: "claims", href: "/claims", icon: FaFileAlt, label: "Claims" },
-    { id: "settings", href: "/settings", icon: FaCog, label: "Settings" },
   ];
 
   const handleItemClick = (itemId: string) => {
     setActiveItem(itemId);
   };
 
-  return (
-    <>
-      {/* Desktop Sidebar (like X) */}
-      <aside className="hidden md:flex flex-col items-start xl:items-start h-screen sticky top-0 px-4 xl:px-8 py-3">
-        {/* Logo */}
-        <div className="mb-4 xl:mb-8">
-          <Link 
-            href="/" 
-            className="flex items-center justify-center xl:justify-start p-3 rounded-full hover:bg-slate-800 transition-colors duration-200"
-          >
-            <Image
-              src="/assets/logo.jpeg"
-              alt="TraceVault logo"
-              width={32}
-              height={32}
-              className="w-8 h-8 rounded"
-            />
-          </Link>
-        </div>
+  const userImageUrl = session?.user?.image || "/default-avatar.png";
 
-        {/* Navigation */}
-        <nav className="flex-1 w-full">
-          <ul className="space-y-1">
+  return (
+    <header className="px-4 h-14 sticky bg-slate-900 top-0 inset-x-0 font-sans w-full  backdrop-blur-lg border-b border-border z-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16">
+          {/* Logo Section */}
+          <div className="flex-shrink-0 flex items-center gap-3">
+            <Link
+              href="/"
+              className="flex items-center gap-2"
+              onClick={() => setActiveItem("home")}
+            >
+              <Image
+                src="/assets/logo.jpeg"
+                alt="TraceVault logo"
+                width={32}
+                height={32}
+                className="w-8 h-8 rounded"
+              />
+              <span className="text-xl font-bold text-white hidden sm:block">
+                TraceVault
+              </span>
+            </Link>
+          </div>
+
+          {/* Primary Navigation */}
+          <nav className="hidden md:flex items-center space-x-1">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = activeItem === item.id;
-              
+
               return (
-                <li key={item.id} className="w-full">
-                  <Link
-                    href={item.href}
-                    onClick={() => handleItemClick(item.id)}
-                    className={`
-                      flex items-center justify-center xl:justify-start gap-4 
-                      p-3 rounded-full transition-colors duration-200
-                      group w-full
-                      ${isActive 
-                        ? 'text-white font-semibold' 
-                        : 'text-slate-300 hover:text-white'
-                      }
-                      ${isActive 
-                        ? 'hover:bg-slate-800' 
-                        : 'hover:bg-slate-800/50'
-                      }
-                    `}
-                  >
-                    <Icon className={`w-7 h-7 ${isActive ? 'text-white' : 'text-slate-300'}`} />
-                    <span className="hidden xl:block text-xl">{item.label}</span>
-                  </Link>
-                </li>
+                <Link
+                  key={item.id}
+                  href={item.href}
+                  onClick={() => handleItemClick(item.id)}
+                  className={`
+                    flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200
+                    ${
+                      isActive
+                        ? "bg-slate-800 text-sky-400 font-semibold"
+                        : "text-slate-300 hover:text-white hover:bg-slate-800/50"
+                    }
+                  `}
+                >
+                  <Icon className="w-5 h-5" />
+                  <span className="text-sm">{item.label}</span>
+
+                  {/* Notification Badge */}
+                  {item.id === "notifications" && item.hasNotification && (
+                    <span className="sr-only">Notifications</span>
+                  )}
+                </Link>
               );
             })}
-          </ul>
-        </nav>
+          </nav>
 
-
-        {/* User Profile / Auth Section */}
-        <div className="mt-auto w-full py-4">
-          {session ? (
-            <div className="flex items-center justify-between gap-3 px-3">
-              
-              {/* Mobile profile icon */}
-              <div className="xl:hidden">
-                <Image
-                  src={session.user?.image || "/default-avatar.png"}
-                  alt="Profile"
-                  width={32}
-                  height={32}
-                  className="w-8 h-8 rounded-full"
-                />
-              </div>
-
-              {/* Sign out dropdown trigger */}
-              <div className="hidden xl:block">
-                <button
-                  onClick={async (e) => {
-                    e.preventDefault();
-                    const { signOut } = await import("next-auth/react");
-                    signOut({ callbackUrl: "/" });
-                  }}
-                  className="text-slate-400 hover:text-white"
-                >
-                  •••
-                </button>
-              </div>
-            </div>
-          ) : (
+          {/* Right Section - Actions & User */}
+          <div className="flex items-center space-x-3">
+            {/* Utility Icons */}
             <Link
-              href="/login"
-              className={`
-                flex items-center justify-center xl:justify-start gap-3
-                p-3 rounded-full transition-colors duration-200
-                bg-slate-800 hover:bg-slate-700 text-white
-                ${buttonVariants({ variant: "default" })}
-              `}
+              href="/settings"
+              className="text-slate-400 hover:text-white transition-colors duration-200 p-2 rounded-lg hover:bg-slate-800"
             >
-              <FaSignInAlt className="w-5 h-5" />
-              <span className="hidden xl:block">Sign in</span>
+              <IoSettingsSharp className="w-5 h-5" />
             </Link>
-          )}
-        </div>
-      </aside>
 
-      {/* Mobile Bottom Navigation (like X mobile app) */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-700 z-50">
-        <div className="flex items-center justify-around py-2">
-          {navItems.slice(0, 4).map((item) => {
-            const Icon = item.icon;
-            const isActive = activeItem === item.id;
-            
-            return (
+            <Link
+              href="/help"
+              className="text-slate-400 hover:text-white transition-colors duration-200 p-2 rounded-lg hover:bg-slate-800"
+            >
+              <FaQuestionCircle className="w-5 h-5" />
+            </Link>
+
+            {/* User Profile */}
+            {session ? (
+              <div className="relative">
+                <Link
+                  href="/profile"
+                  className="flex items-center gap-2 p-1 rounded-lg hover:bg-slate-800 transition-colors"
+                >
+                  <div className="relative">
+                    <Image
+                      src={userImageUrl}
+                      alt="User Profile"
+                      width={36}
+                      height={36}
+                      className="w-9 h-9 rounded-full object-cover border-2 border-slate-600"
+                    />
+                    {/* Online Status */}
+                    <span className="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full ring-2 ring-slate-900 bg-green-400"></span>
+                  </div>
+                  <span className="text-slate-300 text-sm hidden lg:block max-w-24 truncate">
+                    {session.user?.name}
+                  </span>
+                </Link>
+              </div>
+            ) : (
               <Link
-                key={item.id}
-                href={item.href}
-                onClick={() => handleItemClick(item.id)}
-                className={`
-                  flex flex-col items-center justify-center p-3 rounded-lg
-                  transition-colors duration-200
-                  ${isActive 
-                    ? 'text-white' 
-                    : 'text-slate-400 hover:text-white'
-                  }
-                `}
+                href="/login"
+                className="bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-lg transition-colors duration-200 text-sm font-medium"
               >
-                <Icon className={`w-6 h-6 ${isActive ? 'text-sky-500' : ''}`} />
-                <span className="text-xs mt-1">{item.label}</span>
+                Sign In
               </Link>
-            );
-          })}
-          
-        
+            )}
+          </div>
         </div>
-      </nav>
 
-      {/* Add padding to main content for mobile bottom nav */}
-      <style jsx global>{`
-        @media (max-width: 768px) {
-          main {
-            padding-bottom: 80px;
-          }
-        }
-      `}</style>
-    </>
+        {/* Mobile Bottom Navigation */}
+        <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-700 z-40 py-2">
+          <div className="flex items-center justify-around">
+            {navItems.slice(0, 4).map((item) => {
+              const Icon = item.icon;
+              const isActive = activeItem === item.id;
+
+              return (
+                <Link
+                  key={item.id}
+                  href={item.href}
+                  onClick={() => handleItemClick(item.id)}
+                  className={`
+                    flex flex-col items-center justify-center p-2 rounded-lg transition-colors
+                    ${
+                      isActive
+                        ? "text-sky-400"
+                        : "text-slate-400 hover:text-white"
+                    }
+                  `}
+                >
+                  <Icon className="w-6 h-6" />
+                  <span className="text-xs mt-1">{item.label}</span>
+                </Link>
+              );
+            })}
+          </div>
+        </nav>
+      </div>
+    </header>
   );
 };
 
-export default Sidebar;
+export default Navbar;

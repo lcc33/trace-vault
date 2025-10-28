@@ -13,7 +13,7 @@ cloudinary.config({
 });
 
 // Enhanced upload helper with better timeout handling
-async function uploadBufferToCloudinary(buffer: Buffer, folder = "tracevault", timeoutMs = 30000) {
+async function uploadBufferToCloudinary(buffer: Buffer, folder = "tracevault", timeoutMs = 70000) {
   return new Promise<any>((resolve, reject) => {
     // Set up timeout
     const timeoutId = setTimeout(() => {

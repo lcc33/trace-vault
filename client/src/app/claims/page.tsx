@@ -4,6 +4,8 @@ import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { Navbar } from "@/components";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { report } from "process";
 
 interface Claim {
@@ -26,6 +28,7 @@ export default function ClaimsPage() {
   const [activeTab, setActiveTab] = useState<"made" | "received">("received");
   const [loading, setLoading] = useState(true);
   const [enlargedImage, setEnlargedImage] = useState<string | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     if (session?.user?.email) {
@@ -67,7 +70,19 @@ export default function ClaimsPage() {
   };
 
   if (loading) {
-    return <div className="p-4">Loading claims...</div>;
+    return (
+      <div className="min-h-screen bg-slate-900 text-slate-100 p-4 flex items-center justify-center gap-3 px-3">
+        <div className="text-center">
+          <p className="text-lg mb-4">Loading claims...</p>
+          <button
+            onClick={() => router.back()}
+            className="text-sky-400 hover:text-sky-300 font-semibold flex"
+          >
+            Go back
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (

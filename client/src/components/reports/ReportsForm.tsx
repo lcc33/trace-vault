@@ -1,7 +1,6 @@
 "use client";
-
 import { useRef, useState } from "react";
-
+import { FaImage } from "react-icons/fa";
 export default function ReportForm() {
   const descriptionRef = useRef<HTMLTextAreaElement>(null);
   const categoryRef = useRef<HTMLSelectElement>(null);
@@ -10,7 +9,6 @@ export default function ReportForm() {
   const [file, setFile] = useState<File | null>(null);
   const [selectedImageName, setSelectedImageName] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
     if (e.target.files && e.target.files[0]) {
@@ -19,101 +17,53 @@ export default function ReportForm() {
     }
   }
 
-async function handleSubmit(e: React.FormEvent) {
-  e.preventDefault();
-  setLoading(true);
-  setError(null);
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
 
-  try {
-    const description = descriptionRef.current?.value?.trim();
-    const category = categoryRef.current?.value;
-
-    // Validate required fields
-    if (!description) {
-      setError("Please enter a description");
-      setLoading(false);
-      return;
-    }
-
-    if (!category) {
-      setError("Please select a category");
+    // Add null checks for all refs
+    if (!descriptionRef.current || !categoryRef.current || !imageInputRef.current) {
+      alert("Please fill in all required fields");
       setLoading(false);
       return;
     }
 
     const formData = new FormData();
-    formData.append("description", description);
-    formData.append("category", category);
+    formData.append("description", descriptionRef.current.value);
+    formData.append("category", categoryRef.current.value);
+    
+
     if (file) formData.append("image", file);
 
-    console.log('🔄 Sending POST request to /api/reports');
-    console.log('📦 Form data:', {
-      description,
-      category,
-      hasFile: !!file
-    });
+    try {
+      const res = await fetch("/api/reports", {
+        method: "POST",
+        body: formData,
+      });
 
-    const res = await fetch("/api/reports", {
-      method: "POST",
-      body: formData,
-    });
-
-    console.log('📡 Response status:', res.status);
-    console.log('📡 Response ok:', res.ok);
-
-    // Check if we got any response at all
-    if (!res.ok) {
-      // Try to get error message from response
-      let errorData;
-      try {
-        errorData = await res.json();
-      } catch {
-        errorData = { error: `HTTP ${res.status}: ${res.statusText}` };
+      if (res.ok) {
+        window.location.reload();
+      } else if (!res.ok) {
+        const error = await res.text();
+        alert("Failed to create report: " + error);
       }
-      
-      console.error('❌ API error:', errorData);
-      setError(errorData.error || `Failed to create report: ${res.status}`);
-      return;
+    } catch (error) {
+      alert("Error creating report: " + error);
+    } finally {
+      setLoading(false);
     }
-
-    const data = await res.json();
-    console.log('✅ Success response:', data);
-
-    // Reset form on success
-    if (descriptionRef.current) descriptionRef.current.value = "";
-    if (categoryRef.current) categoryRef.current.value = "";
-    if (imageInputRef.current) imageInputRef.current.value = "";
-    setFile(null);
-    setSelectedImageName(null);
-    
-    // Refresh the page to show the new report
-    window.location.reload();
-
-  } catch (error) {
-    console.error("❌ Network error creating report:", error);
-    setError("Network error: Unable to create report. Check console for details.");
-  } finally {
-    setLoading(false);
   }
-}
 
   return (
     <section className="border-b border-slate-700 p-4">
       <form onSubmit={handleSubmit}>
-        {error && (
-          <div className="mb-4 p-3 bg-red-500/10 border border-red-500/50 rounded-lg text-red-400 text-sm">
-            {error}
-            
-          </div>
-
-        )}
-        
         <div className="flex gap-3 items-start">
           <textarea
             ref={descriptionRef}
-            className="flex-1 bg-transparent border-none resize-none min-h-[50px] p-2 text-lg outline-none placeholder:text-slate-400 text-white"
+            className="flex-1 bg-transparent border-none resize-none min-h-[50px] p-2 text-lg outline-none placeholder:text-slate-400"
             placeholder="What's lost or found?"
             required
+            defaultValue="" // Ensure it has a value
           />
         </div>
         
@@ -124,7 +74,7 @@ async function handleSubmit(e: React.FormEvent) {
                 ref={categoryRef}
                 required
                 className="bg-transparent text-sky-500 border border-sky-500 rounded-full px-3 py-1.5 text-sm font-semibold"
-                defaultValue=""
+                defaultValue="" // Ensure it has a value
               >
                 <option value="">Category</option>
                 <option value="phone">📱 Phone</option>
@@ -136,10 +86,9 @@ async function handleSubmit(e: React.FormEvent) {
               
               <label
                 htmlFor="itemImage"
-                className="cursor-pointer p-2 rounded-full hover:bg-sky-500/10 transition-colors"
-                title="Add image"
+                className="cursor-pointer p-2 rounded-full hover:bg-sky-500/10"
               >
-                📷
+                <FaImage className="w-5 h-5 text-sky-500" />
                 <input
                   ref={imageInputRef}
                   id="itemImage"
@@ -161,16 +110,9 @@ async function handleSubmit(e: React.FormEvent) {
               <button
                 type="submit"
                 disabled={loading}
-                className="bg-sky-500 rounded-full px-4 py-2 text-sm font-bold hover:bg-sky-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+                className="bg-sky-500 rounded-full px-4 py-2 text-sm font-bold hover:bg-sky-600 disabled:opacity-50"
               >
-                {loading ? (
-                  <>
-                    <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
-                    Posting...
-                  </>
-                ) : (
-                  "Post"
-                )}
+                {loading ? "Posting..." : "Post"}
               </button>
             </div>
           </div>

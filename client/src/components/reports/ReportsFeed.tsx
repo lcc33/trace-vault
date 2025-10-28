@@ -5,6 +5,10 @@ import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { MoreVertical } from "lucide-react";
 import { useRouter } from "next/navigation";
+import {
+  formatReportDate,
+  formatRelativeTime,
+} from "@/constants/dateFormatter";
 
 interface Report {
   _id: string;
@@ -59,12 +63,12 @@ export default function ReportsFeed({
     return reports.filter((report) => {
       const matchesCategory =
         filterCategory === "all" || report.category === filterCategory;
-      
+
       // Added null checks for description
-      const matchesSearch = report.description
-        ?.toLowerCase()
-        .includes(searchQuery.toLowerCase()) ?? false;
-      
+      const matchesSearch =
+        report.description?.toLowerCase().includes(searchQuery.toLowerCase()) ??
+        false;
+
       return matchesCategory && matchesSearch;
     });
   }, [reports, searchQuery, filterCategory]);
@@ -117,7 +121,8 @@ export default function ReportsFeed({
         setReports((prev) => prev.filter((r) => r._id !== reportId));
         showSuccess("Report deleted successfully!");
       } else {
-        const errorMessage = data.error || data.message || "Failed to delete report";
+        const errorMessage =
+          data.error || data.message || "Failed to delete report";
         showError(`Delete failed: ${errorMessage}`);
       }
     } catch (err: any) {
@@ -163,8 +168,9 @@ export default function ReportsFeed({
         setSelectedReportId(null);
         showSuccess("Claim submitted successfully!");
       } else {
-        const errorMessage = data.error || data.message || "Failed to submit claim";
-        
+        const errorMessage =
+          data.error || data.message || "Failed to submit claim";
+
         // Handle specific error cases
         if (res.status === 400) {
           showError(`Invalid input: ${errorMessage}`);
@@ -184,7 +190,7 @@ export default function ReportsFeed({
       }
     } catch (error: any) {
       console.error("Claim submission error:", error);
-      
+
       if (error.name === "TypeError" && error.message.includes("fetch")) {
         showError("Network error: Unable to connect to server");
       } else {
@@ -214,8 +220,8 @@ export default function ReportsFeed({
       {popup.isVisible && (
         <div
           className={`fixed top-20 left-1/2 -translate-x-1/2 px-6 py-3 rounded-lg text-sm font-semibold shadow-lg z-50 transition-all duration-300 ${
-            popup.isSuccess 
-              ? "bg-green-500 text-white" 
+            popup.isSuccess
+              ? "bg-green-500 text-white"
               : "bg-red-500 text-white"
           }`}
         >
@@ -265,7 +271,9 @@ export default function ReportsFeed({
       <section>
         {filteredReports.length === 0 ? (
           <p className="text-center text-slate-400 py-12">
-            {reports.length === 0 ? "No reports yet" : "No reports match your search"}
+            {reports.length === 0
+              ? "No reports yet"
+              : "No reports match your search"}
           </p>
         ) : (
           filteredReports.map((report) => {
@@ -280,28 +288,78 @@ export default function ReportsFeed({
                 className="border-b border-slate-700 p-4 hover:bg-white/5 relative cursor-pointer transition-colors"
                 onClick={() => !loading && handlePostClick(report._id)}
               >
-                {/* User Header */}
-                <div className="flex items-center gap-3 mb-3">
-                  <Image
-                    src={report.user?.profilePic || defaultAvatar}
-                    alt={`${report.user?.name || "User"}'s profile`}
-                    width={40}
-                    height={40}
-                    className="w-10 h-10 rounded-full object-cover border border-slate-600"
-                  />
-                  <div>
-                    <p className="font-bold text-slate-100">
-                      {report.user?.name || "Anonymous"}
-                    </p>
-                    <p className="text-xs text-slate-400">
-                      {new Date(report.createdAt).toLocaleDateString()} •{" "}
-                      {report.category}
-                    </p>
+                {/* User Header with Three-Dot Menu at Top Right */}
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-center gap-3">
+                    <Image
+                      src={report.user?.profilePic || defaultAvatar}
+                      alt={`${report.user?.name || "User"}'s profile`}
+                      width={40}
+                      height={40}
+                      className="w-10 h-10 rounded-full object-cover border border-slate-600"
+                    />
+                    <div>
+                      <p className="font-bold text-slate-100">
+                        {report.user?.name || "Anonymous"}
+                      </p>
+                      <p className="text-xs text-slate-400">
+                        {formatRelativeTime(report.createdAt)} •{" "}
+                        {report.category}
+                      </p>
+                    </div>
                   </div>
+
+                  {/* Three-Dot Menu - Positioned at Top Right */}
+                  {isOwner && (
+                    <div className="relative">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActiveMenu(
+                            activeMenu === report._id ? null : report._id
+                          );
+                        }}
+                        disabled={loading}
+                        className="p-2 rounded-full hover:bg-white/10 disabled:opacity-50 transition-colors"
+                        aria-label="Post options"
+                      >
+                        <MoreVertical size={18} className="text-slate-400" />
+                      </button>
+
+                      {/* Dropdown Menu */}
+                      {activeMenu === report._id && (
+                        <div className="absolute right-0 top-8 mt-2 w-36 bg-slate-800 border border-slate-700 rounded-lg shadow-xl z-20">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDelete(report._id);
+                            }}
+                            disabled={loading}
+                            className="w-full text-left px-4 py-2 text-sm hover:bg-white/10 disabled:opacity-50 transition-colors text-red-400 hover:text-red-300"
+                          >
+                            Delete
+                          </button>
+
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleShare(report._id);
+                            }}
+                            disabled={loading}
+                            className="w-full text-left px-4 py-2 text-sm hover:bg-white/10 disabled:opacity-50 transition-colors text-slate-200"
+                          >
+                            Share Post
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 {/* Description */}
-                <p className="text-sm mb-2 text-slate-200">{report.description}</p>
+                <div className="text-sm mb-3 text-slate-200">
+                  {report.description}
+                </div>
 
                 {/* Image - Fixed small size with click to enlarge */}
                 {report.imageUrl && (
@@ -321,63 +379,20 @@ export default function ReportsFeed({
                   </div>
                 )}
 
-                {/* Actions */}
+                {/* Claim Button */}
                 <div
-                  className="flex items-center justify-center gap-2"
+                  className="flex justify-end"
                   onClick={(e) => e.stopPropagation()}
                 >
                   {!isOwner && (
                     <button
                       onClick={() => openClaimModal(report._id)}
                       disabled={loading}
-                      className="px-7 py-2 text-sm font-medium rounded-full flex justify-end bg-sky-500 hover:bg-sky-600 text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      className="px-6 py-2 text-sm font-medium rounded-full bg-sky-500 hover:bg-sky-600 text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
                       {loading ? "Processing..." : "Claim"}
                     </button>
                   )}
-
-                  <div className="relative">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setActiveMenu(
-                          activeMenu === report._id ? null : report._id
-                        );
-                      }}
-                      disabled={loading}
-                      className="p-2 rounded-full hover:bg-white/10 disabled:opacity-50 transition-colors"
-                      aria-label="open menu"
-                    >
-                      <MoreVertical size={18} />
-                    </button>
-
-                    {activeMenu === report._id && (
-                      <div className="absolute left-7 bottom-12 mt-2 w-36 bg-slate-800 border border-slate-700 rounded-lg shadow-lg z-20">
-                        {isOwner && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDelete(report._id);
-                            }}
-                            disabled={loading}
-                            className="w-full text-left px-4 py-2 text-sm hover:bg-white/10 disabled:opacity-50 transition-colors text-red-400 hover:text-red-300"
-                          >
-                            Delete
-                          </button>
-                        )}
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleShare(report._id);
-                          }}
-                          disabled={loading}
-                          className="w-full text-left px-4 py-2 text-sm hover:bg-white/10 disabled:opacity-50 transition-colors"
-                        >
-                          Share Post
-                        </button>
-                      </div>
-                    )}
-                  </div>
                 </div>
               </div>
             );
@@ -389,7 +404,9 @@ export default function ReportsFeed({
       {showModal && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-slate-900 border border-slate-700 rounded-xl p-6 w-[90%] max-w-md">
-            <h2 className="text-lg font-semibold mb-4 text-white">Claim Item</h2>
+            <h2 className="text-lg font-semibold mb-4 text-white">
+              Claim Item
+            </h2>
 
             <textarea
               placeholder="Describe how you lost this item and provide any identifying details..."
@@ -404,7 +421,7 @@ export default function ReportsFeed({
 
             <div className="mb-4">
               <label className="block text-sm text-slate-400 mb-2">
-                Upload proof image (optional)
+                Upload proof image (required)
               </label>
               <input
                 type="file"

@@ -9,6 +9,9 @@ export const authOptions: NextAuthOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      httpOptions: {
+        timeout: 10000, // 10 seconds timeout
+      },
       checks: ['none']
     }),
   ],
@@ -23,7 +26,10 @@ export const authOptions: NextAuthOptions = {
   },
   callbacks: {
     async redirect({ url, baseUrl }) {
+      console.log(url);
       return `${baseUrl}/home`;
+      
+      
     },
     async session({ session, token }) {
       // Send properties to the client

@@ -9,13 +9,13 @@ export async function GET() {
     const result = await db.command({ ping: 1 });
     return NextResponse.json({ 
       status: "success", 
-      message: "Connected to MongoDB Atlas",
+      message: "Connected to MongoDB server",
       ping: result 
     });
   } catch (error: any) {
     return NextResponse.json(
       { 
-        status: "error", 
+        status: "error ti wa ohhh", 
         message: "Failed to connect to MongoDB Atlas",
         error: error.message 
       },
