@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Navbar } from "@/components";
 import { report } from "process";
+import LogoutButton from "@/components/home/navigation/logout";
 
 interface Report {
   _id: string;
@@ -76,20 +77,7 @@ export default function ProfilePage() {
               </div>
             </div>
             <div className="flex justify-end">
-              <button className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition"
-                onClick={() => {
-                  fetch('/api/auth/signout', {
-                    method: 'POST',
-                    headers: {
-                      'Content-Type': 'application/json',
-                    },
-                  }).then(() => {
-                    window.location.href = '/login';
-                  });
-                }}
-              >
-                Logout
-              </button>
+              <LogoutButton />
             </div>
           </div>
 

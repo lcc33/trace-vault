@@ -4,7 +4,7 @@ import { MongoClient } from "mongodb";
 const uri = process.env.MONGODB_URI!;
 const options = {
   maxPoolSize: 10,
-  serverSelectionTimeoutMS: 5000, // 5 seconds - fail fast if no server available
+  serverSelectionTimeoutMS: 10000, // 10s seconds - fail fast if no server available
   socketTimeoutMS: 30000, // 30 seconds - reasonable for API calls
   connectTimeoutMS: 10000, // 10 seconds - connection establishment timeout
 };
