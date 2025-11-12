@@ -1,17 +1,12 @@
+// src/app/api/reports/[id]/route.ts
 import { NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 
-interface Context {
-  params: Promise<{ id: string }>;
-}
-
-export async function GET(request: Request, context: Context) {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const params = await context.params;
-    const { id } = params;
+    const { id } = await params; // ← UNWRAP PROMISE
 
-    // Validate ID format
     if (!ObjectId.isValid(id)) {
       return NextResponse.json(
         { error: "Invalid report ID format" },
@@ -30,7 +25,6 @@ export async function GET(request: Request, context: Context) {
       return NextResponse.json({ error: "Report not found" }, { status: 404 });
     }
 
-    // Convert MongoDB ObjectId to string for serialization
     const serializedReport = {
       ...report,
       _id: report._id.toString(),
@@ -47,11 +41,9 @@ export async function GET(request: Request, context: Context) {
   }
 }
 
-// Optional: Add DELETE method for report deletion
-export async function DELETE(request: Request, context: Context) {
+export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const params = await context.params;
-    const { id } = params;
+    const { id } = await params;
 
     if (!ObjectId.isValid(id)) {
       return NextResponse.json(

@@ -1,42 +1,16 @@
-//src/lib/auth.ts
-import GoogleProvider from "next-auth/providers/google";
-import { MongoDBAdapter } from "@auth/mongodb-adapter";
-import clientPromise from "@/lib/mongodb";
-import { NextAuthOptions } from "next-auth";
+// lib/auth.ts
+import { auth } from "@clerk/nextjs/server";
 
-export const authOptions: NextAuthOptions = {
-  providers: [
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-      httpOptions: {
-        timeout: 20000, // 20 seconds timeout
-      },
-      checks: ['none']
-    }),
-  ],
-  adapter: MongoDBAdapter(clientPromise),
-  secret: process.env.NEXTAUTH_SECRET,
-  session: {
-    strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60,
-  },
-  jwt: {
-    maxAge: 30 * 24 * 60 * 60,
-  },
-  callbacks: {
-    async redirect({ url, baseUrl }) {
-      console.log(url);
-      return `${baseUrl}/home`;
-      
-      
-    },
-    async session({ session, token }) {
-      // Send properties to the client
-      if (session.user) {
-        session.user.id = token.sub!;
-      }
-      return session;
-    },
-  },
-};
+export async function validateUserAccess(reportId: string, userId: string) {
+  const report = await db.reports.findOne({ _id: reportId });
+  if (!report) return null;
+  
+  // User can access if they're reporter or claimer in an active claim
+  const claim = await db.claims.findOne({ 
+    reportId, 
+    $or: [{ claimerId: userId }, { reporterId: userId }],
+    status: { $in: ['pending', 'accepted'] }
+  });
+  
+  return report.reporterId === userId || claim ? report : null;
+}

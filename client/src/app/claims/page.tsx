@@ -1,12 +1,12 @@
 "use client";
 
-import { useSession } from "next-auth/react";
+import { useSession } from "@clerk/nextjs";
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { Navbar } from "@/components";
 import Link from "next/link";
 
-import { report } from "process";
+
 interface Claim {
   _id: string;
   reportId: string;

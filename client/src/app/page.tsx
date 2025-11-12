@@ -41,11 +41,13 @@ const HomePage = () => {
             {/* Headline */}
             <div className="flex flex-col items-center mt-6 sm:mt-8 max-w-3xl w-full text-center">
               <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-semibold bg-clip-text bg-gradient-to-b from-gray-50 to-gray-200 text-transparent leading-snug">
-                Lost something? Found something? <br className="hidden sm:block" /> Reconnect with TraceVault
+                Lost something? Found something?{" "}
+                <br className="hidden sm:block" /> Reconnect with TraceVault
               </h1>
               <p className="text-sm sm:text-base md:text-lg text-foreground/80 mt-4 sm:mt-6">
-                A simple, open-source, community-driven lost & found platform. Report lost
-                items, explore found listings, and reconnect with what matters.
+                A simple, open-source, community-driven lost & found platform.
+                Report lost items, explore found listings, and reconnect with
+                what matters.
               </p>
 
               {/* CTA */}
@@ -54,9 +56,6 @@ const HomePage = () => {
                   href="/login"
                   className="flex flex-col sm:flex-row items-center justify-center mt-4 sm:mt-7 gap-4 w-full shadow-md "
                 >
-                  {/* <p className="text-sm sm:text-base font-extralight">
-                    
-                  </p> */}
                   <Button
                     size="sm"
                     className="rounded-full p-5  bg-white/20 backdrop-blur-lg flex items-center"
@@ -96,25 +95,28 @@ const HomePage = () => {
               Three simple steps to reconnect
             </h2>
             <p className="text-sm sm:text-base text-muted-foreground mt-4 sm:mt-6">
-              TraceVault makes it easy to report, explore, and reconnect with your lost or found items.
+              TraceVault makes it easy to report, explore, and reconnect with
+              your lost or found items.
             </p>
           </div>
         </Container>
         <Container>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-10">
             {perks.map((perk) => (
-              <div key={perk.title} className="p-4 sm:p-6  rounded-lg bg-card shadow-sm hover:shadow-md transition">
+              <div
+                key={perk.title}
+                className="p-4 sm:p-6  rounded-lg bg-card shadow-sm hover:shadow-md transition"
+              >
                 <perk.icon className="w-6 h-6 sm:w-8 sm:h-8" />
                 <h3 className="text-lg font-medium mt-3">{perk.title}</h3>
-                <p className="text-sm sm:text-base text-muted-foreground mt-2">{perk.info}</p>
+                <p className="text-sm sm:text-base text-muted-foreground mt-2">
+                  {perk.info}
+                </p>
               </div>
             ))}
           </div>
         </Container>
       </Wrapper>
-
-      
-
 
       {/* features */}
       <Wrapper className="flex flex-col items-center justify-center py-12 relative w-full">

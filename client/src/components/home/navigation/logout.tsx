@@ -1,12 +1,13 @@
-// components/SignOutButton.js
-'use client'; // If used in a Client Component
+'use client'
 
-import { signOut } from 'next-auth/react';
+import { useClerk } from '@clerk/nextjs'
 
-export default function LogoutButton() {
+export const SignOutButton = () => {
+  const { signOut } = useClerk()
+
   return (
-    <button onClick={() => signOut({ callbackUrl: '/login' })} className="text-red-500 hover:text-red-700 font-semibold">
-      Sign Out
-    </button>
-  );
+    // Clicking this button signs out a user
+    // and redirects them to the home page "/".
+    <button onClick={() => signOut({ redirectUrl: '/sign-in' })}>Sign out</button>
+  )
 }

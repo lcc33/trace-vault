@@ -1,5 +1,5 @@
 "use client";
-import { SessionProvider } from "next-auth/react";
+import { ClerkProvider } from "@clerk/nextjs";
 
 export default function ProfileLayout({
   children,
@@ -7,8 +7,8 @@ export default function ProfileLayout({
   children: React.ReactNode;
 }) {
   return (
-    <SessionProvider>
+    <ClerkProvider>
       {children}
-    </SessionProvider>
+    </ClerkProvider>
   );
 }

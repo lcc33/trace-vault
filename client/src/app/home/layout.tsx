@@ -1,7 +1,6 @@
 // app/layout.tsx or your main layout
 "use client";
-import { Navbar } from "@/components";
-import { SessionProvider } from "next-auth/react";
+import { ClerkProvider } from "@clerk/nextjs";
 
 export default function RootLayout({
   children,
@@ -9,9 +8,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <SessionProvider>
+    <ClerkProvider>
       {/* <Navbar /> */}
       {children}
-    </SessionProvider>
+    </ClerkProvider>
   );
 }

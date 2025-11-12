@@ -1,248 +1,246 @@
+// src/components/reports/ReportsFeed.tsx
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import Image from "next/image";
-import { useSession } from "next-auth/react";
-import { MoreVertical } from "lucide-react";
+import { useUser } from "@clerk/nextjs";
+import { MoreVertical, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import {
-  formatReportDate,
-  formatRelativeTime,
-} from "@/constants/dateFormatter";
-
-interface Report {
-  _id: string;
-  description: string;
-  category: string;
-  imageUrl?: string;
-  createdAt: string;
-  user?: {
-    name?: string;
-    email?: string;
-    profilePic?: string;
-  };
-}
+import { formatRelativeTime } from "@/constants/dateFormatter";
+import type { Report, Pagination } from "@/app/home/page";
 
 export default function ReportsFeed({
-  initialReports,
+  initialReports = [],
+  initialPagination,
 }: {
-  initialReports: Report[];
+  initialReports?: Report[];
+  initialPagination?: Pagination;
 }) {
-  // Ensure initialReports is always an array
-  const [reports, setReports] = useState(
+  const router = useRouter();
+  const { user, isSignedIn, isLoaded } = useUser();
+
+  const [reports, setReports] = useState<Report[]>(
     Array.isArray(initialReports) ? initialReports : []
   );
+  const [pagination, setPagination] = useState<Pagination>(
+    initialPagination ?? {
+      page: 1,
+      limit: 10,
+      total: 0,
+      hasNext: false,
+      totalPages: 0,
+    }
+  );
+
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
-  const { data: currentUser } = useSession();
-  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [fetchingMore, setFetchingMore] = useState(false);
 
-  const defaultAvatar =
-    "https://i.pinimg.com/736x/21/f6/fc/21f6fc4abd29ba736e36e540a787e7da.jpg";
+  const [popup, setPopup] = useState<{
+    isVisible: boolean;
+    message: string;
+    isSuccess: boolean;
+  }>({ isVisible: false, message: "", isSuccess: true });
 
-  const [popup, setPopup] = useState({
-    isVisible: false,
-    message: "",
-    isSuccess: true,
-  });
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [selectedReportId, setSelectedReportId] = useState<string | null>(null);
   const [claimData, setClaimData] = useState<{
     image: File | null;
     description: string;
-  }>({
-    image: null,
-    description: "",
-  });
+  }>({ image: null, description: "" });
   const [enlargedImage, setEnlargedImage] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
 
-  // FIXED: Added null checks for report properties
+  // --- Toast Helpers ---
+  const showToast = useCallback(
+    (message: string, isSuccess = true, duration = 3000) => {
+      setPopup({ isVisible: true, message, isSuccess });
+      setTimeout(() => setPopup((p) => ({ ...p, isVisible: false })), duration);
+    },
+    []
+  );
+
+  // --- Fetch Reports ---
+  const fetchReports = useCallback(
+    async (page: number = 1, append = false) => {
+      const isLoadMore = page > 1;
+      if (isLoadMore) setFetchingMore(true);
+      else setLoading(true);
+
+      try {
+        const params = new URLSearchParams({
+          page: page.toString(),
+          limit: "10",
+          ...(filterCategory !== "all" && { category: filterCategory }),
+          ...(searchQuery && { q: searchQuery }),
+        });
+
+        const res = await fetch(`/api/reports?${params}`);
+        const data = await res.json();
+
+        if (res.ok) {
+          const newReports: Report[] = data.reports || [];
+          setReports((prev) =>
+            append ? [...prev, ...newReports] : newReports
+          );
+          setPagination(data.pagination);
+        } else {
+          showToast(data.error || "Failed to load reports", false);
+        }
+      } catch (err) {
+        showToast("Network error", false);
+      } finally {
+        setLoading(false);
+        setFetchingMore(false);
+      }
+    },
+    [filterCategory, searchQuery, showToast]
+  );
+
+  // Initial load
+  useEffect(() => {
+    if (isLoaded) {
+      fetchReports(1);
+    }
+  }, [isLoaded, fetchReports]);
+
+  // --- Filtering ---
   const filteredReports = useMemo(() => {
     return reports.filter((report) => {
       const matchesCategory =
         filterCategory === "all" || report.category === filterCategory;
-
-      // Added null checks for description
       const matchesSearch =
         report.description?.toLowerCase().includes(searchQuery.toLowerCase()) ??
         false;
-
       return matchesCategory && matchesSearch;
     });
   }, [reports, searchQuery, filterCategory]);
 
-  // Enhanced error display function
-  const showError = (message: string, duration = 4000) => {
-    setPopup({
-      isVisible: true,
-      message,
-      isSuccess: false,
-    });
-    setTimeout(() => setPopup((p) => ({ ...p, isVisible: false })), duration);
-  };
-
-  const showSuccess = (message: string, duration = 3000) => {
-    setPopup({
-      isVisible: true,
-      message,
-      isSuccess: true,
-    });
-    setTimeout(() => setPopup((p) => ({ ...p, isVisible: false })), duration);
-  };
-
-  // Add this function to handle post clicks
+  // --- Actions ---
   const handlePostClick = (reportId: string) => {
     router.push(`/report/${reportId}`);
   };
 
   const handleShare = (reportId: string) => {
+    if (typeof window === "undefined") return;
     const url = `${window.location.origin}/report/${reportId}`;
     navigator.clipboard.writeText(url);
-    showSuccess("Post link copied!");
+    showToast("Link copied!");
   };
 
   const handleDelete = async (reportId: string) => {
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this report? This action cannot be undone."
-    );
-    if (!confirmed) return;
+    if (!window.confirm("Delete this report? This cannot be undone.")) return;
 
     setLoading(true);
     try {
-      const res = await fetch(`/api/reports/${reportId}`, {
-        method: "DELETE",
+      const res = await fetch(`/api/reports/delete`, {
+        method: "POST",
+        body: JSON.stringify({ reportId }),
+        headers: { "Content-Type": "application/json" },
       });
 
       const data = await res.json();
-
       if (res.ok) {
         setReports((prev) => prev.filter((r) => r._id !== reportId));
-        showSuccess("Report deleted successfully!");
+        showToast("Report deleted");
       } else {
-        const errorMessage =
-          data.error || data.message || "Failed to delete report";
-        showError(`Delete failed: ${errorMessage}`);
+        showToast(data.error || "Delete failed", false);
       }
-    } catch (err: any) {
-      console.error("Delete error:", err);
-      showError("Network error: Unable to connect to server");
+    } catch {
+      showToast("Network error", false);
     } finally {
       setLoading(false);
     }
   };
 
-  // Enhanced claim submission with better error handling
   const handleClaimSubmit = async () => {
     if (!claimData.description.trim()) {
-      showError("Please provide a claim description");
+      showToast("Add a description", false);
       return;
     }
-
-    if (!selectedReportId) {
-      showError("No report selected for claim");
+    if (!claimData.image) {
+      showToast("Upload a proof image", false);
       return;
     }
 
     setLoading(true);
+    const formData = new FormData();
+    formData.append("reportId", selectedReportId!);
+    formData.append("description", claimData.description);
+    formData.append("image", claimData.image);
+
     try {
-      const formData = new FormData();
-      formData.append("reportId", selectedReportId);
-      formData.append("description", claimData.description);
-
-      if (claimData.image) {
-        formData.append("image", claimData.image);
-      }
-
       const res = await fetch("/api/claims", {
         method: "POST",
         body: formData,
       });
-
       const data = await res.json();
 
       if (res.ok) {
-        setShowModal(false);
-        setClaimData({ image: null, description: "" });
-        setSelectedReportId(null);
-        showSuccess("Claim submitted successfully!");
+        closeClaimModal();
+        showToast("Claim submitted!");
       } else {
-        const errorMessage =
-          data.error || data.message || "Failed to submit claim";
-
-        // Handle specific error cases
-        if (res.status === 400) {
-          showError(`Invalid input: ${errorMessage}`);
-        } else if (res.status === 401) {
-          showError("Please sign in to submit claims");
-        } else if (res.status === 404) {
-          showError("Report not found");
-        } else if (res.status === 413) {
-          showError("Image file too large");
-        } else if (res.status === 502 || res.status === 504) {
-          showError("Upload service unavailable. Please try again.");
-        } else if (res.status === 503) {
-          showError("Service temporarily unavailable. Please try again.");
-        } else {
-          showError(`Submission failed: ${errorMessage}`);
-        }
+        showToast(data.error || "Claim failed", false);
       }
-    } catch (error: any) {
-      console.error("Claim submission error:", error);
-
-      if (error.name === "TypeError" && error.message.includes("fetch")) {
-        showError("Network error: Unable to connect to server");
-      } else {
-        showError("Unexpected error occurred");
-      }
+    } catch {
+      showToast("Network error", false);
     } finally {
       setLoading(false);
     }
   };
 
-  // Function to open claim modal with report ID
-  const openClaimModal = (reportId: string) => {
-    setSelectedReportId(reportId);
+  const openClaimModal = (id: string) => {
+    setSelectedReportId(id);
     setShowModal(true);
     setClaimData({ image: null, description: "" });
   };
 
-  // Function to close modal and reset state
   const closeClaimModal = () => {
     setShowModal(false);
     setSelectedReportId(null);
     setClaimData({ image: null, description: "" });
   };
 
+  const loadMore = () => {
+    if (pagination.hasNext && !fetchingMore) {
+      fetchReports(pagination.page + 1, true);
+    }
+  };
+
+  // --- Category Map (UI → Backend) ---
+  const categoryMap: Record<string, string> = {
+    phone: "electronics",
+    id: "documents",
+    bag: "bags",
+    wallet: "accessories",
+    other: "other",
+  };
+
   return (
     <>
+      {/* Toast */}
       {popup.isVisible && (
         <div
-          className={`fixed top-20 left-1/2 -translate-x-1/2 px-6 py-3 rounded-lg text-sm font-semibold shadow-lg z-50 transition-all duration-300 ${
-            popup.isSuccess
-              ? "bg-green-500 text-white"
-              : "bg-red-500 text-white"
-          }`}
+          className={`fixed top-20 left-1/2 -translate-x-1/2 px-6 py-3 rounded-lg text-sm font-semibold shadow-lg z-50 transition-all ${
+            popup.isSuccess ? "bg-green-500" : "bg-red-500"
+          } text-white`}
         >
-          <div className="flex items-center gap-2">
-            {popup.isSuccess ? "✅" : "❌"}
-            {popup.message}
-          </div>
+          {popup.message}
         </div>
       )}
 
-      {/* Loading overlay */}
+      {/* Loading Overlay */}
       {loading && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-slate-800 rounded-lg p-6 flex items-center gap-3">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-sky-500"></div>
-            <span className="text-slate-200">Processing...</span>
+            <Loader2 className="animate-spin h-6 w-6 text-sky-500" />
+            <span>Processing...</span>
           </div>
         </div>
       )}
 
-      {/* Search + filter */}
+      {/* Search + Filter */}
       <section className="border-b border-slate-700 p-4 flex gap-3 sticky top-0 z-10 bg-slate-900/90 backdrop-blur-md">
         <input
           type="text"
@@ -250,242 +248,231 @@ export default function ReportsFeed({
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="flex-1 bg-slate-800 border border-slate-700 rounded-full px-4 py-2 text-sm focus:border-sky-500 outline-none text-white placeholder-slate-400"
-          disabled={loading}
         />
         <select
           value={filterCategory}
           onChange={(e) => setFilterCategory(e.target.value)}
           className="bg-slate-800 border border-slate-700 rounded-full px-3 py-2 text-sm focus:border-sky-500 outline-none text-white"
-          disabled={loading}
         >
           <option value="all">All</option>
-          <option value="phone">📱 Phone</option>
-          <option value="id">🆔 ID Card</option>
-          <option value="bag">🎒 Bag</option>
-          <option value="wallet">💰 Wallet</option>
-          <option value="other">📦 Other</option>
+          <option value="electronics">Phone</option>
+          <option value="documents">ID Card</option>
+          <option value="bags">Bag</option>
+          <option value="accessories">Wallet</option>
+          <option value="other">Other</option>
         </select>
       </section>
 
-      {/* Reports Feed */}
+      {/* Feed */}
       <section>
         {filteredReports.length === 0 ? (
           <p className="text-center text-slate-400 py-12">
-            {reports.length === 0
-              ? "No reports yet"
-              : "No reports match your search"}
+            {reports.length === 0 ? "No reports yet" : "No matches"}
           </p>
         ) : (
-          filteredReports.map((report) => {
-            // FIXED: Added null checks for user properties
-            const isOwner =
-              currentUser?.user?.email &&
-              report.user?.email === currentUser.user.email;
+          <>
+            {filteredReports.map((report) => {
+              const isOwner = isSignedIn && report.reporterId === user?.id;
 
-            return (
-              <div
-                key={report._id}
-                className="border-b border-slate-700 p-4 hover:bg-white/5 relative cursor-pointer transition-colors"
-                onClick={() => !loading && handlePostClick(report._id)}
-              >
-                {/* User Header with Three-Dot Menu at Top Right */}
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex items-center gap-3">
-                    <Image
-                      src={report.user?.profilePic || defaultAvatar}
-                      alt={`${report.user?.name || "User"}'s profile`}
-                      width={40}
-                      height={40}
-                      className="w-10 h-10 rounded-full object-cover border border-slate-600"
-                    />
-                    <div>
-                      <p className="font-bold text-slate-100">
-                        {report.user?.name || "Anonymous"}
-                      </p>
-                      <p className="text-xs text-slate-400">
-                        {formatRelativeTime(report.createdAt)} •{" "}
-                        {report.category}
-                      </p>
+              return (
+                <div
+                  key={report._id}
+                  className="border-b border-slate-700 p-4 hover:bg-white/5 cursor-pointer transition-colors"
+                  onClick={() => handlePostClick(report._id)}
+                >
+                  {/* Header */}
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <Image
+                        src={report.user?.profilePic || "/default-avatar.png"}
+                        alt="User"
+                        width={40}
+                        height={40}
+                        className="w-10 h-10 rounded-full object-cover border border-slate-600"
+                      />
+                      <div>
+                        <p className="font-bold text-slate-100">
+                          {report.user?.name || "Anonymous"}
+                        </p>
+                        <p className="text-xs text-slate-400">
+                          {formatRelativeTime(report.createdAt)} •{" "}
+                          {report.category}
+                        </p>
+                      </div>
                     </div>
+
+                    {/* Owner Menu */}
+                    {isOwner && (
+                      <div className="relative">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActiveMenu(
+                              activeMenu === report._id ? null : report._id
+                            );
+                          }}
+                          className="p-2 rounded-full hover:bg-white/10"
+                        >
+                          <MoreVertical size={18} className="text-slate-400" />
+                        </button>
+                        {activeMenu === report._id && (
+                          <div className="absolute right-0 top-8 mt-2 w-36 bg-slate-800 border border-slate-700 rounded-lg shadow-xl z-20">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDelete(report._id);
+                              }}
+                              className="w-full text-left px-4 py-2 text-sm hover:bg-white/10 text-red-400"
+                            >
+                              Delete
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleShare(report._id);
+                              }}
+                              className="w-full text-left px-4 py-2 text-sm hover:bg-white/10 text-slate-200"
+                            >
+                              Share
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
 
-                  {/* Three-Dot Menu - Positioned at Top Right */}
-                  {isOwner && (
-                    <div className="relative">
-                      <button
+                  {/* Description */}
+                  <p className="text-sm mb-3 text-slate-200">
+                    {report.description}
+                  </p>
+
+                  {/* Image */}
+                  {report.imageUrl && (
+                    <div className="mb-3">
+                      <Image
+                        src={report.imageUrl}
+                        alt="Report"
+                        width={700}
+                        height={300}
+                        className="rounded-xl border border-slate-700 object-cover cursor-pointer max-h-64 hover:opacity-90"
+                        unoptimized
                         onClick={(e) => {
                           e.stopPropagation();
-                          setActiveMenu(
-                            activeMenu === report._id ? null : report._id
-                          );
+                          setEnlargedImage(report.imageUrl!);
                         }}
-                        disabled={loading}
-                        className="p-2 rounded-full hover:bg-white/10 disabled:opacity-50 transition-colors"
-                        aria-label="Post options"
-                      >
-                        <MoreVertical size={18} className="text-slate-400" />
-                      </button>
-
-                      {/* Dropdown Menu */}
-                      {activeMenu === report._id && (
-                        <div className="absolute right-0 top-8 mt-2 w-36 bg-slate-800 border border-slate-700 rounded-lg shadow-xl z-20">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDelete(report._id);
-                            }}
-                            disabled={loading}
-                            className="w-full text-left px-4 py-2 text-sm hover:bg-white/10 disabled:opacity-50 transition-colors text-red-400 hover:text-red-300"
-                          >
-                            Delete
-                          </button>
-
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleShare(report._id);
-                            }}
-                            disabled={loading}
-                            className="w-full text-left px-4 py-2 text-sm hover:bg-white/10 disabled:opacity-50 transition-colors text-slate-200"
-                          >
-                            Share Post
-                          </button>
-                        </div>
-                      )}
+                      />
                     </div>
                   )}
-                </div>
 
-                {/* Description */}
-                <div className="text-sm mb-3 text-slate-200">
-                  {report.description}
-                </div>
-
-                {/* Image - Fixed small size with click to enlarge */}
-                {report.imageUrl && (
-                  <div className="mb-3">
-                    <Image
-                      src={report.imageUrl}
-                      alt="Report image"
-                      width={700}
-                      height={300}
-                      className="rounded-xl border border-slate-700 object-cover cursor-pointer max-w-[700px] max-h-[300px] hover:opacity-90 transition-opacity"
-                      unoptimized
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setEnlargedImage(report.imageUrl!);
-                      }}
-                    />
+                  {/* Claim Button */}
+                  <div
+                    className="flex justify-end"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {!isOwner && (
+                      <button
+                        onClick={() => openClaimModal(report._id)}
+                        className="px-6 py-2 text-sm font-medium rounded-full bg-sky-500 hover:bg-sky-600 text-white"
+                      >
+                        Claim
+                      </button>
+                    )}
                   </div>
-                )}
-
-                {/* Claim Button */}
-                <div
-                  className="flex justify-end"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  {!isOwner && (
-                    <button
-                      onClick={() => openClaimModal(report._id)}
-                      disabled={loading}
-                      className="px-6 py-2 text-sm font-medium rounded-full bg-sky-500 hover:bg-sky-600 text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                    >
-                      {loading ? "Processing..." : "Claim"}
-                    </button>
-                  )}
                 </div>
+              );
+            })}
+
+            {/* Load More */}
+            {pagination.hasNext && (
+              <div className="p-4 text-center">
+                <button
+                  onClick={loadMore}
+                  disabled={fetchingMore}
+                  className="text-sky-500 hover:text-sky-400 text-sm font-medium disabled:opacity-50"
+                >
+                  {fetchingMore ? "Loading..." : "Load More"}
+                </button>
               </div>
-            );
-          })
+            )}
+          </>
         )}
       </section>
 
       {/* Claim Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-slate-900 border border-slate-700 rounded-xl p-6 w-[90%] max-w-md">
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+          <div className="bg-slate-900 border border-slate-700 rounded-xl p-6 w-full max-w-md">
             <h2 className="text-lg font-semibold mb-4 text-white">
               Claim Item
             </h2>
-
             <textarea
-              placeholder="Describe how you lost this item and provide any identifying details..."
+              placeholder="Describe how you lost this..."
               value={claimData.description}
               onChange={(e) =>
                 setClaimData({ ...claimData, description: e.target.value })
               }
-              disabled={loading}
-              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-400 mb-3 focus:border-sky-500 outline-none resize-none min-h-[100px] disabled:opacity-50"
-              required
+              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-400 mb-3 focus:border-sky-500 outline-none resize-none min-h-[100px]"
             />
-
             <div className="mb-4">
               <label className="block text-sm text-slate-400 mb-2">
-                Upload proof image (required)
+                Proof Image
               </label>
               <input
                 type="file"
                 accept="image/*"
                 onChange={(e) => {
-                  const file = e.target.files && e.target.files[0];
+                  const file = e.target.files?.[0];
                   setClaimData({ ...claimData, image: file || null });
                 }}
-                disabled={loading}
-                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:border-sky-500 outline-none disabled:opacity-50"
+                className="w-full"
               />
               {claimData.image && (
-                <div className="mt-2 flex justify-center">
-                  <Image
-                    src={URL.createObjectURL(claimData.image)}
-                    alt="Preview"
-                    width={150}
-                    height={100}
-                    className="max-h-32 rounded-lg border border-slate-700 object-cover"
-                  />
-                </div>
+                <Image
+                  src={URL.createObjectURL(claimData.image)}
+                  alt="Preview"
+                  width={150}
+                  height={100}
+                  className="mt-2 max-h-32 rounded-lg border object-cover"
+                />
               )}
             </div>
-
             <div className="flex justify-end gap-2">
               <button
                 onClick={closeClaimModal}
-                disabled={loading}
-                className="px-4 py-2 text-sm rounded-full bg-slate-700 hover:bg-slate-600 text-white transition-colors disabled:opacity-50"
+                className="px-4 py-2 rounded-full bg-slate-700 hover:bg-slate-600 text-white"
               >
                 Cancel
               </button>
               <button
                 onClick={handleClaimSubmit}
                 disabled={loading}
-                className="px-4 py-2 text-sm rounded-full bg-sky-500 hover:bg-sky-600 text-white transition-colors disabled:opacity-50 flex items-center gap-2"
+                className="px-4 py-2 rounded-full bg-sky-500 hover:bg-sky-600 text-white flex items-center gap-2"
               >
-                {loading && (
-                  <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
-                )}
-                {loading ? "Submitting..." : "Submit Claim"}
+                {loading && <Loader2 className="animate-spin h-4 w-4" />}
+                Submit
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Enlarged Image Modal */}
+      {/* Enlarged Image */}
       {enlargedImage && (
         <div
-          className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+          className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4"
           onClick={() => setEnlargedImage(null)}
         >
-          <div className="relative max-w-4xl max-h-full">
+          <div className="relative">
             <Image
               src={enlargedImage}
-              alt="Enlarged report image"
+              alt="Enlarged"
               width={1200}
               height={800}
               className="rounded-lg object-contain max-w-full max-h-[90vh]"
               unoptimized
             />
             <button
-              className="absolute -top-12 right-0 text-white text-lg bg-slate-800/50 hover:bg-slate-700/50 w-8 h-8 rounded-full flex items-center justify-center transition-colors"
+              className="absolute -top-12 right-0 text-white text-2xl bg-slate-800/50 hover:bg-slate-700/50 w-10 h-10 rounded-full"
               onClick={() => setEnlargedImage(null)}
             >
               ×
