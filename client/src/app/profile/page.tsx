@@ -119,7 +119,7 @@ useEffect(() => {
             <h2 className="text-2xl font-bold mb-6 flex items-center justify-between">
               Your Reports
               <span className="text-sky-400 text-lg font-normal">
-                {userReports.length} {userReports.length === 1 ? "item" : "items"}
+                {userReports.length} {userReports.length === 1 ? "Report" : "Reports"}
               </span>
             </h2>
 

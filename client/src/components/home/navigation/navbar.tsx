@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
 import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import {
   FaHome,
   FaBell,
@@ -19,6 +20,7 @@ import { SignOutButton } from "@clerk/nextjs";
 
 const Navbar = () => {
   const { isSignedIn, user, isLoaded } = useUser();
+  const pathname = usePathname();
   const [activeItem, setActiveItem] = useState("home");
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -52,6 +54,22 @@ const Navbar = () => {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  // Update active nav item when the pathname changes
+  useEffect(() => {
+    if (!pathname) return;
+
+    if (pathname === "/" || pathname.startsWith("/home")) {
+      setActiveItem("home");
+    } else if (pathname.startsWith("/notifications")) {
+      setActiveItem("notifications");
+    } else if (pathname.startsWith("/claims")) {
+      setActiveItem("claims");
+    } else if (pathname.startsWith("/profile")) {
+      setActiveItem("profile");
+    }
+    // keep sidebar state unchanged here; clicking nav items will close on mobile
+  }, [pathname]);
 
   if (!isLoaded) {
     return (
@@ -127,59 +145,50 @@ const Navbar = () => {
 
           {/* User Profile + Settings */}
           <div className="p-4 border-t border-slate-700">
-            {isSignedIn ? (
-              <div className="space-y-3">
-                <Link
-                  href="/profile"
-                  onClick={() => handleItemClick("profile")}
-                  className="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-800 transition-colors"
-                >
-                  <div className="relative">
-                    <Image
-                      src={userImageUrl}
-                      alt="Profile"
-                      width={40}
-                      height={40}
-                      className="w-10 h-10 rounded-full object-cover border-2 border-slate-600"
-                      onError={(e) => {
-                        e.currentTarget.src = defaultAvatar;
-                      }}
-                    />
-                    <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-400 rounded-full ring-2 ring-slate-900"></span>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-white truncate">
-                      {userName}
-                    </p>
-                    <p className="text-xs text-slate-400">View Profile</p>
-                  </div>
-                </Link>
+            <div className="space-y-3">
+              <Link
+                href="/profile"
+                onClick={() => handleItemClick("profile")}
+                className="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-800 transition-colors"
+              >
+                <div className="relative">
+                  <Image
+                    src={userImageUrl}
+                    alt="Profile"
+                    width={40}
+                    height={40}
+                    className="w-10 h-10 rounded-full object-cover border-2 border-slate-600"
+                    onError={(e) => {
+                      e.currentTarget.src = defaultAvatar;
+                    }}
+                  />
+                  <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-400 rounded-full ring-2 ring-slate-900"></span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-white truncate">
+                    {userName}
+                  </p>
+                  <p className="text-xs text-slate-400">View Profile</p>
+                </div>
+              </Link>
 
-                <div className="flex gap-2">
-                  <Link
-                    href="/settings"
-                    className="flex-1 flex items-center justify-center gap-2 p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors text-sm"
-                  >
-                    <IoSettingsSharp className="w-4 h-4" />
-                    Settings
-                  </Link>
-                  <div className="flex-1 flex items-center justify-center gap-2 p-2 rounded-lg bg-red-700 hover:bg-red-600 text-slate-300 hover:text-white transition-colors text-sm">
-                    <SignOutButton redirectUrl="/home">
-                      <button className=" text-white rounded-lg font-medium transition">
-                        Sign Out
-                      </button>
-                    </SignOutButton>
-                  </div>
+              <div className="flex gap-2">
+                <Link
+                  href="/settings"
+                  className="flex-1 flex items-center justify-center gap-2 p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors text-sm"
+                >
+                  <IoSettingsSharp className="w-4 h-4" />
+                  Settings
+                </Link>
+                <div className="flex-1 flex items-center justify-center gap-2 p-2 rounded-lg bg-red-700 hover:bg-red-600 text-slate-300 hover:text-white transition-colors text-sm">
+                  <SignOutButton redirectUrl="/home">
+                    <button className=" text-white rounded-lg font-medium transition">
+                      Sign Out
+                    </button>
+                  </SignOutButton>
                 </div>
               </div>
-            ) : (
-              <Link
-                href="/sign-in"
-                className="block w-full text-center bg-sky-500 hover:bg-sky-600 text-white py-2.5 rounded-lg font-medium transition-colors"
-              >
-                Sign In
-              </Link>
-            )}
+            </div>
           </div>
         </div>
       </aside>
