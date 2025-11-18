@@ -1,11 +1,10 @@
 "use client";
 
-import { useSession } from "@clerk/nextjs";
+import { useUser } from "@clerk/nextjs";
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { Navbar } from "@/components";
 import Link from "next/link";
-
 
 interface Claim {
   _id: string;
@@ -21,19 +20,18 @@ interface Claim {
 }
 
 export default function ClaimsPage() {
-  const { data: session } = useSession();
+  const { user, isLoaded } = useUser();
   const [claimsMade, setClaimsMade] = useState<Claim[]>([]);
   const [claimsReceived, setClaimsReceived] = useState<Claim[]>([]);
   const [activeTab, setActiveTab] = useState<"made" | "received">("received");
   const [loading, setLoading] = useState(true);
   const [enlargedImage, setEnlargedImage] = useState<string | null>(null);
-  
 
   useEffect(() => {
-    if (session?.user?.email) {
+    if (isLoaded && user) {
       fetchUserClaims();
     }
-  }, [session]);
+  }, [isLoaded, user]);
 
   const fetchUserClaims = async () => {
     try {

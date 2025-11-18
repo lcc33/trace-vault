@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import clientPromise from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 import { v2 as cloudinary } from "cloudinary";
@@ -13,18 +12,18 @@ cloudinary.config({
 
 export async function GET() {
   try {
-    const session = await getServerSession(authOptions);
-    
-    if (!session?.user?.email) {
+    const { userId } = await auth();
+
+    if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const client = await clientPromise;
     const db = client.db("tracevault");
 
-    // Get current user
-    const user = await db.collection("users").findOne({ 
-      email: session.user.email 
+    // Get current user (DB record) by Clerk ID
+    const user = await db.collection("users").findOne({
+      clerkId: userId,
     });
 
     if (!user) {
@@ -38,8 +37,9 @@ export async function GET() {
       .toArray();
 
     // Fetch claims received on user's reports
+    // Find reports where the reporter is the current Clerk user
     const userReports = await db.collection("reports")
-      .find({ userId: user._id })
+      .find({ reporterId: userId })
       .toArray();
 
     const userReportIds = userReports.map(report => report._id);
@@ -80,9 +80,9 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const session = await getServerSession(authOptions);
-    
-    if (!session?.user?.email) {
+    const { userId } = await auth();
+
+    if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -101,9 +101,9 @@ export async function POST(request: Request) {
     const client = await clientPromise;
     const db = client.db("tracevault");
 
-    // Get current user
-    const user = await db.collection("users").findOne({ 
-      email: session.user.email 
+    // Get current user (DB record) by Clerk ID
+    const user = await db.collection("users").findOne({
+      clerkId: userId,
     });
 
     if (!user) {
@@ -119,8 +119,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Report not found" }, { status: 404 });
     }
 
-    // Check if user is claiming their own report
-    if (report.userId.toString() === user._id.toString()) {
+    // Check if user is claiming their own report (reports store reporterId as Clerk id)
+    if (report.reporterId === userId) {
       return NextResponse.json(
         { error: "You cannot claim your own report" }, 
         { status: 400 }
@@ -146,25 +146,29 @@ export async function POST(request: Request) {
       proofImageUrl = uploadRes.secure_url;
     }
 
+    // Get Clerk profile for name/email fallbacks
+    const clerkUser = await currentUser();
+
     // Create claim
     const claim = {
       reportId: new ObjectId(reportId),
       claimantId: user._id,
-      claimantName: user.name,
-      claimantEmail: user.email,
+      claimantName:
+        (user as any).name || `${clerkUser?.firstName || ""} ${clerkUser?.lastName || ""}`.trim() || clerkUser?.username || "Anonymous",
+      claimantEmail: (user as any).email || clerkUser?.primaryEmailAddress?.emailAddress || null,
       description,
       proofImage: proofImageUrl,
       status: "pending", // pending, approved, rejected
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
     };
 
     const result = await db.collection("claims").insertOne(claim);
 
     return NextResponse.json(
-      { 
-        message: "Claim submitted successfully", 
-        claim: { ...claim, _id: result.insertedId } 
+      {
+        message: "Claim submitted successfully",
+        claim: { ...claim, _id: result.insertedId.toString() },
       },
       { status: 201 }
     );

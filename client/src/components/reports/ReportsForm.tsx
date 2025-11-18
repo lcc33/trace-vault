@@ -90,7 +90,14 @@ export default function ReportForm() {
         setSelectedImageName(null);
 
         // Optional: redirect to new report or refresh feed
-        router.push("/community"); // or router.refresh()
+        // Notify any feed/listeners to refresh
+        try {
+          window.dispatchEvent(new CustomEvent("reports:refresh"));
+        } catch (e) {
+          /* ignore in non-browser envs */
+        }
+
+        router.push("/home");
       } else {
         setError(data.error || "Failed to create report");
       }

@@ -22,7 +22,7 @@ const Navbar = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const navItems = [
-    { id: "home", href: "/", icon: FaHome, label: "Home" },
+    { id: "home", href: "/home", icon: FaHome, label: "Home" },
     {
       id: "notifications",
       href: "/notifications",
@@ -65,7 +65,6 @@ const Navbar = () => {
 
   return (
     <>
-      
       {/* Desktop Sidebar */}
       <aside
         className={`fixed left-0 top-0 h-full bg-slate-900 border-r border-slate-700 z-50 transition-transform duration-300 ease-in-out ${
@@ -184,16 +183,38 @@ const Navbar = () => {
         </div>
       </aside>
 
-      {/* Mobile Hamburger Button */}
-      <button
-        onClick={() => setSidebarOpen(true)}
-        className="md:hidden fixed top-4 left-4 z-50 p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-white transition-colors"
-      >
-        <FaBars className="w-6 h-6" />
-      </button>
+      {/* Mobile Topbar (visible on small screens) */}
+      <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-slate-900 border-b border-slate-700 px-4">
+        <div className="max-w-7xl mx-auto flex items-center justify-between h-14">
+          <Link
+            href="/"
+            className="flex items-center gap-3"
+            onClick={() => handleItemClick("home")}
+          >
+            <Image
+              src="/assets/logo.jpeg"
+              alt="TraceVault"
+              width={32}
+              height={32}
+              className="w-8 h-8 rounded-md"
+              priority
+            />
+            <span className="text-lg font-bold text-white">TraceVault</span>
+          </Link>
 
-      {/* Main Content Offset */}
-      <div className="md:pl-64">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="p-2 rounded-md bg-slate-800 hover:bg-slate-700 text-white"
+            >
+              <FaBars className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content Offset: add top padding on mobile to account for fixed topbar */}
+      <div className="pt-14 md:pt-0 md:pl-64">
         {/* Your page content goes here */}
       </div>
 

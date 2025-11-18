@@ -11,8 +11,9 @@ export default clerkMiddleware({
     "/privacy",
     "/terms",
     "/community",
-    "/report",
-    "/claims",
+    "/sign-in(.*)",
+    "/sign-up(.*)",
+    "/help(.*)",
   ],
 });
 

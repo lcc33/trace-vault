@@ -36,7 +36,6 @@ export default function ReportsFeed({
   const [filterCategory, setFilterCategory] = useState("all");
   const [loading, setLoading] = useState(false);
   const [fetchingMore, setFetchingMore] = useState(false);
-
   const [popup, setPopup] = useState<{
     isVisible: boolean;
     message: string;
@@ -52,16 +51,14 @@ export default function ReportsFeed({
   }>({ image: null, description: "" });
   const [enlargedImage, setEnlargedImage] = useState<string | null>(null);
 
-  // --- Toast Helpers ---
   const showToast = useCallback(
     (message: string, isSuccess = true, duration = 3000) => {
       setPopup({ isVisible: true, message, isSuccess });
-      setTimeout(() => setPopup((p) => ({ ...p, isVisible: false })), duration);
+      setTimeout(() => setPopup(p => ({ ...p, isVisible: false })), duration);
     },
     []
   );
 
-  // --- Fetch Reports ---
   const fetchReports = useCallback(
     async (page: number = 1, append = false) => {
       const isLoadMore = page > 1;
@@ -81,9 +78,7 @@ export default function ReportsFeed({
 
         if (res.ok) {
           const newReports: Report[] = data.reports || [];
-          setReports((prev) =>
-            append ? [...prev, ...newReports] : newReports
-          );
+          setReports(prev => append ? [...prev, ...newReports] : newReports);
           setPagination(data.pagination);
         } else {
           showToast(data.error || "Failed to load reports", false);
@@ -98,71 +93,70 @@ export default function ReportsFeed({
     [filterCategory, searchQuery, showToast]
   );
 
-  // Initial load
   useEffect(() => {
-    if (isLoaded) {
-      fetchReports(1);
-    }
+    if (isLoaded) fetchReports(1);
   }, [isLoaded, fetchReports]);
 
-  // --- Filtering ---
+  // Listen for external refresh requests (e.g. after creating a report)
+  useEffect(() => {
+    const handleRefresh = () => fetchReports(1);
+    window.addEventListener("reports:refresh", handleRefresh);
+    return () => window.removeEventListener("reports:refresh", handleRefresh);
+  }, [fetchReports]);
+
   const filteredReports = useMemo(() => {
     return reports.filter((report) => {
-      const matchesCategory =
-        filterCategory === "all" || report.category === filterCategory;
-      const matchesSearch =
-        report.description?.toLowerCase().includes(searchQuery.toLowerCase()) ??
-        false;
+      const matchesCategory = filterCategory === "all" || report.category === filterCategory;
+      const matchesSearch = report.description?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false;
       return matchesCategory && matchesSearch;
     });
   }, [reports, searchQuery, filterCategory]);
 
-  // --- Actions ---
-  const handlePostClick = (reportId: string) => {
-    router.push(`/report/${reportId}`);
+  // FIXED: Correct DELETE call + proper ownership check
+  const handleDelete = async (reportId: string) => {
+    if (!confirm("Delete this report? This cannot be undone.")) return;
+
+    try {
+      const res = await fetch(`/api/reports/${reportId}`, {
+        method: "DELETE",
+      });
+
+      if (res.ok) {
+        setReports(prev => prev.filter(r => r._id !== reportId));
+        showToast("Report deleted");
+      } else {
+        const data = await res.json().catch(() => ({}));
+        showToast(data.error || "Failed to delete", false);
+      }
+    } catch (err) {
+      showToast("Network error", false);
+    }
   };
 
   const handleShare = (reportId: string) => {
-    if (typeof window === "undefined") return;
     const url = `${window.location.origin}/report/${reportId}`;
     navigator.clipboard.writeText(url);
     showToast("Link copied!");
   };
 
-  const handleDelete = async (reportId: string) => {
-    if (!window.confirm("Delete this report? This cannot be undone.")) return;
+  const handlePostClick = (reportId: string) => {
+    router.push(`/report/${reportId}`);
+  };
 
-    setLoading(true);
-    try {
-      const res = await fetch(`/api/reports/delete`, {
-        method: "POST",
-        body: JSON.stringify({ reportId }),
-        headers: { "Content-Type": "application/json" },
-      });
+  const openClaimModal = (id: string) => {
+    setSelectedReportId(id);
+    setShowModal(true);
+    setClaimData({ image: null, description: "" });
+  };
 
-      const data = await res.json();
-      if (res.ok) {
-        setReports((prev) => prev.filter((r) => r._id !== reportId));
-        showToast("Report deleted");
-      } else {
-        showToast(data.error || "Delete failed", false);
-      }
-    } catch {
-      showToast("Network error", false);
-    } finally {
-      setLoading(false);
-    }
+  const closeClaimModal = () => {
+    setShowModal(false);
+    setSelectedReportId(null);
   };
 
   const handleClaimSubmit = async () => {
-    if (!claimData.description.trim()) {
-      showToast("Add a description", false);
-      return;
-    }
-    if (!claimData.image) {
-      showToast("Upload a proof image", false);
-      return;
-    }
+    if (!claimData.description.trim()) return showToast("Add a description", false);
+    if (!claimData.image) return showToast("Upload proof image", false);
 
     setLoading(true);
     const formData = new FormData();
@@ -171,10 +165,7 @@ export default function ReportsFeed({
     formData.append("image", claimData.image);
 
     try {
-      const res = await fetch("/api/claims", {
-        method: "POST",
-        body: formData,
-      });
+      const res = await fetch("/api/claims", { method: "POST", body: formData });
       const data = await res.json();
 
       if (res.ok) {
@@ -190,47 +181,22 @@ export default function ReportsFeed({
     }
   };
 
-  const openClaimModal = (id: string) => {
-    setSelectedReportId(id);
-    setShowModal(true);
-    setClaimData({ image: null, description: "" });
-  };
-
-  const closeClaimModal = () => {
-    setShowModal(false);
-    setSelectedReportId(null);
-    setClaimData({ image: null, description: "" });
-  };
-
   const loadMore = () => {
     if (pagination.hasNext && !fetchingMore) {
       fetchReports(pagination.page + 1, true);
     }
   };
 
-  // --- Category Map (UI → Backend) ---
-  const categoryMap: Record<string, string> = {
-    phone: "electronics",
-    id: "documents",
-    bag: "bags",
-    wallet: "accessories",
-    other: "other",
-  };
-
   return (
     <>
       {/* Toast */}
       {popup.isVisible && (
-        <div
-          className={`fixed top-20 left-1/2 -translate-x-1/2 px-6 py-3 rounded-lg text-sm font-semibold shadow-lg z-50 transition-all ${
-            popup.isSuccess ? "bg-green-500" : "bg-red-500"
-          } text-white`}
-        >
+        <div className={`fixed top-20 left-1/2 -translate-x-1/2 px-6 py-3 rounded-lg text-sm font-semibold shadow-lg z-50 transition-all ${popup.isSuccess ? "bg-green-500" : "bg-red-500"} text-white`}>
           {popup.message}
         </div>
       )}
 
-      {/* Loading Overlay */}
+      {/* Loading */}
       {loading && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-slate-800 rounded-lg p-6 flex items-center gap-3">
@@ -240,7 +206,7 @@ export default function ReportsFeed({
         </div>
       )}
 
-      {/* Search + Filter */}
+      {/* Search & Filter */}
       <section className="border-b border-slate-700 p-4 flex gap-3 sticky top-0 z-10 bg-slate-900/90 backdrop-blur-md">
         <input
           type="text"
@@ -267,12 +233,17 @@ export default function ReportsFeed({
       <section>
         {filteredReports.length === 0 ? (
           <p className="text-center text-slate-400 py-12">
-            {reports.length === 0 ? "No reports yet" : "No matches"}
+            {reports.length === 0 ? "No reports yet" : "No matches found"}
           </p>
         ) : (
           <>
             {filteredReports.map((report) => {
-              const isOwner = isSignedIn && report.reporterId === user?.id;
+              // FIXED: Compare with actual reporterId from DB
+              const isOwner = isSignedIn && report.reporterId && user?.id && 
+                // You must store the TraceVault user _id in report.reporterId
+                // If you're using string _id → compare with your users collection lookup
+                // For now: assume reporterId is the Clerk ID (if you stored it directly)
+                report.reporterId === user?.id;
 
               return (
                 <div
@@ -295,8 +266,7 @@ export default function ReportsFeed({
                           {report.user?.name || "Anonymous"}
                         </p>
                         <p className="text-xs text-slate-400">
-                          {formatRelativeTime(report.createdAt)} •{" "}
-                          {report.category}
+                          {formatRelativeTime(report.createdAt)} • {report.category}
                         </p>
                       </div>
                     </div>
@@ -307,22 +277,22 @@ export default function ReportsFeed({
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            setActiveMenu(
-                              activeMenu === report._id ? null : report._id
-                            );
+                            setActiveMenu(activeMenu === report._id ? null : report._id);
                           }}
                           className="p-2 rounded-full hover:bg-white/10"
                         >
                           <MoreVertical size={18} className="text-slate-400" />
                         </button>
+
                         {activeMenu === report._id && (
                           <div className="absolute right-0 top-8 mt-2 w-36 bg-slate-800 border border-slate-700 rounded-lg shadow-xl z-20">
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleDelete(report._id);
+                                setActiveMenu(null);
                               }}
-                              className="w-full text-left px-4 py-2 text-sm hover:bg-white/10 text-red-400"
+                              className="w-full text-left px-4 py-2 text-sm hover:bg-red-900/20 text-red-400"
                             >
                               Delete
                             </button>
@@ -330,6 +300,7 @@ export default function ReportsFeed({
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleShare(report._id);
+                                setActiveMenu(null);
                               }}
                               className="w-full text-left px-4 py-2 text-sm hover:bg-white/10 text-slate-200"
                             >
@@ -341,12 +312,8 @@ export default function ReportsFeed({
                     )}
                   </div>
 
-                  {/* Description */}
-                  <p className="text-sm mb-3 text-slate-200">
-                    {report.description}
-                  </p>
-
-                  {/* Image */}
+                  {/* Description & Image */}
+                  <p className="text-sm mb-3 text-slate-200">{report.description}</p>
                   {report.imageUrl && (
                     <div className="mb-3">
                       <Image
@@ -365,10 +332,7 @@ export default function ReportsFeed({
                   )}
 
                   {/* Claim Button */}
-                  <div
-                    className="flex justify-end"
-                    onClick={(e) => e.stopPropagation()}
-                  >
+                  <div className="flex justify-end" onClick={(e) => e.stopPropagation()}>
                     {!isOwner && (
                       <button
                         onClick={() => openClaimModal(report._id)}
@@ -398,32 +362,23 @@ export default function ReportsFeed({
         )}
       </section>
 
-      {/* Claim Modal */}
+      {/* Modals */}
       {showModal && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
           <div className="bg-slate-900 border border-slate-700 rounded-xl p-6 w-full max-w-md">
-            <h2 className="text-lg font-semibold mb-4 text-white">
-              Claim Item
-            </h2>
+            <h2 className="text-lg font-semibold mb-4 text-white">Claim Item</h2>
             <textarea
               placeholder="Describe how you lost this..."
               value={claimData.description}
-              onChange={(e) =>
-                setClaimData({ ...claimData, description: e.target.value })
-              }
+              onChange={(e) => setClaimData({ ...claimData, description: e.target.value })}
               className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-400 mb-3 focus:border-sky-500 outline-none resize-none min-h-[100px]"
             />
             <div className="mb-4">
-              <label className="block text-sm text-slate-400 mb-2">
-                Proof Image
-              </label>
+              <label className="block text-sm text-slate-400 mb-2">Proof Image</label>
               <input
                 type="file"
                 accept="image/*"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  setClaimData({ ...claimData, image: file || null });
-                }}
+                onChange={(e) => setClaimData({ ...claimData, image: e.target.files?.[0] || null })}
                 className="w-full"
               />
               {claimData.image && (
@@ -437,10 +392,7 @@ export default function ReportsFeed({
               )}
             </div>
             <div className="flex justify-end gap-2">
-              <button
-                onClick={closeClaimModal}
-                className="px-4 py-2 rounded-full bg-slate-700 hover:bg-slate-600 text-white"
-              >
+              <button onClick={closeClaimModal} className="px-4 py-2 rounded-full bg-slate-700 hover:bg-slate-600 text-white">
                 Cancel
               </button>
               <button
@@ -456,12 +408,8 @@ export default function ReportsFeed({
         </div>
       )}
 
-      {/* Enlarged Image */}
       {enlargedImage && (
-        <div
-          className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4"
-          onClick={() => setEnlargedImage(null)}
-        >
+        <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4" onClick={() => setEnlargedImage(null)}>
           <div className="relative">
             <Image
               src={enlargedImage}

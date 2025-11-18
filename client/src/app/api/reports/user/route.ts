@@ -1,59 +1,59 @@
-// src/app/api/reports/user/route.ts
 import { NextResponse } from "next/server";
-import { currentUser } from "@clerk/nextjs/server";
+import { auth } from "@clerk/nextjs/server";
+
 import clientPromise from "@/lib/mongodb";
+import { ObjectId } from "mongodb";
 
 export async function GET() {
   try {
-    // Get the authenticated Clerk user
-    const clerkUser = await currentUser();
-    if (!clerkUser?.id) {
+    // Use Clerk server auth to get the current user's id
+    const { userId } = await auth();
+
+    if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const client = await clientPromise;
     const db = client.db("tracevault");
 
-    // Find the TraceVault user record (created on sign‑up)
-    const user = await db.collection("users").findOne({ clerkId: clerkUser.id });
-    if (!user?._id) {
+    // Get current user by Clerk ID
+    const user = await db.collection("users").findOne({
+      clerkId: userId,
+    });
+
+    if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // Fetch **all** reports belonging to this user
+    // Fetch user's reports
     const reports = await db
       .collection("reports")
-      .find({ reporterId: user._id }) // string ID
+      .find({ userId: user._id })
       .sort({ createdAt: -1 })
       .toArray();
 
-    // Attach claim count to each report
-    const reportsWithClaims = await Promise.all(
+    // Get claim counts for each report
+    const reportsWithClaimCounts = await Promise.all(
       reports.map(async (report) => {
-        const claimCount = await db
-          .collection("claims")
-          .countDocuments({ reportId: report._id });
+        const claimCount = await db.collection("claims").countDocuments({
+          reportId: report._id,
+        });
 
         return {
-          _id: report._id, // already string
-          reporterId: report.reporterId,
-          title: report.title,
-          description: report.description,
-          category: report.category,
-          location: report.location,
-          imageUrl: report.imageUrl,
-          status: report.status,
-          createdAt: new Date(report.createdAt).toISOString(),
+          ...report,
+          _id: report._id.toString(),
+          userId: report.userId.toString(),
           claimCount,
+          createdAt: report.createdAt.toISOString(),
         };
       })
     );
 
-    return NextResponse.json(reportsWithClaims);
+    return NextResponse.json(reportsWithClaimCounts);
   } catch (error: any) {
     console.error("Error fetching user reports:", error);
     return NextResponse.json(
-      { error: "Failed to fetch reports" },
+      { error: "Failed to fetch user reports" },
       { status: 500 }
     );
   }

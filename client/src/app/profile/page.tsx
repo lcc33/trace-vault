@@ -6,7 +6,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Navbar } from "@/components";
-import { SignOutButton } from "@/components/home/navigation/logout";
+import { SignOutButton } from "@clerk/nextjs"; // ← Official Clerk component
 
 interface Report {
   _id: string;
@@ -14,6 +14,7 @@ interface Report {
   category: string;
   createdAt: string;
   imageUrl?: string;
+  claimCount?: number;
 }
 
 export default function ProfilePage() {
@@ -21,50 +22,61 @@ export default function ProfilePage() {
   const [userReports, setUserReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchUserReports = async (userId: string) => {
+useEffect(() => {
+  const fetchUserReports = async () => {
+    if (!user) return;
+
     setLoading(true);
     try {
-      const res = await fetch(`/api/reports/user?userId=${userId}`);
+      // Fetch reports filtered by the current user's Clerk id
+      const params = new URLSearchParams({ reporterId: user.id, limit: "50" });
+      const res = await fetch(`/api/reports?${params.toString()}`);
+
+      let data;
+      try {
+        data = await res.json();
+      } catch {
+        data = { error: "Invalid response from server" };
+      }
+
       if (!res.ok) {
-        console.error(`API Error: ${res.status}`);
+        console.error("API Error:", res.status, data);
         setUserReports([]);
         return;
       }
-      const reports = await res.json();
-      setUserReports(reports);
+
+      // The reports endpoint returns { reports, pagination }
+      setUserReports(data.reports || []);
     } catch (error) {
-      console.error("Error fetching reports:", error);
+      console.error("Network or fetch error:", error);
       setUserReports([]);
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    if (userLoaded && user) {
-      fetchUserReports(user.id); // ← user.id is safe here
-    }
-  }, [userLoaded, user]);
+  if (userLoaded && user) {
+    fetchUserReports();
+  }
+}, [userLoaded, user]);
 
-  // Loading
   if (!userLoaded) {
     return (
       <div className="min-h-screen bg-slate-900 text-slate-100 flex items-center justify-center">
-        <p>Loading profile...</p>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-sky-500 mx-auto"></div>
+          <p className="mt-4">Loading profile...</p>
+        </div>
       </div>
     );
   }
 
-  // Not signed in (shouldn't happen due to middleware, but safe)
   if (!user) {
     return (
-      <div className="min-h-screen bg-slate-900 text-slate-100 p-4 flex flex-col items-center justify-center">
-        <p>
+      <div className="min-h-screen bg-slate-900 text-slate-100 flex items-center justify-center p-4">
+        <p className="text-center">
           Please{" "}
-          <Link
-            href="/sign-in"
-            className="text-sky-400 hover:text-sky-300 underline"
-          >
+          <Link href="/sign-in" className="text-sky-400 hover:underline">
             sign in
           </Link>{" "}
           to view your profile.
@@ -73,91 +85,113 @@ export default function ProfilePage() {
     );
   }
 
-  const userDisplayName =
-    user.fullName || user.emailAddresses[0]?.emailAddress || "User";
-  const userEmail = user.emailAddresses[0]?.emailAddress || "N/A";
-  const userImageUrl = user.imageUrl || "/default-avatar.png";
+  const displayName = user.fullName || user.emailAddresses[0]?.emailAddress || "User";
+  const email = user.emailAddresses[0]?.emailAddress || "No email";
+  const avatarUrl = user.imageUrl || "/default-avatar.png";
 
   return (
     <div className="min-h-screen bg-slate-900 text-slate-100">
       <Navbar />
 
-      <div className="p-4">
-        <div className="max-w-4xl mx-auto">
-          {/* User Info */}
-          <div className="bg-slate-800 rounded-lg p-6 mb-6">
-            <div className="flex items-center gap-4">
+      <div className="p-6">
+        <div className="max-w-5xl mx-auto space-y-8">
+
+          {/* Profile Header */}
+          <div className="bg-slate-800/50 backdrop-blur border border-slate-700 rounded-2xl p-8">
+            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
               <Image
-                src={userImageUrl}
+                src={avatarUrl}
                 alt="Profile"
-                width={80}
-                height={80}
-                className="rounded-full object-cover"
+                width={100}
+                height={100}
+                className="rounded-full object-cover border-4 border-slate-700"
               />
-              <div>
-                <h1 className="text-2xl font-bold">{userDisplayName}</h1>
-                <p className="text-slate-400">{userEmail}</p>
+              <div className="flex-1 text-center sm:text-left">
+                <h1 className="text-3xl font-bold text-white">{displayName}</h1>
+                <p className="text-slate-400 mt-1">{email}</p>
               </div>
-            </div>
-            <div className="flex justify-end mt-4">
-              <SignOutButton />
+              <div className="mt-4 sm:mt-0">
+                <SignOutButton>
+                  <button className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition">
+                    Sign Out
+                  </button>
+                </SignOutButton>
+              </div>
             </div>
           </div>
 
-          {/* User's Reports */}
+          {/* Reports Section */}
           <div>
-            <h2 className="text-xl font-semibold mb-4">
-              Your Reports ({userReports.length})
+            <h2 className="text-2xl font-bold mb-6 flex items-center justify-between">
+              Your Reports
+              <span className="text-sky-400 text-lg font-normal">
+                {userReports.length} {userReports.length === 1 ? "item" : "items"}
+              </span>
             </h2>
 
             {loading ? (
-              <p className="text-slate-400">Loading your reports...</p>
+              <div className="text-center py-12">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-sky-500 mx-auto"></div>
+                <p className="mt-4 text-slate-400">Loading your reports...</p>
+              </div>
             ) : userReports.length === 0 ? (
-              <p className="text-slate-400">
-                You haven't created any reports yet.{" "}
-                <Link href="/" className="text-sky-400 hover:underline">
-                  Create one
+              <div className="text-center py-16 bg-slate-800/30 rounded-2xl border border-dashed border-slate-700">
+                <p className="text-slate-400 text-lg">
+                  You haven't created any reports yet.
+                </p>
+                <Link
+                  href="/"
+                  className="inline-block mt-4 px-6 py-3 bg-sky-600 hover:bg-sky-700 text-white rounded-lg font-medium transition"
+                >
+                  Create Your First Report
                 </Link>
-                .
-              </p>
+              </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {userReports.map((report) => (
-                  <div
+                  <Link
                     key={report._id}
-                    className="bg-slate-800 rounded-lg p-4 flex flex-col h-full shadow-md"
+                    href={`/report/${report._id}`}
+                    className="block group"
                   >
-                    {report.imageUrl ? (
-                      <div className="w-full h-40 mb-3 relative">
-                        <Image
-                          src={report.imageUrl}
-                          alt="Report"
-                          fill
-                          className="object-cover rounded-lg border border-slate-700"
-                          unoptimized
-                        />
+                    <div className="bg-slate-800 rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 border border-slate-700 hover:border-sky-600">
+                      {report.imageUrl ? (
+                        <div className="relative h-48">
+                          <Image
+                            src={report.imageUrl}
+                            alt="Report"
+                            fill
+                            className="object-cover group-hover:scale-105 transition-transform duration-300"
+                            unoptimized
+                          />
+                        </div>
+                      ) : (
+                        <div className="h-48 bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center">
+                          <span className="text-slate-500 text-lg">No Image</span>
+                        </div>
+                      )}
+                      <div className="p-5">
+                        <p className="text-white font-medium line-clamp-2 mb-2">
+                          {report.description}
+                        </p>
+                        <div className="flex justify-between items-center text-sm">
+                          <span className="text-slate-400">
+                            {report.category}
+                          </span>
+                          <span className="text-slate-500">
+                            {new Date(report.createdAt).toLocaleDateString()}
+                          </span>
+                        </div>
+                        {report.claimCount !== undefined && (
+                          <div className="mt-3 text-right">
+                            <span className="inline-flex items-center gap-1 text-xs text-sky-400">
+                              {report.claimCount} claim{report.claimCount !== 1 ? "s" : ""}
+                            </span>
+                          </div>
+                        )}
                       </div>
-                    ) : (
-                      <div className="w-full h-40 mb-3 bg-slate-700 flex items-center justify-center rounded-lg">
-                        <span className="text-slate-400 text-sm">No Image</span>
-                      </div>
-                    )}
-                    <p className="flex-1 text-sm mb-2 text-slate-100 line-clamp-3">
-                      {report.description}
-                    </p>
-                    <div className="flex justify-between items-center mt-auto">
-                      <span className="text-xs text-slate-400">
-                        {report.category} •{" "}
-                        {new Date(report.createdAt).toLocaleDateString()}
-                      </span>
-                      <Link
-                        href={`/report/${report._id}`}
-                        className="text-sky-400 hover:text-sky-300 text-xs font-semibold px-3 py-1 rounded-full border border-sky-400 hover:bg-sky-400/10 transition"
-                      >
-                        View
-                      </Link>
                     </div>
-                  </div>
+                  </Link>
                 ))}
               </div>
             )}

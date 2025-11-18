@@ -157,16 +157,18 @@ export async function POST(req: Request) {
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
-    const category = searchParams.get("category");
-    const status = searchParams.get("status") || "open";
-    const limit = Math.min(parseInt(searchParams.get("limit") || "50"), 100);
-    const page = Math.max(parseInt(searchParams.get("page") || "1"), 1);
+  const category = searchParams.get("category");
+  const status = searchParams.get("status") || "open";
+  const reporterId = searchParams.get("reporterId");
+  const limit = Math.min(parseInt(searchParams.get("limit") || "50"), 100);
+  const page = Math.max(parseInt(searchParams.get("page") || "1"), 1);
 
     const client = await clientPromise;
     const db = client.db("tracevault");
 
-    const filter: any = { status };
-    if (category && category !== "all") filter.category = category;
+  const filter: any = { status };
+  if (category && category !== "all") filter.category = category;
+  if (reporterId) filter.reporterId = reporterId;
 
     const reports = await db
       .collection("reports")

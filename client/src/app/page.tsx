@@ -53,7 +53,7 @@ const HomePage = () => {
               {/* CTA */}
               <div className="">
                 <Link
-                  href="/login"
+                  href="/sign-in"
                   className="flex flex-col sm:flex-row items-center justify-center mt-4 sm:mt-7 gap-4 w-full shadow-md "
                 >
                   <Button
