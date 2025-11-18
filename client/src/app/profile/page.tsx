@@ -6,7 +6,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Navbar } from "@/components";
-import { SignOutButton } from "@clerk/nextjs"; // ← Official Clerk component
+ // ← Official Clerk component
 
 interface Report {
   _id: string;
@@ -110,13 +110,7 @@ useEffect(() => {
                 <h1 className="text-3xl font-bold text-white">{displayName}</h1>
                 <p className="text-slate-400 mt-1">{email}</p>
               </div>
-              <div className="mt-4 sm:mt-0">
-                <SignOutButton>
-                  <button className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition">
-                    Sign Out
-                  </button>
-                </SignOutButton>
-              </div>
+              
             </div>
           </div>
 
@@ -140,7 +134,7 @@ useEffect(() => {
                   You haven't created any reports yet.
                 </p>
                 <Link
-                  href="/"
+                  href="/home"
                   className="inline-block mt-4 px-6 py-3 bg-sky-600 hover:bg-sky-700 text-white rounded-lg font-medium transition"
                 >
                   Create Your First Report

@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { auth } from "@clerk/nextjs/server";
 import clientPromise from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 
@@ -10,9 +9,9 @@ interface RouteContext {
 
 export async function PATCH(request: Request, context: RouteContext) {
   try {
-    const session = await getServerSession(authOptions);
-    
-    if (!session?.user?.email) {
+    const { userId } = await auth();
+
+    if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -33,33 +32,30 @@ export async function PATCH(request: Request, context: RouteContext) {
       );
     }
 
+
     const client = await clientPromise;
     const db = client.db("tracevault");
 
-    // Get current user
-    const user = await db.collection("users").findOne({ 
-      email: session.user.email 
-    });
-
-    if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
-
     // Get the claim
-    const claim = await db.collection("claims").findOne({ 
-      _id: new ObjectId(id) 
-    });
+    const claim = await db.collection("claims").findOne({ _id: new ObjectId(id) });
 
     if (!claim) {
       return NextResponse.json({ error: "Claim not found" }, { status: 404 });
     }
 
     // Verify user owns the report associated with this claim
-    const report = await db.collection("reports").findOne({ 
-      _id: new ObjectId(claim.reportId) 
-    });
+    // claim.reportId in DB may be an ObjectId or a string; handle both
+    let reportLookupId: any = (claim as any).reportId;
+    if (typeof reportLookupId === "string") {
+      try {
+        reportLookupId = new ObjectId(reportLookupId);
+      } catch {}
+    }
 
-    if (!report || report.userId.toString() !== user._id.toString()) {
+    const report = await db.collection("reports").findOne({ _id: reportLookupId });
+
+    // Ownership: reports store the Clerk user id in `reporterId`
+    if (!report || report.reporterId !== userId) {
       return NextResponse.json(
         { error: "You can only update claims on your own reports" }, 
         { status: 403 }

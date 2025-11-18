@@ -15,6 +15,7 @@ import {
   FaTimes,
 } from "react-icons/fa";
 import { IoSettingsSharp } from "react-icons/io5";
+import { SignOutButton } from "@clerk/nextjs";
 
 const Navbar = () => {
   const { isSignedIn, user, isLoaded } = useUser();
@@ -162,13 +163,13 @@ const Navbar = () => {
                     <IoSettingsSharp className="w-4 h-4" />
                     Settings
                   </Link>
-                  <Link
-                    href="/help"
-                    className="flex-1 flex items-center justify-center gap-2 p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors text-sm"
-                  >
-                    <FaQuestionCircle className="w-4 h-4" />
-                    Help
-                  </Link>
+                  <div className="flex-1 flex items-center justify-center gap-2 p-2 rounded-lg bg-red-700 hover:bg-red-600 text-slate-300 hover:text-white transition-colors text-sm">
+                    <SignOutButton redirectUrl="/home">
+                      <button className=" text-white rounded-lg font-medium transition">
+                        Sign Out
+                      </button>
+                    </SignOutButton>
+                  </div>
                 </div>
               </div>
             ) : (

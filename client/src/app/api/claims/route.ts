@@ -26,13 +26,31 @@ export async function GET() {
       clerkId: userId,
     });
 
-    if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    let dbUser = user;
+    if (!dbUser) {
+      // Try to create a DB user from Clerk profile if missing
+      const clerkProfile = await currentUser();
+      if (!clerkProfile) {
+        return NextResponse.json({ error: "User not found" }, { status: 404 });
+      }
+
+      const newUser = {
+        clerkId: userId,
+        name:
+          `${clerkProfile.firstName || ""} ${clerkProfile.lastName || ""}`.trim() || clerkProfile.username || "Anonymous",
+        email: clerkProfile.primaryEmailAddress?.emailAddress || null,
+        profilePic: clerkProfile.imageUrl || null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      } as any;
+
+      const insertRes = await db.collection("users").insertOne(newUser);
+      dbUser = { ...newUser, _id: insertRes.insertedId } as any;
     }
 
     // Fetch claims made by the user
     const claimsMade = await db.collection("claims")
-      .find({ claimantId: user._id })
+      .find({ claimantId: dbUser!._id })
       .sort({ createdAt: -1 })
       .toArray();
 
@@ -101,13 +119,26 @@ export async function POST(request: Request) {
     const client = await clientPromise;
     const db = client.db("tracevault");
 
-    // Get current user (DB record) by Clerk ID
-    const user = await db.collection("users").findOne({
-      clerkId: userId,
-    });
+    // Get current user (DB record) by Clerk ID; create if missing
+    let dbUser = await db.collection("users").findOne({ clerkId: userId });
+    if (!dbUser) {
+      const clerkProfile = await currentUser();
+      if (!clerkProfile) {
+        return NextResponse.json({ error: "User not found" }, { status: 404 });
+      }
 
-    if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+      const newUser = {
+        clerkId: userId,
+        name:
+          `${clerkProfile.firstName || ""} ${clerkProfile.lastName || ""}`.trim() || clerkProfile.username || "Anonymous",
+        email: clerkProfile.primaryEmailAddress?.emailAddress || null,
+        profilePic: clerkProfile.imageUrl || null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      } as any;
+
+      const insertRes = await db.collection("users").insertOne(newUser);
+      dbUser = { ...newUser, _id: insertRes.insertedId } as any;
     }
 
     // Verify report exists
@@ -152,10 +183,10 @@ export async function POST(request: Request) {
     // Create claim
     const claim = {
       reportId: new ObjectId(reportId),
-      claimantId: user._id,
+      claimantId: dbUser!._id,
       claimantName:
-        (user as any).name || `${clerkUser?.firstName || ""} ${clerkUser?.lastName || ""}`.trim() || clerkUser?.username || "Anonymous",
-      claimantEmail: (user as any).email || clerkUser?.primaryEmailAddress?.emailAddress || null,
+        (dbUser! as any).name || `${clerkUser?.firstName || ""} ${clerkUser?.lastName || ""}`.trim() || clerkUser?.username || "Anonymous",
+      claimantEmail: (dbUser! as any).email || clerkUser?.primaryEmailAddress?.emailAddress || null,
       description,
       proofImage: proofImageUrl,
       status: "pending", // pending, approved, rejected

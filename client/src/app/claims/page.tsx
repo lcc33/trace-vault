@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useState, useEffect } from "react";
 import { Navbar } from "@/components";
 import Link from "next/link";
+import { Link2Icon } from "lucide-react";
 
 interface Claim {
   _id: string;
@@ -124,7 +125,14 @@ export default function ClaimsPage() {
                     <div className="flex justify-between items-start">
                       <div>
                         <h3 className="font-semibold">
-                          Report: {claim.reportTitle}
+                          <Link
+                            href={`/report/${claim.reportId}`}
+                            className="inline-flex items-center gap-3 text-sky-400 font-semibold hover:underline underline-offset-4"
+                            aria-label={`Open report ${claim.reportTitle}`}
+                          >
+                            <span className="text-sm">Report:</span>
+                            <Link2Icon className="w-5 h-5 opacity-90" />
+                          </Link>
                         </h3>
                         <p className="text-sm text-slate-400 mt-1">
                           Claimant: {claim.claimantName} ({claim.claimantEmail})
@@ -204,7 +212,14 @@ export default function ClaimsPage() {
                     <div className="flex justify-between items-center">
                       <div>
                         <h3 className="font-semibold">
-                          Report: {claim.reportTitle}
+                          <Link
+                            href={`/report/${claim.reportId}`}
+                            className="inline-flex items-center gap-3 text-sky-400 font-semibold hover:underline underline-offset-4"
+                            aria-label={`Open report ${claim.reportTitle}`}
+                          >
+                            <span className="text-xl">Report</span>
+                            <Link2Icon className="w-5 h-5 opacity-90" />
+                          </Link>
                         </h3>
                         <p className="text-sm text-slate-400 mt-1">
                           Status:{" "}
