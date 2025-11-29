@@ -2,7 +2,7 @@
 import { ClerkProvider } from "@clerk/nextjs";
 import { Navbar } from "@/components";
 
-export default function DynamicReportLayout({
+export default function ChatLayout({
   children,
 }: {
   children: React.ReactNode;

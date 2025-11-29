@@ -3,6 +3,7 @@ import { Metadata } from "next";
 import Navbar from "@/components/home/navigation/navbar";
 import ReportForm from "@/components/reports/ReportsForm";
 import ReportsFeed from "@/components/reports/ReportsFeed";
+import type { Pagination, Report, ReportsResponse } from "./types";
 
 // Optional: SEO
 export const metadata: Metadata = {
@@ -10,37 +11,6 @@ export const metadata: Metadata = {
   description:
     "Report lost items, claim found ones, and reunite with what matters.",
 };
-
-export interface Report {
-  _id: string;
-  reporterId: string;
-  title: string;
-  description: string;
-  category: string;
-  location: string;
-  imageUrl?: string;
-  status: string;
-  user: {
-    name?: string;
-    email?: string;
-    profilePic?: string;
-  };
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface Pagination {
-  page: number;
-  limit: number;
-  total: number;
-  hasNext: boolean;
-  totalPages: number;
-}
-
-interface ReportsResponse {
-  reports: Report[];
-  pagination: Pagination;
-}
 
 export default async function HomePage() {
   let initialReports: Report[] = [];

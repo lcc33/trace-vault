@@ -7,11 +7,11 @@ import { useState, useEffect } from "react";
 import { Navbar } from "@/components";
 import Link from "next/link";
 import {
-  Link2Icon,
+  Clock,
   CheckCircle,
   XCircle,
-  Clock,
   ExternalLink,
+  MessageCircle,
 } from "lucide-react";
 
 interface Claim {
@@ -21,8 +21,9 @@ interface Claim {
   claimantId: string;
   claimantName: string;
   claimantEmail: string;
+  claimantPhone?: string; // Add this to your Claim model
   description: string;
-  proofImage?: string;
+  proofImage?: any;
   status: "pending" | "approved" | "rejected";
   createdAt: string;
 }
@@ -36,9 +37,7 @@ export default function ClaimsPage() {
   const [enlargedImage, setEnlargedImage] = useState<string | null>(null);
 
   useEffect(() => {
-    if (isLoaded && user) {
-      fetchUserClaims();
-    }
+    if (isLoaded && user) fetchUserClaims();
   }, [isLoaded, user]);
 
   const fetchUserClaims = async () => {
@@ -54,40 +53,35 @@ export default function ClaimsPage() {
     }
   };
 
-  const handleClaimAction = async (
-    claimId: string,
-    action: "approve" | "reject"
-  ) => {
+  const handleClaimAction = async (claimId: string, action: "approve" | "reject") => {
     try {
       const res = await fetch(`/api/claims/${claimId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action }),
       });
-
-      if (res.ok) {
-        fetchUserClaims();
-      }
+      if (res.ok) fetchUserClaims();
     } catch (error) {
-      console.error("Error updating claim:", error);
+      console.error("Error:", error);
     }
   };
 
-  const handleClaimAccept = async (claimId: string) => {
+  // Mark report as claimed (reporter only)
+  const markReportAsClaimed = async (reportId: string) => {
+    if (!confirm("Mark this report as claimed? This will close it.")) return;
+
     try {
-      const res = await fetch(`/api/claims/${claimId}/accept`, {
+      const res = await fetch(`/api/reports/${reportId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "claimed" }),
       });
-
       if (res.ok) {
-        fetchUserClaims(); // Refresh to show updated status
-      } else {
-        const data = await res.json();
-        console.error("Error accepting claim:", data.error);
+        fetchUserClaims(); // Refresh
+        alert("Report marked as claimed!");
       }
     } catch (error) {
-      console.error("Error accepting claim:", error);
+      alert("Failed to update report");
     }
   };
 
@@ -106,12 +100,12 @@ export default function ClaimsPage() {
     <div className="min-h-screen bg-slate-900 text-slate-100">
       <Navbar />
 
-      <div className="max-w-5xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+      <div className="max-w-5xl mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-8 text-center sm:text-left">
           Claims Management
         </h1>
 
-        {/* Tab Navigation - Responsive */}
+        {/* Tabs */}
         <div className="flex flex-col sm:flex-row border-b border-slate-700 mb-8">
           <button
             onClick={() => setActiveTab("received")}
@@ -121,10 +115,7 @@ export default function ClaimsPage() {
                 : "text-slate-400 hover:text-slate-200"
             }`}
           >
-            Claims on My Reports
-            <span className="ml-2 text-sm bg-slate-700 px-2 py-0.5 rounded-full">
-              {claimsReceived.length}
-            </span>
+            Claims on My Reports ({claimsReceived.length})
           </button>
           <button
             onClick={() => setActiveTab("made")}
@@ -134,115 +125,98 @@ export default function ClaimsPage() {
                 : "text-slate-400 hover:text-slate-200"
             }`}
           >
-            My Claims
-            <span className="ml-2 text-sm bg-slate-700 px-2 py-0.5 rounded-full">
-              {claimsMade.length}
-            </span>
+            My Claims ({claimsMade.length})
           </button>
         </div>
 
-        {/* Claims Received */}
+        {/* === CLAIMS RECEIVED (Reporter View) === */}
         {activeTab === "received" && (
           <div className="space-y-6">
-            <h2 className="text-2xl font-semibold text-sky-300">
-              Claims on Your Reports
-            </h2>
+            <h2 className="text-2xl font-semibold text-sky-300">Claims on Your Reports</h2>
             {claimsReceived.length === 0 ? (
               <div className="text-center py-16 bg-slate-800/50 rounded-2xl border border-dashed border-slate-700">
                 <Clock className="w-16 h-16 mx-auto text-slate-600 mb-4" />
-                <p className="text-slate-400 text-lg">
-                  No one has claimed your items yet.
-                </p>
+                <p className="text-slate-400 text-lg">No one has claimed your items yet.</p>
               </div>
             ) : (
               claimsReceived.map((claim) => (
-                <div
-                  key={claim._id}
-                  className="bg-slate-800/70 backdrop-blur border border-slate-700 rounded-2xl p-6 shadow-lg"
-                >
-                  {/* Header */}
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+                <div key={claim._id} className="bg-slate-800/70 border border-slate-700 rounded-2xl p-6 shadow-lg">
+                  <div className="flex flex-col sm:flex-row justify-between gap-4 mb-4">
                     <div>
                       <Link
                         href={`/report/${claim.reportId}`}
-                        className="inline-flex items-center gap-2 text-sky-400 hover:text-sky-300 font-semibold text-lg group"
+                        className="text-sky-400 hover:text-sky-300 font-semibold text-lg flex items-center gap-2 group"
                       >
-                        <span>{claim.reportTitle || "View Report"}</span>
+                        {claim.reportTitle || "View Report"}
                         <ExternalLink className="w-4 h-4 opacity-70 group-hover:opacity-100" />
                       </Link>
                       <p className="text-sm text-slate-400 mt-1">
-                        Claimed by:{" "}
-                        <span className="font-medium text-slate-200">
-                          {claim.claimantName}
-                        </span>
-                        {" • "} {claim.claimantEmail}
+                        Claimed by: <strong>{claim.claimantName}</strong> • {claim.claimantEmail}
                       </p>
                     </div>
 
-                    {/* Status Badge */}
-                    <div className="flex items-center gap-3">
-                      <span
-                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wider ${
-                          claim.status === "pending"
-                            ? "bg-yellow-500/20 text-yellow-400 border border-yellow-500/50"
-                            : claim.status === "approved"
-                            ? "bg-green-500/20 text-green-400 border border-green-500/50"
-                            : "bg-red-500/20 text-red-400 border border-red-500/50"
-                        }`}
-                      >
-                        {claim.status === "pending" && (
-                          <Clock className="w-3.5 h-3.5" />
-                        )}
-                        {claim.status === "approved" && (
-                          <CheckCircle className="w-3.5 h-3.5" />
-                        )}
-                        {claim.status === "rejected" && (
-                          <XCircle className="w-3.5 h-3.5" />
-                        )}
-                        {claim.status}
-                      </span>
+                    <div className={`px-4 py-2 rounded-full text-sm font-bold flex items-center gap-2 ${
+                      claim.status === "pending" ? "bg-yellow-500/20 text-yellow-400 border border-yellow-500/50" :
+                      claim.status === "approved" ? "bg-green-500/20 text-green-400 border border-green-500/50" :
+                      "bg-red-500/20 text-red-400 border border-red-500/50"
+                    }`}>
+                      {claim.status === "pending" && <Clock className="w-4 h-4" />}
+                      {claim.status === "approved" && <CheckCircle className="w-4 h-4" />}
+                      {claim.status === "rejected" && <XCircle className="w-4 h-4" />}
+                      {claim.status.toUpperCase()}
                     </div>
                   </div>
 
-                  {/* Description */}
-                  <p className="text-slate-300 mb-4 leading-relaxed">
-                    {claim.description}
-                  </p>
+                  <p className="text-slate-300 mb-4">{claim.description}</p>
 
-                  {/* Proof Image */}
                   {claim.proofImage && (
-                    <div className="mb-5">
-                      <Image
-                        src={claim.proofImage}
-                        alt="Proof from claimant"
-                        width={800}
-                        height={600}
-                        className="rounded-xl border border-slate-600 object-cover w-full max-h-96 cursor-pointer hover:opacity-90 transition-opacity"
-                        unoptimized
-                        onClick={() => setEnlargedImage(claim.proofImage!)}
-                      />
-                      <p className="text-xs text-slate-500 mt-2 text-center">
-                        Tap to enlarge
-                      </p>
-                    </div>
+                    <Image
+                      src={claim.proofImage}
+                      alt="Proof"
+                      width={800}
+                      height={600}
+                      className="rounded-xl border border-slate-700 w-full max-h-96 object-cover cursor-pointer hover:opacity-90 mb-5"
+                      unoptimized
+                      onClick={() => setEnlargedImage(claim.proofImage)}
+                    />
                   )}
 
-                  {/* Action Buttons - Responsive */}
+                  {/* Actions */}
                   {claim.status === "pending" && (
-                    <div className="flex flex-col sm:flex-row gap-3 mt-6">
+                    <div className="flex flex-col sm:flex-row gap-3">
                       <button
                         onClick={() => handleClaimAction(claim._id, "approve")}
-                        className="flex-1 sm:flex-initial px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-xl transition flex items-center justify-center gap-2"
+                        className="flex-1 py-3 bg-green-600 hover:bg-green-700 rounded-xl font-medium flex items-center justify-center gap-2"
                       >
-                        <CheckCircle className="w-5 h-5" />
-                        Approve Claim
+                        <CheckCircle className="w-5 h-5" /> Approve Claim
                       </button>
                       <button
                         onClick={() => handleClaimAction(claim._id, "reject")}
-                        className="flex-1 sm:flex-initial px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-medium rounded-xl transition flex items-center justify-center gap-2"
+                        className="flex-1 py-3 bg-red-600 hover:bg-red-700 rounded-xl font-medium flex items-center justify-center gap-2"
                       >
-                        <XCircle className="w-5 h-5" />
-                        Reject Claim
+                        <XCircle className="w-5 h-5" /> Reject Claim
+                      </button>
+                    </div>
+                  )}
+
+                  {/* WhatsApp Button — Only when approved */}
+                  {claim.status === "approved" && claim.claimantPhone && (
+                    <div className="mt-4">
+                      <a
+                        href={`https://wa.me/${claim.claimantPhone.replace(/[^0-9]/g, "")}?text=Hi ${encodeURIComponent(claim.claimantName)}, your claim on "${claim.reportTitle || "my item"}" was approved! Let's arrange pickup.`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-3 px-6 py-4 bg-[#25D366] hover:bg-[#128C7E] text-white font-bold rounded-xl transition-all transform hover:scale-105"
+                      >
+                        <MessageCircle className="w-6 h-6" />
+                        Message on WhatsApp
+                      </a>
+
+                      <button
+                        onClick={() => markReportAsClaimed(claim.reportId)}
+                        className="ml-3 px-6 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold rounded-xl transition"
+                      >
+                        Mark Report as Claimed
                       </button>
                     </div>
                   )}
@@ -252,72 +226,51 @@ export default function ClaimsPage() {
           </div>
         )}
 
-        {/* Claims Made */}
+        {/* === MY CLAIMS (Claimant View) === */}
         {activeTab === "made" && (
           <div className="space-y-6">
             <h2 className="text-2xl font-semibold text-sky-300">Your Claims</h2>
             {claimsMade.length === 0 ? (
               <div className="text-center py-16 bg-slate-800/50 rounded-2xl border border-dashed border-slate-700">
                 <Clock className="w-16 h-16 mx-auto text-slate-600 mb-4" />
-                <p className="text-slate-400 text-lg">
-                  You haven't claimed any items yet.
-                </p>
+                <p className="text-slate-400 text-lg">You haven't claimed any items yet.</p>
               </div>
             ) : (
               claimsMade.map((claim) => (
-                <div
-                  key={claim._id}
-                  className="bg-slate-800/70 backdrop-blur border border-slate-700 rounded-2xl p-6 shadow-lg"
-                >
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div key={claim._id} className="bg-slate-800/70 border border-slate-700 rounded-2xl p-6 shadow-lg">
+                  <div className="flex flex-col sm:flex-row justify-between gap-4">
                     <div>
                       <Link
                         href={`/report/${claim.reportId}`}
-                        className="inline-flex items-center gap-2 text-sky-400 hover:text-sky-300 font-semibold text-lg group"
+                        className="text-sky-400 hover:text-sky-300 font-semibold text-lg flex items-center gap-2 group"
                       >
-                        <span>{claim.reportTitle || "View Report"}</span>
+                        {claim.reportTitle || "View Report"}
                         <ExternalLink className="w-4 h-4 opacity-70 group-hover:opacity-100" />
                       </Link>
                       <p className="text-sm text-slate-400 mt-2">
-                        Submitted on{" "}
-                        {new Date(claim.createdAt).toLocaleDateString()}
+                        Submitted {new Date(claim.createdAt).toLocaleDateString()}
                       </p>
                     </div>
 
-                    <span
-                      className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wider ${
-                        claim.status === "pending"
-                          ? "bg-yellow-500/20 text-yellow-400 border border-yellow-500/50"
-                          : claim.status === "approved"
-                          ? "bg-green-500/20 text-green-400 border border-green-500/50"
-                          : "bg-red-500/20 text-red-400 border border-red-500/50"
-                      }`}
-                    >
-                      {claim.status === "pending" && (
-                        <Clock className="w-4 h-4" />
-                      )}
-                      {claim.status === "approved" && (
-                        <CheckCircle className="w-4 h-4" />
-                      )}
-                      {claim.status === "rejected" && (
-                        <XCircle className="w-4 h-4" />
-                      )}
-                      {claim.status}
-                    </span>
+                    <div className={`px-4 py-2 rounded-full text-sm font-bold flex items-center gap-2 ${
+                      claim.status === "pending" ? "bg-yellow-500/20 text-yellow-400" :
+                      claim.status === "approved" ? "bg-green-500/20 text-green-400" :
+                      "bg-red-500/20 text-red-400"
+                    }`}>
+                      {claim.status === "pending" && <Clock className="w-4 h-4" />}
+                      {claim.status === "approved" && <CheckCircle className="w-4 h-4" />}
+                      {claim.status === "rejected" && <XCircle className="w-4 h-4" />}
+                      {claim.status.toUpperCase()}
+                    </div>
                   </div>
 
                   <p className="mt-4 text-slate-300">{claim.description}</p>
 
-                  {/* Accept Button for Approved Claims */}
                   {claim.status === "approved" && (
-                    <div className="mt-6 flex flex-col sm:flex-row gap-3">
-                      <button
-                        onClick={() => handleClaimAccept(claim._id)}
-                        className="flex-1 sm:flex-initial px-6 py-3 bg-sky-600 hover:bg-sky-700 text-white font-medium rounded-xl transition flex items-center justify-center gap-2"
-                      >
-                        <CheckCircle className="w-5 h-5" />
-                        Accept & Confirm
-                      </button>
+                    <div className="mt-5 p-4 bg-green-900/30 border border-green-700 rounded-xl">
+                      <p className="text-green-400 font-medium">
+                        Your claim was approved! The owner will contact you soon.
+                      </p>
                     </div>
                   )}
                 </div>
@@ -327,24 +280,24 @@ export default function ClaimsPage() {
         )}
       </div>
 
-      {/* Enlarged Image Modal */}
+      {/* Enlarged Image */}
       {enlargedImage && (
         <div
-          className="fixed inset-0 bg-black/95 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+          className="fixed inset-0 bg-black/95 flex items-center justify-center z-50 p-4"
           onClick={() => setEnlargedImage(null)}
         >
-          <div className="relative max-w-5xl max-h-full">
+          <div className="relative">
             <Image
               src={enlargedImage}
-              alt="Enlarged proof"
+              alt="Proof"
               width={1200}
               height={800}
-              className="rounded-2xl object-contain max-w-full max-h-[90vh] shadow-2xl"
+              className="rounded-2xl object-contain max-w-full max-h-[90vh]"
               unoptimized
             />
             <button
               onClick={() => setEnlargedImage(null)}
-              className="absolute -top-12 right-0 text-white bg-slate-800/80 hover:bg-slate-700/80 backdrop-blur w-12 h-12 rounded-full flex items-center justify-center text-2xl font-light transition"
+              className="absolute -top-12 right-0 bg-slate-800/80 hover:bg-slate-700/80 text-white w-12 h-12 rounded-full flex items-center justify-center text-3xl"
             >
               ×
             </button>

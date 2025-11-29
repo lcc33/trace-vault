@@ -1,34 +1,43 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-
-interface Report {
-  _id: string;
-  description: string;
-  category: string;
-  contact: string;
-  imageUrl?: string;
-  createdAt: string;
-  user?: {
-    name?: string;
-    email?: string;
-    profilePic?: string;
-  };
-}
+import { Loader2 } from "lucide-react";
+import { useUser } from "@clerk/nextjs";
+import type { Report } from "@/app/home/types";
 
 export default function ReportPage() {
+  const [selectedReportId, setSelectedReportId] = useState<string | null>(null);
+  const { user, isSignedIn, isLoaded } = useUser();
+
+  const isOwner = (report: Report) =>
+    isSignedIn && report.reporterId === user?.id;
+  const [showModal, setShowModal] = useState(false);
+  const [claimData, setClaimData] = useState<{
+    image: File | null;
+    description: string;
+  }>({ image: null, description: "" });
   const params = useParams();
   const router = useRouter();
   const id = params.id as string;
-
+  const [popup, setPopup] = useState<{
+    isVisible: boolean;
+    message: string;
+    isSuccess: boolean;
+  }>({ isVisible: false, message: "", isSuccess: true });
   const [report, setReport] = useState<Report | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [enlargedImage, setEnlargedImage] = useState<string | null>(null);
-
+  const showToast = useCallback(
+    (message: string, isSuccess = true, duration = 3000) => {
+      setPopup({ isVisible: true, message, isSuccess });
+      setTimeout(() => setPopup((p) => ({ ...p, isVisible: false })), duration);
+    },
+    []
+  );
   const defaultAvatar =
     "https://i.pinimg.com/736x/21/f6/fc/21f6fc4abd29ba736e36e540a787e7da.jpg";
 
@@ -62,6 +71,47 @@ export default function ReportPage() {
       fetchReport();
     }
   }, [id]);
+
+  const openClaimModal = (id: string) => {
+    setSelectedReportId(id);
+    setShowModal(true);
+    setClaimData({ image: null, description: "" });
+  };
+
+  const closeClaimModal = () => {
+    setShowModal(false);
+    setSelectedReportId(null);
+  };
+
+  const handleClaimSubmit = async () => {
+    if (!claimData.description.trim())
+      return showToast("Add a description", false);
+    if (!claimData.image) return showToast("Upload proof image", false);
+
+    setLoading(true);
+    const formData = new FormData();
+    formData.append("reportId", selectedReportId!);
+    formData.append("description", claimData.description);
+    formData.append("image", claimData.image);
+
+    try {
+      const res = await fetch("/api/claims", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      if (res.ok) {
+        closeClaimModal();
+        showToast("Claim submitted!");
+      } else {
+        showToast(data.error || "Claim failed", false);
+      }
+    } catch {
+      showToast("Network error", false);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleShare = () => {
     navigator.clipboard.writeText(window.location.href);
@@ -135,6 +185,80 @@ export default function ReportPage() {
               </div>
             )}
 
+            <div className="mt-4" onClick={(e) => e.stopPropagation()}>
+              {!isOwner(report) && (
+                <button
+                  onClick={() => openClaimModal(report._id)}
+                  className="w-full sm:w-auto px-8 py-4 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-2xl transition-all transform hover:scale-105 active:scale-95 shadow-lg"
+                >
+                  Claim This Item
+                </button>
+              )}
+            </div>
+            {/* Claim Modal */}
+            {showModal && (
+              <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                <div className="bg-slate-900 rounded-3xl p-6 w-full max-w-lg border border-slate-700 shadow-2xl">
+                  <h2 className="text-2xl font-bold text-white mb-6">
+                    Claim This Item
+                  </h2>
+                  <textarea
+                    placeholder="Describe how this item belongs to you..."
+                    value={claimData.description}
+                    onChange={(e) =>
+                      setClaimData({
+                        ...claimData,
+                        description: e.target.value,
+                      })
+                    }
+                    className="w-full bg-slate-800 border border-slate-700 rounded-2xl px-5 py-4 text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-500/20 min-h-32 resize-none mb-5"
+                  />
+                  <div className="mb-6">
+                    <label className="block text-sm font-medium text-slate-400 mb-3">
+                      Proof of Ownership (Photo)
+                    </label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) =>
+                        setClaimData({
+                          ...claimData,
+                          image: e.target.files?.[0] || null,
+                        })
+                      }
+                      className="block w-full text-sm text-slate-400 file:mr-4 file:py-3 file:px-6 file:rounded-full file:border-0 file:bg-sky-600 file:text-white hover:file:bg-sky-700 cursor-pointer"
+                    />
+                    {claimData.image && (
+                      <div className="mt-4">
+                        <Image
+                          src={URL.createObjectURL(claimData.image)}
+                          alt="Proof"
+                          width={400}
+                          height={300}
+                          className="rounded-2xl border border-slate-700 object-cover w-full max-h-64"
+                        />
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <button
+                      onClick={handleClaimSubmit}
+                      disabled={loading}
+                      className="flex-1 py-4 bg-sky-600 hover:bg-sky-700 disabled:opacity-50 text-white font-bold rounded-2xl transition flex items-center justify-center gap-2"
+                    >
+                      {loading ? <Loader2 className="animate-spin" /> : null}
+                      Submit Claim
+                    </button>
+                    <button
+                      onClick={closeClaimModal}
+                      className="flex-1 py-4 bg-slate-700 hover:bg-slate-600 text-white font-bold rounded-2xl transition"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
             {/* Report ID */}
             <div className="text-xs text-slate-500 mt-4">
               Report ID: {report._id}
@@ -145,7 +269,7 @@ export default function ReportPage() {
           <div className="flex gap-3 mt-6">
             <button
               onClick={handleBack}
-              className="px-4 py-2 text-sm rounded-full                                            bg-slate                                                                                                                                                                                                                                                                                                                            -700 hover:bg-slate-600 text-white transition-colors"
+              className="px-4 py-2 text-sm rounded-full bg-slate-700 hover:bg-slate-600 text-white transition-colors"
             >
               ← Back to Feed
             </button>

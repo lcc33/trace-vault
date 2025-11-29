@@ -11,15 +11,16 @@ import {
   FaBell,
   FaUser,
   FaFileAlt,
-  FaQuestionCircle,
   FaBars,
   FaTimes,
+  FaRegComments,
 } from "react-icons/fa";
+
 import { IoSettingsSharp } from "react-icons/io5";
 import { SignOutButton } from "@clerk/nextjs";
 
 const Navbar = () => {
-  const { isSignedIn, user, isLoaded } = useUser();
+  const { user, isLoaded } = useUser();
   const pathname = usePathname();
   const [activeItem, setActiveItem] = useState("home");
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -35,6 +36,7 @@ const Navbar = () => {
     },
     { id: "claims", href: "/claims", icon: FaFileAlt, label: "Claims" },
     { id: "profile", href: "/profile", icon: FaUser, label: "Profile" },
+    { id: "chats", href: "/chats", icon: FaRegComments, label: "Chats" },
   ];
 
   const handleItemClick = (id: string) => {
@@ -42,7 +44,8 @@ const Navbar = () => {
     setSidebarOpen(false); // Close on mobile
   };
 
-  const defaultAvatar = "/default-avatar.png";
+  const defaultAvatar =
+    "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
 
   // Close sidebar on route change or resize
   useEffect(() => {
@@ -67,6 +70,8 @@ const Navbar = () => {
       setActiveItem("claims");
     } else if (pathname.startsWith("/profile")) {
       setActiveItem("profile");
+    } else if (pathname.startsWith("/chats")) {
+      setActiveItem("chats");
     }
     // keep sidebar state unchanged here; clicking nav items will close on mobile
   }, [pathname]);
@@ -181,7 +186,7 @@ const Navbar = () => {
                   Settings
                 </Link>
                 <div className="flex-1 flex items-center justify-center gap-2 p-2 rounded-lg bg-red-700 hover:bg-red-600 text-slate-300 hover:text-white transition-colors text-sm">
-                  <SignOutButton redirectUrl="/home">
+                  <SignOutButton redirectUrl="/sign-in">
                     <button className=" text-white rounded-lg font-medium transition">
                       Sign Out
                     </button>

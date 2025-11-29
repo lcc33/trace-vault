@@ -4,10 +4,16 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import Image from "next/image";
 import { useUser } from "@clerk/nextjs";
-import { MoreVertical, Loader2, Search, Filter } from "lucide-react";
+import {
+  MoreVertical,
+  Loader2,
+  Search,
+  Filter,
+  CheckCircle,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { formatRelativeTime } from "@/constants/dateFormatter";
-import type { Report, Pagination } from "@/app/home/page";
+import type { Report, Pagination } from "@/app/home/types";
 
 export default function ReportsFeed({
   initialReports = [],
@@ -83,7 +89,12 @@ export default function ReportsFeed({
           );
           setPagination(data.pagination);
         } else {
-          showToast(data.error || "Failed to load reports", false);
+          const msg = data.error || "Failed to load reports";
+          if (res.status === 429) {
+            showToast("Daily limit reached. Try again tomorrow.", false);
+          } else {
+            showToast(msg, false);
+          }
         }
       } catch (err) {
         showToast("Network error", false);
@@ -171,11 +182,17 @@ export default function ReportsFeed({
         body: formData,
       });
       const data = await res.json();
+
       if (res.ok) {
         closeClaimModal();
-        showToast("Claim submitted!");
+        showToast("Claim submitted! The owner will contact you.");
       } else {
-        showToast(data.error || "Claim failed", false);
+        const msg = data.error || "Claim failed";
+        if (res.status === 429) {
+          showToast("Daily claim limit reached (5 per day)", false);
+        } else {
+          showToast(msg, false);
+        }
       }
     } catch {
       showToast("Network error", false);
@@ -207,7 +224,7 @@ export default function ReportsFeed({
       )}
 
       {/* Fullscreen Loading */}
-      {loading && (
+      {loading && !fetchingMore && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-slate-800 rounded-2xl p-8 flex flex-col items-center gap-4">
             <Loader2 className="animate-spin h-12 w-12 text-sky-500" />
@@ -216,7 +233,7 @@ export default function ReportsFeed({
         </div>
       )}
 
-      {/* Search & Filter - Fully Responsive */}
+      {/* Search & Filter */}
       <div className="sticky top-0 z-10 bg-slate-900/95 backdrop-blur-lg border-b border-slate-700">
         <div className="max-w-6xl mx-auto px-4 py-4">
           <div className="flex flex-col sm:flex-row gap-3">
@@ -268,111 +285,135 @@ export default function ReportsFeed({
           </div>
         ) : (
           <div className="divide-y divide-slate-700">
-            {filteredReports.map((report) => (
-              <article
-                key={report._id}
-                className="p-5 hover:bg-slate-800/50 transition-all cursor-pointer"
-                onClick={() => handlePostClick(report._id)}
-              >
-                {/* Header */}
-                <div className="flex items-start justify-between gap-4 mb-4">
-                  <div className="flex items-center gap-4 flex-1 min-w-0">
-                    <Image
-                      src={report.user?.profilePic || "/default-avatar.png"}
-                      alt="User"
-                      width={48}
-                      height={48}
-                      className="w-12 h-12 rounded-full object-cover border-2 border-slate-700 flex-shrink-0"
-                    />
-                    <div className="min-w-0">
-                      <p className="font-bold text-white truncate">
-                        {report.user?.name || "Anonymous"}
-                      </p>
-                      <p className="text-xs text-slate-400">
-                        {formatRelativeTime(report.createdAt)} •{" "}
-                        <span className="capitalize">{report.category}</span>
-                      </p>
-                    </div>
-                  </div>
+            {filteredReports.map((report) => {
+              const claimed = report.status === "claimed";
 
-                  {/* Owner Menu */}
-                  {isOwner(report) && (
-                    <div
-                      className="relative flex-shrink-0"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <button
-                        onClick={() =>
-                          setActiveMenu(
-                            activeMenu === report._id ? null : report._id
-                          )
-                        }
-                        className="p-2 rounded-full hover:bg-slate-700 transition"
-                      >
-                        <MoreVertical className="w-5 h-5 text-slate-400" />
-                      </button>
-                      {activeMenu === report._id && (
-                        <div className="absolute right-0 top-10 w-40 bg-slate-800 border border-slate-700 rounded-xl shadow-2xl overflow-hidden z-20">
-                          <button
-                            onClick={() => {
-                              handleDelete(report._id);
-                              setActiveMenu(null);
-                            }}
-                            className="w-full text-left px-4 py-3 text-sm text-red-400 hover:bg-red-900/30 transition"
-                          >
-                            Delete Report
-                          </button>
-                          <button
-                            onClick={() => {
-                              handleShare(report._id);
-                              setActiveMenu(null);
-                            }}
-                            className="w-full text-left px-4 py-3 text-sm text-slate-300 hover:bg-slate-700 transition"
-                          >
-                            Share Link
-                          </button>
+              return (
+                <article
+                  key={report._id}
+                  className={`p-5 transition-all ${
+                    claimed ? "opacity-60" : "hover:bg-slate-800/50"
+                  } cursor-pointer`}
+                  onClick={() => !claimed && handlePostClick(report._id)}
+                >
+                  {/* Header */}
+                  <div className="flex items-start justify-between gap-4 mb-4">
+                    <div className="flex items-center gap-4 flex-1 min-w-0">
+                      <Image
+                        src={report.user?.profilePic || "/default-avatar.png"}
+                        alt="User"
+                        width={48}
+                        height={48}
+                        className="w-12 h-12 rounded-full object-cover border-2 border-slate-700 flex-shrink-0"
+                      />
+                      <div className="min-w-0">
+                        <p className="font-bold text-white truncate">
+                          {report.user?.name || "Anonymous"}
+                        </p>
+                        <div className="flex items-center gap-2 text-xs text-slate-400">
+                          <span>{formatRelativeTime(report.createdAt)}</span>
+                          <span>•</span>
+                          <span className="capitalize">{report.category}</span>
+                          {claimed && (
+                            <>
+                              <span>•</span>
+                              <span className="flex items-center gap-1 text-green-400 font-medium">
+                                <CheckCircle className="w-4 h-4" />
+                                Claimed
+                              </span>
+                            </>
+                          )}
                         </div>
-                      )}
+                      </div>
+                    </div>
+
+                    {/* Owner Menu */}
+                    {isOwner(report) && (
+                      <div
+                        className="relative flex-shrink-0"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <button
+                          onClick={() =>
+                            setActiveMenu(
+                              activeMenu === report._id ? null : report._id
+                            )
+                          }
+                          className="p-2 rounded-full hover:bg-slate-700 transition"
+                        >
+                          <MoreVertical className="w-5 h-5 text-slate-400" />
+                        </button>
+                        {activeMenu === report._id && (
+                          <div className="absolute right-0 top-10 w-40 bg-slate-800 border border-slate-700 rounded-xl shadow-2xl overflow-hidden z-20">
+                            <button
+                              onClick={() => {
+                                handleDelete(report._id);
+                                setActiveMenu(null);
+                              }}
+                              className="w-full text-left px-4 py-3 text-sm text-red-400 hover:bg-red-900/30 transition"
+                            >
+                              Delete Report
+                            </button>
+                            <button
+                              onClick={() => {
+                                handleShare(report._id);
+                                setActiveMenu(null);
+                              }}
+                              className="w-full text-left px-4 py-3 text-sm text-slate-300 hover:bg-slate-700 transition"
+                            >
+                              Share Link
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Description */}
+                  <p className="text-slate-200 mb-4 leading-relaxed">
+                    {report.description}
+                  </p>
+
+                  {/* Image */}
+                  {report.imageUrl && (
+                    <div className="mb-5 -mx-5">
+                      <Image
+                        src={report.imageUrl}
+                        alt="Report"
+                        width={800}
+                        height={600}
+                        className="w-full rounded-2xl border border-slate-700 object-cover max-h-96 cursor-pointer hover:opacity-90 transition"
+                        unoptimized
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEnlargedImage(report.imageUrl!);
+                        }}
+                      />
                     </div>
                   )}
-                </div>
 
-                {/* Description */}
-                <p className="text-slate-200 mb-4 leading-relaxed">
-                  {report.description}
-                </p>
-
-                {/* Image */}
-                {report.imageUrl && (
-                  <div className="mb-5 -mx-5">
-                    <Image
-                      src={report.imageUrl}
-                      alt="Report"
-                      width={800}
-                      height={600}
-                      className="w-full rounded-2xl border border-slate-700 object-cover max-h-96 cursor-pointer hover:opacity-90 transition"
-                      unoptimized
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setEnlargedImage(report.imageUrl!);
-                      }}
-                    />
+                  {/* Claim Button */}
+                  <div className="mt-4" onClick={(e) => e.stopPropagation()}>
+                    {!isOwner(report) && !claimed && (
+                      <button
+                        onClick={() => openClaimModal(report._id)}
+                        className="w-full px-8 py-4 bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white font-bold rounded-2xl transition-all transform hover:scale-105 active:scale-95 shadow-xl"
+                      >
+                        Claim This Item
+                      </button>
+                    )}
+                    {claimed && (
+                      <div className="text-center py-3">
+                        <span className="inline-flex items-center gap-2 px-4 py-2 bg-green-900/30 border border-green-700 text-green-400 rounded-full text-sm font-medium">
+                          <CheckCircle className="w-5 h-5" />
+                          This item has been claimed
+                        </span>
+                      </div>
+                    )}
                   </div>
-                )}
-
-                {/* Claim Button - Full width on mobile */}
-                <div className="mt-4" onClick={(e) => e.stopPropagation()}>
-                  {!isOwner(report) && (
-                    <button
-                      onClick={() => openClaimModal(report._id)}
-                      className="w-full sm:w-auto px-8 py-4 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-2xl transition-all transform hover:scale-105 active:scale-95 shadow-lg"
-                    >
-                      Claim This Item
-                    </button>
-                  )}
-                </div>
-              </article>
-            ))}
+                </article>
+              );
+            })}
 
             {/* Load More */}
             {pagination.hasNext && (

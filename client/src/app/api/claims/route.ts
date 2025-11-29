@@ -1,3 +1,4 @@
+// src/app/api/claims/route.ts
 import { NextResponse } from "next/server";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import clientPromise from "@/lib/mongodb";
@@ -5,210 +6,237 @@ import { ObjectId } from "mongodb";
 import { v2 as cloudinary } from "cloudinary";
 
 cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME!,
+  api_key: process.env.CLOUDINARY_API_KEY!,
+  api_secret: process.env.CLOUDINARY_API_SECRET!,
 });
 
+const DAILY_CLAIM_LIMIT = 5;
+
+// --- GET: Fetch user's claims (made + received) ---
 export async function GET() {
   try {
     const { userId } = await auth();
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const client = await clientPromise;
     const db = client.db("tracevault");
 
-    // Get current user (DB record) by Clerk ID
-    const user = await db.collection("users").findOne({
-      clerkId: userId,
-    });
-
-    let dbUser = user;
+    // Get or create DB user
+    let dbUser = await db.collection("users").findOne({ clerkId: userId });
     if (!dbUser) {
-      // Try to create a DB user from Clerk profile if missing
       const clerkProfile = await currentUser();
-      if (!clerkProfile) {
-        return NextResponse.json({ error: "User not found" }, { status: 404 });
-      }
+      if (!clerkProfile) return NextResponse.json({ error: "User not found" }, { status: 404 });
 
       const newUser = {
         clerkId: userId,
-        name:
-          `${clerkProfile.firstName || ""} ${clerkProfile.lastName || ""}`.trim() || clerkProfile.username || "Anonymous",
+        name: `${clerkProfile.firstName || ""} ${clerkProfile.lastName || ""}`.trim() || clerkProfile.username || "Anonymous",
         email: clerkProfile.primaryEmailAddress?.emailAddress || null,
         profilePic: clerkProfile.imageUrl || null,
         createdAt: new Date(),
-        updatedAt: new Date(),
-      } as any;
+      };
 
-      const insertRes = await db.collection("users").insertOne(newUser);
-      dbUser = { ...newUser, _id: insertRes.insertedId } as any;
+      const res = await db.collection("users").insertOne(newUser);
+      dbUser = { ...newUser, _id: res.insertedId };
     }
 
-    // Fetch claims made by the user
+    // === CLAIMS MADE BY USER ===
     const claimsMade = await db.collection("claims")
-      .find({ claimantId: dbUser!._id })
-      .sort({ createdAt: -1 })
+      .aggregate([
+        { $match: { claimantId: dbUser._id } },
+        {
+          $lookup: {
+            from: "reports",
+            localField: "reportId",
+            foreignField: "_id",
+            as: "report",
+          },
+        },
+        { $unwind: "$report" },
+        { $sort: { createdAt: -1 } },
+      ])
       .toArray();
 
-    // Fetch claims received on user's reports
-    // Find reports where the reporter is the current Clerk user
+    // === CLAIMS RECEIVED ON USER'S REPORTS ===
     const userReports = await db.collection("reports")
       .find({ reporterId: userId })
       .toArray();
 
-    const userReportIds = userReports.map(report => report._id);
-    
+    const reportIds = userReports.map(r => r._id);
+
     const claimsReceived = await db.collection("claims")
-      .find({ reportId: { $in: userReportIds } })
-      .sort({ createdAt: -1 })
+      .aggregate([
+        { $match: { reportId: { $in: reportIds } } },
+        {
+          $lookup: {
+            from: "reports",
+            localField: "reportId",
+            foreignField: "_id",
+            as: "report",
+          },
+        },
+        { $unwind: "$report" },
+        {
+          $lookup: {
+            from: "users",
+            localField: "claimantId",
+            foreignField: "_id",
+            as: "claimantUser",
+          },
+        },
+        { $unwind: { path: "$claimantUser", preserveNullAndEmptyArrays: true } },
+        { $sort: { createdAt: -1 } },
+      ])
       .toArray();
 
-    // Serialize the data
-    const serializedClaimsMade = claimsMade.map(claim => ({
-      ...claim,
-      _id: claim._id.toString(),
-      createdAt: claim.createdAt.toISOString(),
-      updatedAt: claim.updatedAt?.toISOString() || null
-    }));
-
-    const serializedClaimsReceived = claimsReceived.map(claim => ({
-      ...claim,
-      _id: claim._id.toString(),
-      createdAt: claim.createdAt.toISOString(),
-      updatedAt: claim.updatedAt?.toISOString() || null
-    }));
+    // Serialize
+    const serializeClaim = (c: any) => ({
+      _id: c._id.toString(),
+      reportId: c.reportId.toString(),
+      reportTitle: c.report?.description?.slice(0, 60) + "..." || "Lost/Found Item",
+      claimantId: c.claimantId.toString(),
+      claimantName: c.claimantName,
+      claimantEmail: c.claimantEmail,
+      claimantPhone: c.claimantUser?.phone || null,
+      description: c.description,
+      proofImage: c.proofImage || null,
+      status: c.status,
+      createdAt: c.createdAt.toISOString(),
+    });
 
     return NextResponse.json({
-      claimsMade: serializedClaimsMade,
-      claimsReceived: serializedClaimsReceived
+      claimsMade: claimsMade.map(serializeClaim),
+      claimsReceived: claimsReceived.map(serializeClaim),
     });
 
   } catch (error: any) {
-    console.error("Error fetching claims:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch claims" }, 
-      { status: 500 }
-    );
+    console.error("GET /api/claims error:", error);
+    return NextResponse.json({ error: "Failed to load claims" }, { status: 500 });
   }
 }
 
+// --- POST: Submit a Claim ---
 export async function POST(request: Request) {
   try {
     const { userId } = await auth();
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const formData = await request.formData();
     const reportId = formData.get("reportId") as string;
     const description = formData.get("description") as string;
     const file = formData.get("image") as File | null;
 
-    if (!reportId || !description) {
-      return NextResponse.json(
-        { error: "Report ID and description are required" }, 
-        { status: 400 }
-      );
+    if (!reportId || !description?.trim()) {
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
     const client = await clientPromise;
     const db = client.db("tracevault");
 
-    // Get current user (DB record) by Clerk ID; create if missing
-    let dbUser = await db.collection("users").findOne({ clerkId: userId });
-    if (!dbUser) {
-      const clerkProfile = await currentUser();
-      if (!clerkProfile) {
-        return NextResponse.json({ error: "User not found" }, { status: 404 });
-      }
+    // === DAILY CLAIM LIMIT ===
+    const today = new Date().toISOString().split("T")[0];
+    const stats = await db.collection("userStats").findOne({ clerkId: userId });
+    const todayClaims = stats?.dailyClaims?.[today] || 0;
 
-      const newUser = {
-        clerkId: userId,
-        name:
-          `${clerkProfile.firstName || ""} ${clerkProfile.lastName || ""}`.trim() || clerkProfile.username || "Anonymous",
-        email: clerkProfile.primaryEmailAddress?.emailAddress || null,
-        profilePic: clerkProfile.imageUrl || null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      } as any;
-
-      const insertRes = await db.collection("users").insertOne(newUser);
-      dbUser = { ...newUser, _id: insertRes.insertedId } as any;
-    }
-
-    // Verify report exists
-    const report = await db.collection("reports").findOne({ 
-      _id: new ObjectId(reportId) 
-    });
-
-    if (!report) {
-      return NextResponse.json({ error: "Report not found" }, { status: 404 });
-    }
-
-    // Check if user is claiming their own report (reports store reporterId as Clerk id)
-    if (report.reporterId === userId) {
+    if (todayClaims >= DAILY_CLAIM_LIMIT) {
       return NextResponse.json(
-        { error: "You cannot claim your own report" }, 
-        { status: 400 }
+        { error: `Daily claim limit reached (${DAILY_CLAIM_LIMIT} per day)` },
+        { status: 429 }
       );
     }
 
-    let proofImageUrl = null;
-    
-    // Upload image to Cloudinary if provided
-    if (file) {
-      const bytes = await file.arrayBuffer();
-      const buffer = Buffer.from(bytes);
+    // === Get or create DB user ===
+    let dbUser = await db.collection("users").findOne({ clerkId: userId });
+    if (!dbUser) {
+      const clerkProfile = await currentUser();
+      if (!clerkProfile) return NextResponse.json({ error: "User not found" }, { status: 404 });
 
-      const uploadRes = await new Promise<any>((resolve, reject) => {
-        cloudinary.uploader
-          .upload_stream({ folder: "tracevault/claims" }, (err, result) => {
-            if (err) reject(err);
-            else resolve(result);
-          })
-          .end(buffer);
-      });
+      const newUser = {
+        clerkId: userId,
+        name: `${clerkProfile.firstName || ""} ${clerkProfile.lastName || ""}`.trim() || clerkProfile.username || "Anonymous",
+        email: clerkProfile.primaryEmailAddress?.emailAddress || null,
+        profilePic: clerkProfile.imageUrl || null,
+        createdAt: new Date(),
+      };
 
-      proofImageUrl = uploadRes.secure_url;
+      const res = await db.collection("users").insertOne(newUser);
+      dbUser = { ...newUser, _id: res.insertedId };
     }
 
-    // Get Clerk profile for name/email fallbacks
-    const clerkUser = await currentUser();
+    // === Validate report exists and not self-claim ===
+    const report = await db.collection("reports").findOne({
+      _id: new ObjectId(reportId),
+      status: "open",
+    });
 
-    // Create claim
+    if (!report) {
+      return NextResponse.json({ error: "Report not found or already claimed" }, { status: 404 });
+    }
+
+    if (report.reporterId === userId) {
+      return NextResponse.json({ error: "You cannot claim your own report" }, { status: 400 });
+    }
+
+    // === Upload proof image ===
+    let proofImage = null;
+    if (file && file.size > 0) {
+      if (!["image/jpeg", "image/jpg", "image/png", "image/webp"].includes(file.type)) {
+        return NextResponse.json({ error: "Invalid image type" }, { status: 400 });
+      }
+      if (file.size > 8 * 1024 * 1024) {
+        return NextResponse.json({ error: "Image too large (max 8MB)" }, { status: 413 });
+      }
+
+      const buffer = Buffer.from(await file.arrayBuffer());
+      const result = await new Promise((resolve, reject) => {
+        cloudinary.uploader.upload_stream(
+          { folder: "tracevault/claims" },
+          (err, res) => (err ? reject(err) : resolve(res))
+        ).end(buffer);
+      });
+
+      proofImage = (result as any)?.secure_url;
+    }
+
+    // === Create claim ===
     const claim = {
       reportId: new ObjectId(reportId),
-      claimantId: dbUser!._id,
-      claimantName:
-        (dbUser! as any).name || `${clerkUser?.firstName || ""} ${clerkUser?.lastName || ""}`.trim() || clerkUser?.username || "Anonymous",
-      claimantEmail: (dbUser! as any).email || clerkUser?.primaryEmailAddress?.emailAddress || null,
-      description,
-      proofImage: proofImageUrl,
-      status: "pending", // pending, approved, rejected
+      claimantId: dbUser._id,
+      claimantName: dbUser.name,
+      claimantEmail: dbUser.email,
+      description: description.trim(),
+      proofImage,
+      status: "pending" as const,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
 
     const result = await db.collection("claims").insertOne(claim);
 
+    // === Update daily claim counter ===
+    await db.collection("userStats").updateOne(
+      { clerkId: userId },
+      {
+        $inc: { [`dailyClaims.${today}`]: 1 },
+        $setOnInsert: { clerkId: userId },
+      },
+      { upsert: true }
+    );
+
     return NextResponse.json(
       {
-        message: "Claim submitted successfully",
-        claim: { ...claim, _id: result.insertedId.toString() },
+        message: "Claim submitted!",
+        claim: {
+          ...claim,
+          _id: result.insertedId.toString(),
+          reportTitle: report.description.slice(0, 60) + "...",
+        },
       },
       { status: 201 }
     );
 
   } catch (error: any) {
-    console.error("Error creating claim:", error);
-    return NextResponse.json(
-      { error: "Failed to submit claim" }, 
-      { status: 500 }
-    );
+    console.error("POST /api/claims error:", error);
+    return NextResponse.json({ error: "Failed to submit claim" }, { status: 500 });
   }
 }

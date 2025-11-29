@@ -1,27 +1,26 @@
-// src/app/api/reports/route.ts   (or src/app/api/reports/[id]/route.ts if you prefer)
+// src/app/api/reports/delete/route.ts
 import { NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
-import { currentUser } from "@clerk/nextjs/server";
+import { auth } from "@clerk/nextjs/server";
 import { ObjectId } from "mongodb";
 
 export async function DELETE(request: Request) {
   try {
-    // 1. Authenticate with Clerk
-    const clerkUser = await currentUser();
-    if (!clerkUser?.id) {
+    const { userId } = await auth();
+
+    if (!userId) {
       return NextResponse.json(
         { error: "Unauthorized – please sign in" },
         { status: 401 }
       );
     }
 
-    // 2. Extract report ID from query string (or body)
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
 
-    if (!id) {
+    if (!id || !ObjectId.isValid(id)) {
       return NextResponse.json(
-        { error: "Missing report ID" },
+        { error: "Valid report ID is required" },
         { status: 400 }
       );
     }
@@ -29,43 +28,32 @@ export async function DELETE(request: Request) {
     const client = await clientPromise;
     const db = client.db("tracevault");
 
-    // 3. Find the report
-    const report = await db.collection("reports").findOne({ _id: new ObjectId(id) });
+    // Find the report
+    const report = await db.collection("reports").findOne({
+      _id: new ObjectId(id),
+    });
 
     if (!report) {
-      return NextResponse.json(
-        { error: "Report not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Report not found" }, { status: 404 });
     }
 
-    // 4. Authorization – only the owner can delete
-    // (Assuming you store the reporter's TraceVault user _id as reporterId)
-    const traceVaultUser = await db
-      .collection("users")
-      .findOne({ clerkId: clerkUser.id });
-
-    if (!traceVaultUser) {
-      return NextResponse.json(
-        { error: "User record not found" },
-        { status: 404 }
-      );
-    }
-
-    if (report.reporterId !== traceVaultUser._id) {
+    // Authorization: Only the owner (reporterId === Clerk userId) can delete
+    if (report.reporterId !== userId) {
       return NextResponse.json(
         { error: "Forbidden – you can only delete your own reports" },
         { status: 403 }
       );
     }
 
-    // 5. Delete the report + related claims (optional but recommended)
+    // Delete report + all associated claims
     await db.collection("reports").deleteOne({ _id: new ObjectId(id) });
     await db.collection("claims").deleteMany({ reportId: new ObjectId(id) });
 
-    return NextResponse.json({ message: "Report deleted successfully" });
+    return NextResponse.json({
+      message: "Report and all claims deleted successfully",
+    });
   } catch (error: any) {
-    console.error("DELETE /api/reports error:", error);
+    console.error("DELETE /api/reports/delete error:", error);
     return NextResponse.json(
       { error: "Failed to delete report" },
       { status: 500 }

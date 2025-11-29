@@ -14,8 +14,9 @@ export default clerkMiddleware({
     "/sign-in(.*)",
     "/sign-up(.*)",
     "/help(.*)",
+    "/report/(.*)",
   ],
-});
+} as any);
 
 export const config = {
   matcher: ["/((?!.*\\..*|/_next).*)", "/", "/(api|trpc)(.*)"],

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { LampContainer } from "@/components/ui/lamp";
 import SectionBadge from "@/components/ui/section-badge";
 import { features, perks } from "@/constants";
-import { ArrowRight, ChevronRight } from "lucide-react";
+import { ArrowRight, ChevronRight, GiftIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import WaitlistForm from "@/components/waitlist";
@@ -60,8 +60,17 @@ const HomePage = () => {
                     size="sm"
                     className="rounded-full p-5  bg-white/20 backdrop-blur-lg flex items-center"
                   >
-                    ✨ Get Started <ArrowRight className="w-4 h-4 ml-1" />
+                    Get Started <ArrowRight className="w-4 h-4 ml-1" />
                   </Button>
+                  <Link href="#">
+                    <Button
+                      size="sm"
+                      className="rounded-full p-5 backdrop-blur-lg flex items-center shadow-md "
+                    >
+                      <GiftIcon className="w-4 h-4 ml-1" />
+                      Donate
+                    </Button>
+                  </Link>
                 </Link>
               </div>
             </div>
