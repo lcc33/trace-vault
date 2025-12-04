@@ -51,7 +51,7 @@ const HomePage = () => {
               </p>
 
               {/* CTA */}
-              <div className="">
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-6 sm:mt-8">
                 <Link
                   href="/sign-in"
                   className="flex flex-col sm:flex-row items-center justify-center mt-4 sm:mt-7 gap-4 w-full shadow-md "
@@ -62,15 +62,16 @@ const HomePage = () => {
                   >
                     Get Started <ArrowRight className="w-4 h-4 ml-1" />
                   </Button>
-                  <Link href="#">
-                    <Button
-                      size="sm"
-                      className="rounded-full p-5 backdrop-blur-lg flex items-center shadow-md "
-                    >
-                      <GiftIcon className="w-4 h-4 ml-1" />
-                      Donate
-                    </Button>
-                  </Link>
+                </Link>
+                <Link href="#"
+                className="flex flex-col sm:flex-row items-center justify-center mt-4 sm:mt-7 gap-4 w-full shadow-md ">
+                  <Button
+                    size="sm"
+                    className="rounded-full p-5 backdrop-blur-lg flex items-center shadow-md "
+                  >
+                    <GiftIcon className="w-4 h-4 ml-1" />
+                    Donate
+                  </Button>
                 </Link>
               </div>
             </div>

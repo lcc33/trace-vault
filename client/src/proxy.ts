@@ -14,7 +14,6 @@ export default clerkMiddleware({
     "/sign-in(.*)",
     "/sign-up(.*)",
     "/help(.*)",
-    "/report/(.*)",
   ],
 } as any);
 

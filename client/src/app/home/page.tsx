@@ -1,18 +1,12 @@
-// src/app/page.tsx
-import { Metadata } from "next";
+
 import Navbar from "@/components/home/navigation/navbar";
 import ReportForm from "@/components/reports/ReportsForm";
 import ReportsFeed from "@/components/reports/ReportsFeed";
 import type { Pagination, Report, ReportsResponse } from "./types";
 
-// Optional: SEO
-export const metadata: Metadata = {
-  title: "TraceVault – Lost & Found Community",
-  description:
-    "Report lost items, claim found ones, and reunite with what matters.",
-};
 
 export default async function HomePage() {
+  
   let initialReports: Report[] = [];
   let initialPagination: Pagination | null = null;
 
@@ -40,6 +34,7 @@ export default async function HomePage() {
     console.error("Failed to fetch initial reports:", error);
     // Continue rendering – show empty feed + form
   }
+
 
   return (
     <div className="min-h-screen bg-slate-900 text-slate-100">

@@ -36,3 +36,11 @@ export const SITE_CONFIG: Metadata = {
   },
   metadataBase: new URL("https://tracevault.vercel.app"),
 };
+
+
+// Optional: SEO
+export const metadata: Metadata = {
+  title: "TraceVault – Lost & Found Community",
+  description:
+    "Report lost items, claim found ones, and reunite with what matters.",
+};

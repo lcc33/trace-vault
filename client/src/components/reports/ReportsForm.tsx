@@ -140,6 +140,8 @@ export default function ReportForm() {
               <input
                 ref={whatsappRef}
                 type="tel"
+                inputMode="tel"
+                pattern="[+0-9]{10,}"
                 placeholder="Your WhatsApp number (e.g. +2348012345678)"
                 className="w-full pl-12 pr-4 py-4 bg-slate-800/60 border border-slate-700 rounded-2xl text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-500/20 transition"
                 required
