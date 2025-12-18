@@ -1,19 +1,18 @@
+export interface User {
+  name?: string | null;
+  profilePic?: string | null;
+}
+
 export interface Report {
   _id: string;
   reporterId: string;
-  title: string;
   description: string;
   category: string;
-  location: string;
+  whatsappNumber?: string;
   imageUrl?: string;
-  status: string;
-  user: {
-    name?: string;
-    email?: string;
-    profilePic?: string;
-  };
+  status: "open" | "claimed";
+  user: User;
   createdAt: string;
-  updatedAt: string;
 }
 
 export interface Pagination {

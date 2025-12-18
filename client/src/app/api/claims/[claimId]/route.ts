@@ -1,25 +1,25 @@
 // src/app/api/claims/[id]/route.ts
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import clientPromise from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 
 interface RouteParams {
   params: {
-    id: string;
+    claimId: string;
   };
 }
 
 // PATCH: Approve or Reject a Claim
-export async function PATCH(request: Request, { params }: RouteParams) {
+export async function PATCH(request: NextRequest, { params }: RouteParams) {
   try {
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { id } = params;
-    if (!ObjectId.isValid(id)) {
+    const { claimId } = params;
+    if (!ObjectId.isValid(claimId)) {
       return NextResponse.json({ error: "Invalid claim ID" }, { status: 400 });
     }
 
@@ -39,7 +39,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     // Fetch claim
     const claim = await db
       .collection("claims")
-      .findOne({ _id: new ObjectId(id) });
+      .findOne({ _id: new ObjectId(claimId) });
 
     if (!claim) {
       return NextResponse.json({ error: "Claim not found" }, { status: 404 });
@@ -78,7 +78,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     const result = await db
       .collection("claims")
       .updateOne(
-        { _id: new ObjectId(id) },
+        { _id: new ObjectId(claimId) },
         {
           $set: {
             status: newStatus,
@@ -99,7 +99,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       status: newStatus,
     });
   } catch (error: any) {
-    console.error("PATCH /api/claims/[id] error:", error);
+    console.error("PATCH /api/claims/[claimId] error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

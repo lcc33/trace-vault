@@ -3,9 +3,9 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useUser } from "@clerk/nextjs";
+import { useUser, useClerk } from "@clerk/nextjs";
 import { useState, useEffect } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   FaHome,
   FaBell,
@@ -17,10 +17,11 @@ import {
 } from "react-icons/fa";
 
 import { IoSettingsSharp } from "react-icons/io5";
-import { SignOutButton } from "@clerk/nextjs";
 
 const Navbar = () => {
   const { user, isLoaded } = useUser();
+  const { signOut } = useClerk();
+  const router = useRouter();
   const pathname = usePathname();
   const [activeItem, setActiveItem] = useState("home");
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -186,11 +187,15 @@ const Navbar = () => {
                   Settings
                 </Link>
                 <div className="flex-1 flex items-center justify-center gap-2 p-2 rounded-lg bg-red-700 hover:bg-red-600 text-slate-300 hover:text-white transition-colors text-sm">
-                  <SignOutButton redirectUrl="/sign-in">
-                    <button className=" text-white rounded-lg font-medium transition">
-                      Sign Out
-                    </button>
-                  </SignOutButton>
+                  <button
+                    onClick={async () => {
+                      await signOut();
+                      router.push("/sign-in");
+                    }}
+                    className=" text-white rounded-lg font-medium transition"
+                  >
+                    Sign Out
+                  </button>
                 </div>
               </div>
             </div>

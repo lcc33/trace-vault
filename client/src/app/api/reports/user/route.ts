@@ -46,7 +46,7 @@ export async function GET() {
           claimCount,
           createdAt: report.createdAt.toISOString(),
         };
-      })
+      }),
     );
 
     return NextResponse.json(reportsWithClaimCounts);
@@ -54,7 +54,7 @@ export async function GET() {
     console.error("Error fetching user reports:", error);
     return NextResponse.json(
       { error: "Failed to fetch user reports" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

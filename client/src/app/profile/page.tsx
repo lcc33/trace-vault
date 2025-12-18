@@ -6,7 +6,6 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Navbar } from "@/components";
- // ← Official Clerk component
 
 interface Report {
   _id: string;
@@ -22,43 +21,42 @@ export default function ProfilePage() {
   const [userReports, setUserReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
 
-useEffect(() => {
-  const fetchUserReports = async () => {
-    if (!user) return;
+  useEffect(() => {
+    const fetchUserReports = async () => {
+      if (!user) return;
 
-    setLoading(true);
-    try {
-      // Fetch reports filtered by the current user's Clerk id
-      const params = new URLSearchParams({ reporterId: user.id, limit: "50" });
-      const res = await fetch(`/api/reports?${params.toString()}`);
-
-      let data;
+      setLoading(true);
       try {
-        data = await res.json();
-      } catch {
-        data = { error: "Invalid response from server" };
-      }
+        // Use the dedicated user reports route (it uses Clerk auth on the server)
+        const res = await fetch(`/api/reports/user`);
 
-      if (!res.ok) {
-        console.error("API Error:", res.status, data);
+        let data;
+        try {
+          data = await res.json();
+        } catch {
+          data = { error: "Invalid response from server" };
+        }
+
+        if (!res.ok) {
+          setUserReports([]);
+          console.error("API Error:", res.status, data);
+          return;
+        }
+
+        // /api/reports/user returns an array of reports
+        setUserReports(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error("Network or fetch error:", error);
         setUserReports([]);
-        return;
+      } finally {
+        setLoading(false);
       }
+    };
 
-      // The reports endpoint returns { reports, pagination }
-      setUserReports(data.reports || []);
-    } catch (error) {
-      console.error("Network or fetch error:", error);
-      setUserReports([]);
-    } finally {
-      setLoading(false);
+    if (userLoaded && user) {
+      fetchUserReports();
     }
-  };
-
-  if (userLoaded && user) {
-    fetchUserReports();
-  }
-}, [userLoaded, user]);
+  }, [userLoaded, user]);
 
   if (!userLoaded) {
     return (
@@ -85,7 +83,8 @@ useEffect(() => {
     );
   }
 
-  const displayName = user.fullName || user.emailAddresses[0]?.emailAddress || "User";
+  const displayName =
+    user.fullName || user.emailAddresses[0]?.emailAddress || "User";
   const email = user.emailAddresses[0]?.emailAddress || "No email";
   const avatarUrl = user.imageUrl || "/default-avatar.png";
 
@@ -95,7 +94,6 @@ useEffect(() => {
 
       <div className="p-6">
         <div className="max-w-5xl mx-auto space-y-8">
-
           {/* Profile Header */}
           <div className="bg-slate-800/50 backdrop-blur border border-slate-700 rounded-2xl p-8">
             <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
@@ -110,7 +108,6 @@ useEffect(() => {
                 <h1 className="text-3xl font-bold text-white">{displayName}</h1>
                 <p className="text-slate-400 mt-1">{email}</p>
               </div>
-              
             </div>
           </div>
 
@@ -119,7 +116,8 @@ useEffect(() => {
             <h2 className="text-2xl font-bold mb-6 flex items-center justify-between">
               Your Reports
               <span className="text-sky-400 text-lg font-normal">
-                {userReports.length} {userReports.length === 1 ? "Report" : "Reports"}
+                {userReports.length}{" "}
+                {userReports.length === 1 ? "Report" : "Reports"}
               </span>
             </h2>
 
@@ -133,12 +131,6 @@ useEffect(() => {
                 <p className="text-slate-400 text-lg">
                   You haven't created any reports yet.
                 </p>
-                <Link
-                  href="/home"
-                  className="inline-block mt-4 px-6 py-3 bg-sky-600 hover:bg-sky-700 text-white rounded-lg font-medium transition"
-                >
-                  Create Your First Report
-                </Link>
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -161,7 +153,9 @@ useEffect(() => {
                         </div>
                       ) : (
                         <div className="h-48 bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center">
-                          <span className="text-slate-500 text-lg">No Image</span>
+                          <span className="text-slate-500 text-lg">
+                            No Image
+                          </span>
                         </div>
                       )}
                       <div className="p-5">
@@ -179,7 +173,8 @@ useEffect(() => {
                         {report.claimCount !== undefined && (
                           <div className="mt-3 text-right">
                             <span className="inline-flex items-center gap-1 text-xs text-sky-400">
-                              {report.claimCount} claim{report.claimCount !== 1 ? "s" : ""}
+                              {report.claimCount} claim
+                              {report.claimCount !== 1 ? "s" : ""}
                             </span>
                           </div>
                         )}
