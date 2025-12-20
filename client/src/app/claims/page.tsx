@@ -53,7 +53,10 @@ export default function ClaimsPage() {
     }
   };
 
-  const handleClaimAction = async (claimId: string, action: "approve" | "reject") => {
+  const handleClaimAction = async (
+    claimId: string,
+    action: "approve" | "reject",
+  ) => {
     try {
       const res = await fetch(`/api/claims/${claimId}`, {
         method: "PATCH",
@@ -84,7 +87,19 @@ export default function ClaimsPage() {
       alert("Failed to update report");
     }
   };
-
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-slate-900 text-slate-100 flex items-center justify-center p-4">
+        <p className="text-center">
+          Please{" "}
+          <Link href="/sign-in" className="text-sky-400 hover:underline">
+            sign in
+          </Link>{" "}
+          to view your profile.
+        </p>
+      </div>
+    );
+  }
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-900 flex items-center justify-center">
@@ -132,15 +147,22 @@ export default function ClaimsPage() {
         {/* === CLAIMS RECEIVED (Reporter View) === */}
         {activeTab === "received" && (
           <div className="space-y-6">
-            <h2 className="text-2xl font-semibold text-sky-300">Claims on Your Reports</h2>
+            <h2 className="text-2xl font-semibold text-sky-300">
+              Claims on Your Reports
+            </h2>
             {claimsReceived.length === 0 ? (
               <div className="text-center py-16 bg-slate-800/50 rounded-2xl border border-dashed border-slate-700">
                 <Clock className="w-16 h-16 mx-auto text-slate-600 mb-4" />
-                <p className="text-slate-400 text-lg">No one has claimed your items yet.</p>
+                <p className="text-slate-400 text-lg">
+                  No one has claimed your items yet.
+                </p>
               </div>
             ) : (
               claimsReceived.map((claim) => (
-                <div key={claim._id} className="bg-slate-800/70 border border-slate-700 rounded-2xl p-6 shadow-lg">
+                <div
+                  key={claim._id}
+                  className="bg-slate-800/70 border border-slate-700 rounded-2xl p-6 shadow-lg"
+                >
                   <div className="flex flex-col sm:flex-row justify-between gap-4 mb-4">
                     <div>
                       <Link
@@ -151,18 +173,29 @@ export default function ClaimsPage() {
                         <ExternalLink className="w-4 h-4 opacity-70 group-hover:opacity-100" />
                       </Link>
                       <p className="text-sm text-slate-400 mt-1">
-                        Claimed by: <strong>{claim.claimantName}</strong> • {claim.claimantEmail}
+                        Claimed by: <strong>{claim.claimantName}</strong> •{" "}
+                        {claim.claimantEmail}
                       </p>
                     </div>
 
-                    <div className={`px-4 py-2 rounded-full text-sm font-bold flex items-center gap-2 ${
-                      claim.status === "pending" ? "bg-yellow-500/20 text-yellow-400 border border-yellow-500/50" :
-                      claim.status === "approved" ? "bg-green-500/20 text-green-400 border border-green-500/50" :
-                      "bg-red-500/20 text-red-400 border border-red-500/50"
-                    }`}>
-                      {claim.status === "pending" && <Clock className="w-4 h-4" />}
-                      {claim.status === "approved" && <CheckCircle className="w-4 h-4" />}
-                      {claim.status === "rejected" && <XCircle className="w-4 h-4" />}
+                    <div
+                      className={`px-4 py-2 rounded-full text-sm font-bold flex items-center gap-2 ${
+                        claim.status === "pending"
+                          ? "bg-yellow-500/20 text-yellow-400 border border-yellow-500/50"
+                          : claim.status === "approved"
+                            ? "bg-green-500/20 text-green-400 border border-green-500/50"
+                            : "bg-red-500/20 text-red-400 border border-red-500/50"
+                      }`}
+                    >
+                      {claim.status === "pending" && (
+                        <Clock className="w-4 h-4" />
+                      )}
+                      {claim.status === "approved" && (
+                        <CheckCircle className="w-4 h-4" />
+                      )}
+                      {claim.status === "rejected" && (
+                        <XCircle className="w-4 h-4" />
+                      )}
                       {claim.status.toUpperCase()}
                     </div>
                   </div>
@@ -233,11 +266,16 @@ export default function ClaimsPage() {
             {claimsMade.length === 0 ? (
               <div className="text-center py-16 bg-slate-800/50 rounded-2xl border border-dashed border-slate-700">
                 <Clock className="w-16 h-16 mx-auto text-slate-600 mb-4" />
-                <p className="text-slate-400 text-lg">You haven't claimed any items yet.</p>
+                <p className="text-slate-400 text-lg">
+                  You haven't claimed any items yet.
+                </p>
               </div>
             ) : (
               claimsMade.map((claim) => (
-                <div key={claim._id} className="bg-slate-800/70 border border-slate-700 rounded-2xl p-6 shadow-lg">
+                <div
+                  key={claim._id}
+                  className="bg-slate-800/70 border border-slate-700 rounded-2xl p-6 shadow-lg"
+                >
                   <div className="flex flex-col sm:flex-row justify-between gap-4">
                     <div>
                       <Link
@@ -248,18 +286,29 @@ export default function ClaimsPage() {
                         <ExternalLink className="w-4 h-4 opacity-70 group-hover:opacity-100" />
                       </Link>
                       <p className="text-sm text-slate-400 mt-2">
-                        Submitted {new Date(claim.createdAt).toLocaleDateString()}
+                        Submitted{" "}
+                        {new Date(claim.createdAt).toLocaleDateString()}
                       </p>
                     </div>
 
-                    <div className={`px-4 py-2 rounded-full text-sm font-bold flex items-center gap-2 ${
-                      claim.status === "pending" ? "bg-yellow-500/20 text-yellow-400" :
-                      claim.status === "approved" ? "bg-green-500/20 text-green-400" :
-                      "bg-red-500/20 text-red-400"
-                    }`}>
-                      {claim.status === "pending" && <Clock className="w-4 h-4" />}
-                      {claim.status === "approved" && <CheckCircle className="w-4 h-4" />}
-                      {claim.status === "rejected" && <XCircle className="w-4 h-4" />}
+                    <div
+                      className={`px-4 py-2 rounded-full text-sm font-bold flex items-center gap-2 ${
+                        claim.status === "pending"
+                          ? "bg-yellow-500/20 text-yellow-400"
+                          : claim.status === "approved"
+                            ? "bg-green-500/20 text-green-400"
+                            : "bg-red-500/20 text-red-400"
+                      }`}
+                    >
+                      {claim.status === "pending" && (
+                        <Clock className="w-4 h-4" />
+                      )}
+                      {claim.status === "approved" && (
+                        <CheckCircle className="w-4 h-4" />
+                      )}
+                      {claim.status === "rejected" && (
+                        <XCircle className="w-4 h-4" />
+                      )}
                       {claim.status.toUpperCase()}
                     </div>
                   </div>
@@ -269,7 +318,8 @@ export default function ClaimsPage() {
                   {claim.status === "approved" && (
                     <div className="mt-5 p-4 bg-green-900/30 border border-green-700 rounded-xl">
                       <p className="text-green-400 font-medium">
-                        Your claim was approved! The owner will contact you soon.
+                        Your claim was approved! The owner will contact you
+                        soon.
                       </p>
                     </div>
                   )}

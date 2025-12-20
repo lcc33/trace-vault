@@ -8,10 +8,14 @@ import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
-export default function ReportForm({ onSuccess }: { onSuccess: () => void }) {
+export default function ReportForm({
+  onSuccessAction,
+}: {
+  onSuccessAction: () => void;
+}) {
   const router = useRouter();
   const { user, isLoaded } = useUser();
-
+  const [phoneNumber, setPhoneNumber] = useState("");
   const descriptionRef = useRef<HTMLTextAreaElement>(null);
   const categoryRef = useRef<HTMLSelectElement>(null);
   const whatsappRef = useRef<HTMLInputElement>(null);
@@ -90,7 +94,7 @@ export default function ReportForm({ onSuccess }: { onSuccess: () => void }) {
         categoryRef.current!.value = "";
         whatsappRef.current!.value = "";
         removeImage();
-        onSuccess();
+        onSuccessAction();
         router.push("/home");
       }
     } catch {
@@ -99,7 +103,11 @@ export default function ReportForm({ onSuccess }: { onSuccess: () => void }) {
       setLoading(false);
     }
   };
-
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Remove all non-numeric characters (anything that is not a digit)
+    const cleanedValue = e.target.value.replace(/\D/g, "");
+    setPhoneNumber(cleanedValue);
+  };
   return (
     <section className="border-b border-slate-700 bg-slate-900/50 backdrop-blur-sm">
       <div className="max-w-4xl mx-auto p-4 sm:p-6">
@@ -107,7 +115,7 @@ export default function ReportForm({ onSuccess }: { onSuccess: () => void }) {
           <textarea
             ref={descriptionRef}
             placeholder="Describe the item..."
-            className="w-full bg-slate-800/60 border border-slate-700 rounded-2xl px-5 py-4 text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 min-h-36 resize-none"
+            className="w-full bg-slate-800/60 border border-slate-700 rounded-2xl px-5 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 min-h-36 resize-none"
             required
             maxLength={1000}
           />
@@ -116,9 +124,13 @@ export default function ReportForm({ onSuccess }: { onSuccess: () => void }) {
             <FaPhone className="absolute left-4 top-1/2 -translate-y-1/2 text-sky-400" />
             <input
               ref={whatsappRef}
+              value={phoneNumber}
+              onChange={handleInputChange}
+              inputMode="numeric"
+              pattern="[0-9]*"
               type="tel"
               placeholder="WhatsApp number (e.g. +234...)"
-              className="w-full pl-12 py-4 bg-slate-800/60 border border-slate-700 rounded-2xl text-white placeholder-slate-500 focus:outline-none focus:border-sky-500"
+              className="w-full pl-12 py-2 bg-slate-800/60 border border-slate-700 rounded-2xl text-white placeholder-slate-500 focus:outline-none focus:border-sky-500"
               required
             />
           </div>
@@ -143,12 +155,12 @@ export default function ReportForm({ onSuccess }: { onSuccess: () => void }) {
             </div>
           )}
 
-          <div className="flex flex-col sm:flex-row gap-4 pt-4 border-t border-slate-700">
-            <div className="flex flex-wrap gap-3 items-center">
+          <div className="flex flex-col justify-around sm:flex-row gap-4 pt-4 border-t border-slate-700">
+            <div className="flex gap-3 items-center">
               <select
                 ref={categoryRef}
                 required
-                className="bg-slate-800 border border-slate-600 text-sky-400 rounded-full px-6 py-3 focus:outline-none focus:border-sky-500"
+                className="bg-slate-800 border border-slate-600 text-sky-400 rounded-full px-3 py-3 focus:outline-none focus:border-sky-500"
               >
                 <option value="" disabled>
                   Select Category
@@ -163,8 +175,8 @@ export default function ReportForm({ onSuccess }: { onSuccess: () => void }) {
               </select>
 
               <label className="cursor-pointer flex items-center gap-3 bg-slate-800 border border-slate-600 hover:border-sky-500 rounded-full px-6 py-3 text-sky-400">
-                <FaImage className="w-5 h-5" />
-                <span>{imagePreview ? "Change Photo" : "Add Photo"}</span>
+                <FaImage className="w-10 h-10" />
+
                 <input
                   ref={fileInputRef}
                   type="file"

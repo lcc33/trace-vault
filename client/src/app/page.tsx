@@ -1,4 +1,4 @@
-import { Container, Icons, Wrapper } from "@/components";
+import { Container, Footer, Icons, Wrapper } from "@/components";
 import { BorderBeam } from "@/components/ui/border-beam";
 import { Button } from "@/components/ui/button";
 import { LampContainer } from "@/components/ui/lamp";
@@ -7,7 +7,6 @@ import { features, perks } from "@/constants";
 import { ArrowRight, ChevronRight, GiftIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import WaitlistForm from "@/components/waitlist";
 
 const HomePage = () => {
   return (
@@ -63,8 +62,10 @@ const HomePage = () => {
                     Get Started <ArrowRight className="w-4 h-4 ml-1" />
                   </Button>
                 </Link>
-                <Link href="#"
-                className="flex flex-col sm:flex-row items-center justify-center mt-4 sm:mt-7 gap-4 w-full shadow-md ">
+                <Link
+                  href="#"
+                  className="flex flex-col sm:flex-row items-center justify-center mt-4 sm:mt-7 gap-4 w-full shadow-md "
+                >
                   <Button
                     size="sm"
                     className="rounded-full p-5 backdrop-blur-lg flex items-center shadow-md "
@@ -205,22 +206,30 @@ const HomePage = () => {
             <div className="flex flex-col md:flex-row items-start md:items-center justify-start md:justify-between w-full px-4 md:px-8 rounded-lg lg:rounded-2xl border border-border/80 py-4 md:py-8">
               <div className="flex flex-col items-start gap-4 w-full">
                 <h4 className="text-xl md:text-2xl font-semibold">
-                  Join the TraceVault Waitlist
+                  Join the TraceVault
+                  <Link
+                    href="/community"
+                    className="text-blue-700 px-2 text-xl md:text-3xl font-serif"
+                  >
+                    Community
+                  </Link>
                 </h4>
                 <p className="text-base text-muted-foreground">
                   Be the first to know when we launch.
                 </p>
               </div>
               <div className="flex flex-col items-start gap-2 md:min-w-80 mt-5 md:mt-0 w-full md:w-max">
-                <WaitlistForm />
                 <p className="text-xs text-muted-foreground">
                   By joining, you agree to our{" "}
-                  <Link href="/privacy">Privacy Policy</Link>
+                  <Link href="/privacy" className="text-sm text-blue-600">
+                    Privacy Policy
+                  </Link>
                 </p>
               </div>
             </div>
           </div>
         </Container>
+        <Footer />
       </Wrapper>
     </section>
   );

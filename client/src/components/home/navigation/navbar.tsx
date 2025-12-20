@@ -6,15 +6,7 @@ import Link from "next/link";
 import { useUser, useClerk } from "@clerk/nextjs";
 import { useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import {
-  FaHome,
-  FaBell,
-  FaUser,
-  FaFileAlt,
-  FaBars,
-  FaTimes,
-  FaRegComments,
-} from "react-icons/fa";
+import { FaHome, FaFileAlt, FaBars, FaTimes } from "react-icons/fa";
 
 import { IoSettingsSharp } from "react-icons/io5";
 
@@ -28,16 +20,13 @@ const Navbar = () => {
 
   const navItems = [
     { id: "home", href: "/home", icon: FaHome, label: "Home" },
-    {
-      id: "notifications",
-      href: "/notifications",
-      icon: FaBell,
-      label: "Notifications",
-      hasNotification: true,
-    },
     { id: "claims", href: "/claims", icon: FaFileAlt, label: "Claims" },
-    { id: "profile", href: "/profile", icon: FaUser, label: "Profile" },
-    { id: "chats", href: "/chats", icon: FaRegComments, label: "Chats" },
+    {
+      id: "settings",
+      href: "/settings",
+      icon: IoSettingsSharp,
+      label: "Settings",
+    },
   ];
 
   const handleItemClick = (id: string) => {
@@ -65,15 +54,14 @@ const Navbar = () => {
 
     if (pathname === "/" || pathname.startsWith("/home")) {
       setActiveItem("home");
-    } else if (pathname.startsWith("/notifications")) {
-      setActiveItem("notifications");
     } else if (pathname.startsWith("/claims")) {
       setActiveItem("claims");
     } else if (pathname.startsWith("/profile")) {
       setActiveItem("profile");
-    } else if (pathname.startsWith("/chats")) {
-      setActiveItem("chats");
+    } else if (pathname.startsWith("/settings")) {
+      setActiveItem("settings");
     }
+
     // keep sidebar state unchanged here; clicking nav items will close on mobile
   }, [pathname]);
 
@@ -87,7 +75,6 @@ const Navbar = () => {
 
   const userImageUrl = user?.imageUrl || defaultAvatar;
   const userName = user?.fullName || user?.firstName || "User";
-
   return (
     <>
       {/* Desktop Sidebar */}
@@ -141,21 +128,18 @@ const Navbar = () => {
                 >
                   <Icon className="w-5 h-5" />
                   <span>{item.label}</span>
-                  {item.hasNotification && (
-                    <span className="ml-auto w-2 h-2 bg-red-500 rounded-full" />
-                  )}
                 </Link>
               );
             })}
           </nav>
 
-          {/* User Profile + Settings */}
+          {/* User Profile + Sign Out */}
           <div className="p-4 border-t border-slate-700">
-            <div className="space-y-3">
+            <div className="space-y-4">
               <Link
                 href="/profile"
                 onClick={() => handleItemClick("profile")}
-                className="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-800 transition-colors"
+                className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-800 transition-colors"
               >
                 <div className="relative">
                   <Image
@@ -178,26 +162,23 @@ const Navbar = () => {
                 </div>
               </Link>
 
-              <div className="flex gap-2">
-                <Link
-                  href="/settings"
-                  className="flex-1 flex items-center justify-center gap-2 p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors text-sm"
+              {/* Sign Out Button */}
+              {user && (
+                <button
+                  onClick={() => signOut({ redirectUrl: "/sign-in" })}
+                  className="w-full py-3 px-4 rounded-xl bg-red-600 hover:bg-red-700 text-white font-semibold transition-all shadow-md hover:shadow-lg"
                 >
-                  <IoSettingsSharp className="w-4 h-4" />
-                  Settings
-                </Link>
-                <div className="flex-1 flex items-center justify-center gap-2 p-2 rounded-lg bg-red-700 hover:bg-red-600 text-slate-300 hover:text-white transition-colors text-sm">
-                  <button
-                    onClick={async () => {
-                      await signOut();
-                      router.push("/sign-in");
-                    }}
-                    className=" text-white rounded-lg font-medium transition"
-                  >
-                    Sign Out
-                  </button>
-                </div>
-              </div>
+                  Sign Out
+                </button>
+              )}
+              {!user && (
+                <button
+                  onClick={() => router.push("/sign-in")}
+                  className="w-full py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold transition-all shadow-md hover:shadow-lg"
+                >
+                  Sign In
+                </button>
+              )}
             </div>
           </div>
         </div>

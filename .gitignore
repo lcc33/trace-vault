@@ -8,3 +8,5 @@ server/.env
 client/.vscode
 client/.env.local
 client/.astro
+client/build
+client/dist

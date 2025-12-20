@@ -102,7 +102,7 @@ export default function HomePage() {
     <div className="min-h-screen bg-slate-900 text-slate-100">
       <Navbar />
       <main className="max-w-3xl mx-auto border-x border-slate-700 bg-black/40">
-        <ReportForm onSuccess={() => fetchReports(1)} />
+        <ReportForm onSuccessAction={() => fetchReports(1)} />
         <SearchFilter
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}

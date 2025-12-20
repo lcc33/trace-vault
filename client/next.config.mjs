@@ -24,12 +24,12 @@ const nextConfig = {
       },
       {
         protocol: "https",
-        hostname: "img.clerk.com"
+        hostname: "img.clerk.com",
       },
       {
         protocol: "https",
-        hostname: "www.gravatar.com"
-      }
+        hostname: "www.gravatar.com",
+      },
     ],
   },
   reactStrictMode: false,
