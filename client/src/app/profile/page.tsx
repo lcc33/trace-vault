@@ -1,4 +1,5 @@
 // src/app/profile/page.tsx
+
 "use client";
 
 import { useUser } from "@clerk/nextjs";
@@ -21,38 +22,22 @@ export default function ProfilePage() {
   const [userReports, setUserReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const fetchUserReports = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/reports/user"); // ← No query param
+      if (!res.ok) throw new Error("Failed");
+      const reports = await res.json();
+      setUserReports(reports);
+    } catch (error) {
+      console.error("Error:", error);
+      setUserReports([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchUserReports = async () => {
-      if (!user) return;
-
-      setLoading(true);
-      try {
-        // Use the dedicated user reports route (it uses Clerk auth on the server)
-        const res = await fetch(`/api/reports/user`);
-
-        let data;
-        try {
-          data = await res.json();
-        } catch {
-          data = { error: "Invalid response from server" };
-        }
-
-        if (!res.ok) {
-          setUserReports([]);
-          console.error("API Error:", res.status, data);
-          return;
-        }
-
-        // /api/reports/user returns an array of reports
-        setUserReports(Array.isArray(data) ? data : []);
-      } catch (error) {
-        console.error("Network or fetch error:", error);
-        setUserReports([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     if (userLoaded && user) {
       fetchUserReports();
     }

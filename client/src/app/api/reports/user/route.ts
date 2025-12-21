@@ -2,12 +2,10 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import clientPromise from "@/lib/mongodb";
-import { ObjectId } from "mongodb";
 
 export async function GET() {
   try {
-    // Use Clerk server auth to get the current user's id
-    const { userId } = await auth();
+    const { userId } = await auth(); // This is the Clerk user ID (string)
 
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -16,44 +14,39 @@ export async function GET() {
     const client = await clientPromise;
     const db = client.db("tracevault");
 
-    // Get current user by Clerk ID
-    const user = await db.collection("users").findOne({
-      clerkId: userId,
-    });
-
-    if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
-
-    // Fetch user's reports
+    // Find reports where reporterId === Clerk userId (string)
     const reports = await db
       .collection("reports")
-      .find({ userId: user._id })
+      .find({ reporterId: userId }) // ← FIXED: reporterId, not userId
       .sort({ createdAt: -1 })
       .toArray();
 
-    // Get claim counts for each report
-    const reportsWithClaimCounts = await Promise.all(
+    // Add claim count to each report
+    const reportsWithClaims = await Promise.all(
       reports.map(async (report) => {
-        const claimCount = await db.collection("claims").countDocuments({
-          reportId: report._id,
-        });
+        const claimCount = await db
+          .collection("claims")
+          .countDocuments({ reportId: report._id });
 
         return {
-          ...report,
           _id: report._id.toString(),
-          userId: report.userId.toString(),
-          claimCount,
+          description: report.description,
+          category: report.category,
+          imageUrl: report.imageUrl || null,
+          whatsappNumber: report.whatsappNumber || null,
+          status: report.status || "open",
           createdAt: report.createdAt.toISOString(),
+          updatedAt: report.updatedAt?.toISOString() || null,
+          claimCount,
         };
       }),
     );
 
-    return NextResponse.json(reportsWithClaimCounts);
+    return NextResponse.json(reportsWithClaims);
   } catch (error: any) {
-    console.error("Error fetching user reports:", error);
+    console.error("GET /api/reports/user error:", error);
     return NextResponse.json(
-      { error: "Failed to fetch user reports" },
+      { error: "Failed to fetch your reports" },
       { status: 500 },
     );
   }

@@ -2,16 +2,17 @@
 import { NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
+import { auth } from "@clerk/nextjs/server";
 
-export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(
+  _: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
   try {
-    const { id } = await params; // ← UNWRAP PROMISE
+    const { id } = await params;
 
     if (!ObjectId.isValid(id)) {
-      return NextResponse.json(
-        { error: "Invalid report ID format" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
     }
 
     const client = await clientPromise;
@@ -25,50 +26,56 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       return NextResponse.json({ error: "Report not found" }, { status: 404 });
     }
 
-    const serializedReport = {
+    return NextResponse.json({
       ...report,
       _id: report._id.toString(),
       createdAt: report.createdAt.toISOString(),
-    };
-
-    return NextResponse.json(serializedReport);
-  } catch (error: any) {
-    console.error("Error fetching report:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch report" },
-      { status: 500 }
-    );
+    });
+  } catch (error) {
+    console.error("GET error:", error);
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
 
-export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function DELETE(
+  _: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
   try {
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { id } = await params;
 
     if (!ObjectId.isValid(id)) {
-      return NextResponse.json(
-        { error: "Invalid report ID format" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
     }
 
     const client = await clientPromise;
     const db = client.db("tracevault");
 
-    const result = await db.collection("reports").deleteOne({
+    const report = await db.collection("reports").findOne({
       _id: new ObjectId(id),
     });
 
-    if (result.deletedCount === 0) {
+    if (!report) {
       return NextResponse.json({ error: "Report not found" }, { status: 404 });
     }
 
-    return NextResponse.json({ message: "Report deleted successfully" });
-  } catch (error: any) {
-    console.error("Error deleting report:", error);
-    return NextResponse.json(
-      { error: "Failed to delete report" },
-      { status: 500 }
-    );
+    // SECURITY: Only owner can delete
+    if (report.reporterId !== userId) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    // Delete report + all claims
+    await db.collection("reports").deleteOne({ _id: new ObjectId(id) });
+    await db.collection("claims").deleteMany({ reportId: new ObjectId(id) });
+
+    return NextResponse.json({ message: "Deleted successfully" });
+  } catch (error) {
+    console.error("DELETE error:", error);
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }

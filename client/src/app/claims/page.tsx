@@ -21,9 +21,10 @@ interface Claim {
   claimantId: string;
   claimantName: string;
   claimantEmail: string;
-  claimantPhone?: string; // Add this to your Claim model
+  claimantPhone?: string;
+  reporterWhatsapp?: string; // ← Reporter's WhatsApp number from report
   description: string;
-  proofImage?: any;
+  proofImage?: string;
   status: "pending" | "approved" | "rejected";
   createdAt: string;
 }
@@ -69,10 +70,8 @@ export default function ClaimsPage() {
     }
   };
 
-  // Mark report as claimed (reporter only)
   const markReportAsClaimed = async (reportId: string) => {
     if (!confirm("Mark this report as claimed? This will close it.")) return;
-
     try {
       const res = await fetch(`/api/reports/${reportId}`, {
         method: "PATCH",
@@ -80,13 +79,14 @@ export default function ClaimsPage() {
         body: JSON.stringify({ status: "claimed" }),
       });
       if (res.ok) {
-        fetchUserClaims(); // Refresh
+        fetchUserClaims();
         alert("Report marked as claimed!");
       }
     } catch (error) {
       alert("Failed to update report");
     }
   };
+
   if (!user) {
     return (
       <div className="min-h-screen bg-slate-900 text-slate-100 flex items-center justify-center p-4">
@@ -95,11 +95,12 @@ export default function ClaimsPage() {
           <Link href="/sign-in" className="text-sky-400 hover:underline">
             sign in
           </Link>{" "}
-          to view your profile.
+          to view your claims.
         </p>
       </div>
     );
   }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-900 flex items-center justify-center">
@@ -114,7 +115,6 @@ export default function ClaimsPage() {
   return (
     <div className="min-h-screen bg-slate-900 text-slate-100">
       <Navbar />
-
       <div className="max-w-5xl mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-8 text-center sm:text-left">
           Claims Management
@@ -177,7 +177,6 @@ export default function ClaimsPage() {
                         {claim.claimantEmail}
                       </p>
                     </div>
-
                     <div
                       className={`px-4 py-2 rounded-full text-sm font-bold flex items-center gap-2 ${
                         claim.status === "pending"
@@ -210,11 +209,12 @@ export default function ClaimsPage() {
                       height={600}
                       className="rounded-xl border border-slate-700 w-full max-h-96 object-cover cursor-pointer hover:opacity-90 mb-5"
                       unoptimized
-                      onClick={() => setEnlargedImage(claim.proofImage)}
+                      onClick={() =>
+                        setEnlargedImage(claim.proofImage as string)
+                      }
                     />
                   )}
 
-                  {/* Actions */}
                   {claim.status === "pending" && (
                     <div className="flex flex-col sm:flex-row gap-3">
                       <button
@@ -232,22 +232,22 @@ export default function ClaimsPage() {
                     </div>
                   )}
 
-                  {/* WhatsApp Button — Only when approved */}
-                  {claim.status === "approved" && claim.claimantPhone && (
-                    <div className="mt-4">
+                  {/* WhatsApp for Reporter */}
+                  {claim.status === "approved" && claim.reporterWhatsapp && (
+                    <div className="mt-6">
                       <a
-                        href={`https://wa.me/${claim.claimantPhone.replace(/[^0-9]/g, "")}?text=Hi ${encodeURIComponent(claim.claimantName)}, your claim on "${claim.reportTitle || "my item"}" was approved! Let's arrange pickup.`}
+                        href={`https://wa.me/${claim.reporterWhatsapp.replace(/[^0-9]/g, "")}?text=Hi, your report "${claim.reportTitle || "my item"}" has a claim I submitted that was approved! Let's connect.`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-3 px-6 py-4 bg-[#25D366] hover:bg-[#128C7E] text-white font-bold rounded-xl transition-all transform hover:scale-105"
+                        className="inline-flex items-center gap-3 px-6 py-4 bg-[#25D366] hover:bg-[#128C7E] text-white font-bold rounded-xl transition-all transform hover:scale-105 shadow-lg"
                       >
                         <MessageCircle className="w-6 h-6" />
-                        Message on WhatsApp
+                        Message Owner on WhatsApp
                       </a>
 
                       <button
                         onClick={() => markReportAsClaimed(claim.reportId)}
-                        className="ml-3 px-6 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold rounded-xl transition"
+                        className="ml-4 px-6 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold rounded-xl transition"
                       >
                         Mark Report as Claimed
                       </button>
@@ -290,7 +290,6 @@ export default function ClaimsPage() {
                         {new Date(claim.createdAt).toLocaleDateString()}
                       </p>
                     </div>
-
                     <div
                       className={`px-4 py-2 rounded-full text-sm font-bold flex items-center gap-2 ${
                         claim.status === "pending"
@@ -315,11 +314,26 @@ export default function ClaimsPage() {
 
                   <p className="mt-4 text-slate-300">{claim.description}</p>
 
-                  {claim.status === "approved" && (
-                    <div className="mt-5 p-4 bg-green-900/30 border border-green-700 rounded-xl">
+                  {/* WhatsApp Button for Claimer when Approved */}
+                  {claim.status === "approved" && claim.reporterWhatsapp && (
+                    <div className="mt-6">
+                      <a
+                        href={`https://wa.me/${claim.reporterWhatsapp.replace(/[^0-9]/g, "")}?text=Hi, I submitted a claim on your report "${claim.reportTitle || "the item"}" and it was approved! Let's connect to return it.`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-3 px-8 py-4 bg-[#25D366] hover:bg-[#128C7E] text-white font-bold rounded-2xl transition-all transform hover:scale-105 shadow-2xl"
+                      >
+                        <MessageCircle className="w-6 h-6" />
+                        Message Owner on WhatsApp
+                      </a>
+                    </div>
+                  )}
+
+                  {claim.status === "approved" && !claim.reporterWhatsapp && (
+                    <div className="mt-6 p-4 bg-green-900/30 border border-green-700 rounded-xl">
                       <p className="text-green-400 font-medium">
-                        Your claim was approved! The owner will contact you
-                        soon.
+                        Your claim was approved! The owner will contact you soon
+                        via WhatsApp.
                       </p>
                     </div>
                   )}

@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { Loader2 } from "lucide-react";
+import { Loader2, Trash2 } from "lucide-react";
 import { useUser } from "@clerk/nextjs";
 import type { Report } from "@/app/home/types";
 
@@ -15,6 +15,7 @@ export default function ReportPage() {
   const isOwner = (report: Report) =>
     isSignedIn && report.reporterId === user?.id;
   const [showModal, setShowModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [claimData, setClaimData] = useState<{
     image: File | null;
     description: string;
@@ -36,7 +37,7 @@ export default function ReportPage() {
       setPopup({ isVisible: true, message, isSuccess });
       setTimeout(() => setPopup((p) => ({ ...p, isVisible: false })), duration);
     },
-    []
+    [],
   );
   const defaultAvatar =
     "https://i.pinimg.com/736x/21/f6/fc/21f6fc4abd29ba736e36e540a787e7da.jpg";
@@ -117,7 +118,23 @@ export default function ReportPage() {
     navigator.clipboard.writeText(window.location.href);
     alert("Link copied to clipboard!");
   };
+  const handleDelete = async () => {
+    try {
+      const res = await fetch(`/api/reports/${id}`, {
+        method: "DELETE",
+      });
 
+      if (res.ok) {
+        showToast("Report deleted successfully");
+        router.push("/home"); // Redirect to home after delete
+      } else {
+        const data = await res.json();
+        showToast(data.error || "Failed to delete", false);
+      }
+    } catch (err) {
+      showToast("Network error", false);
+    }
+  };
   const handleBack = () => {
     router.back();
   };
@@ -266,22 +283,69 @@ export default function ReportPage() {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex gap-3 mt-6">
+          <div className="flex flex-wrap gap-3 mt-6">
             <button
               onClick={handleBack}
-              className="px-4 py-2 text-sm rounded-full bg-slate-700 hover:bg-slate-600 text-white transition-colors"
+              className="px-6 py-3 text-sm rounded-full bg-slate-700 hover:bg-slate-600 text-white transition-colors flex items-center gap-2"
             >
               ← Back to Feed
             </button>
+
             <button
               onClick={handleShare}
-              className="px-4 py-2 text-sm rounded-full bg-sky-500 hover:bg-sky-600 text-white transition-colors"
+              className="px-6 py-3 text-sm rounded-full bg-sky-500 hover:bg-sky-600 text-white transition-colors flex items-center gap-2"
             >
               Share Report
             </button>
+
+            {/* Delete Button — Only for Owner */}
+            {isOwner(report) && (
+              <button
+                onClick={() => setShowDeleteModal(true)}
+                className="px-6 py-3 text-sm rounded-full bg-red-600 hover:bg-red-700 text-white transition-colors flex items-center gap-2 ml-auto"
+              >
+                <Trash2 className="w-4 h-4" />
+                Delete Report
+              </button>
+            )}
           </div>
         </div>
       </div>
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+          onClick={() => setShowDeleteModal(false)}
+        >
+          <div
+            className="bg-slate-900 rounded-2xl p-6 max-w-sm w-full border border-slate-700 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-3">
+              <Trash2 className="w-6 h-6 text-red-500" />
+              Confirm Delete
+            </h3>
+            <p className="text-slate-300 mb-6">
+              Are you sure you want to delete this report? This action cannot be
+              undone.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                className="flex-1 py-3 bg-slate-700 hover:bg-slate-600 text-white font-medium rounded-xl transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDelete}
+                className="flex-1 py-3 bg-red-600 hover:bg-red-700 text-white font-medium rounded-xl transition flex items-center justify-center gap-2"
+              >
+                Delete Permanently
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {enlargedImage && (
         <div
