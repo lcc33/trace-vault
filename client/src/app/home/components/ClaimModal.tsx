@@ -35,6 +35,11 @@ export default function ClaimModal({
     formData.append("reportId", reportId);
     formData.append("description", description);
     formData.append("image", image);
+    const res = await fetch("/api/user/status");
+    if (res.ok) {
+      const data = await res.json();
+      formData.append("reporterWhatsapp", data.whatsapp);
+    }
 
     try {
       const res = await fetch("/api/claims", {
@@ -48,6 +53,7 @@ export default function ClaimModal({
         setImage(null);
         onSuccess();
         showToast("Claim submitted! The owner will contact you.");
+        alert("Claim submitted! The owner will contact you.");
       } else {
         showToast(data.error || "Claim failed", false);
       }

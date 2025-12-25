@@ -4,6 +4,7 @@ import { auth, currentUser } from "@clerk/nextjs/server";
 import clientPromise from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 import { v2 as cloudinary } from "cloudinary";
+import { FaWhatsapp } from "react-icons/fa";
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME!,
@@ -107,7 +108,7 @@ export async function GET() {
       claimantName: c.claimantName,
       claimantEmail: c.claimantEmail,
       claimantPhone: c.claimantUser?.phone || null,
-      reporterWhatsapp: c.report?.whatsappNumber || null, // ← Now included!
+      reporterWhatsapp: c.report?.whatsappNumber || null, // ← This is the key line!
       description: c.description,
       proofImage: c.proofImage || null,
       status: c.status,
@@ -127,7 +128,142 @@ export async function GET() {
   }
 }
 
-// POST remains unchanged — already perfect
 export async function POST(request: Request) {
-  // ... your existing POST code (unchanged)
+  try {
+    const { userId } = await auth();
+    if (!userId)
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const formData = await request.formData();
+    const reportId = formData.get("reportId") as string;
+    const description = formData.get("description") as string;
+    const file = formData.get("image") as File | null;
+
+    if (!reportId || !description?.trim()) {
+      return NextResponse.json(
+        { error: "Missing required fields" },
+        { status: 400 },
+      );
+    }
+
+    const client = await clientPromise;
+    const db = client.db("tracevault");
+
+    const today = new Date().toISOString().split("T")[0];
+
+    // === DAILY CLAIM LIMIT (3 per day) ===
+    const DAILY_CLAIM_LIMIT = 3;
+
+    const stats = await db.collection("userStats").findOne({ clerkId: userId });
+    const todayClaims = stats?.dailyClaims?.[today] || 0;
+
+    if (todayClaims >= DAILY_CLAIM_LIMIT) {
+      return NextResponse.json(
+        {
+          error:
+            "You've reached the daily claim limit (3 per day). Try again tomorrow!",
+        },
+        { status: 429 },
+      );
+    }
+
+    // === Get or create DB user ===
+    let dbUser = await db.collection("users").findOne({ clerkId: userId });
+    if (!dbUser) {
+      const clerkProfile = await currentUser();
+      if (!clerkProfile)
+        return NextResponse.json({ error: "User not found" }, { status: 404 });
+
+      const newUser = {
+        clerkId: userId,
+        name:
+          `${clerkProfile.firstName || ""} ${clerkProfile.lastName || ""}`.trim() ||
+          clerkProfile.username ||
+          "Anonymous",
+        email: clerkProfile.primaryEmailAddress?.emailAddress || null,
+        profilePic: clerkProfile.imageUrl || null,
+        createdAt: new Date(),
+      };
+
+      const res = await db.collection("users").insertOne(newUser);
+      dbUser = { ...newUser, _id: res.insertedId };
+    }
+
+    // === Validate report ===
+    const report = await db.collection("reports").findOne({
+      _id: new ObjectId(reportId),
+      status: "open",
+    });
+
+    if (!report) {
+      return NextResponse.json(
+        { error: "Report not found or already claimed" },
+        { status: 404 },
+      );
+    }
+
+    if (report.reporterId === userId) {
+      return NextResponse.json(
+        { error: "You cannot claim your own report" },
+        { status: 400 },
+      );
+    }
+
+    // === Upload image ===
+    let proofImage = null;
+    if (file && file.size > 0) {
+      const buffer = Buffer.from(await file.arrayBuffer());
+      const result = await new Promise((resolve, reject) => {
+        cloudinary.uploader
+          .upload_stream({ folder: "tracevault/claims" }, (err, res) =>
+            err ? reject(err) : resolve(res),
+          )
+          .end(buffer);
+      });
+      proofImage = (result as any).secure_url;
+    }
+
+    // === Create claim ===
+    const claim = {
+      reportId: new ObjectId(reportId),
+      claimantId: dbUser._id,
+      claimantName: dbUser.name,
+      claimantEmail: dbUser.email,
+      description: description.trim(),
+      proofImage,
+      status: "pending",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    const result = await db.collection("claims").insertOne(claim);
+
+    // === Increment daily counter AFTER successful claim ===
+    await db.collection("userStats").updateOne(
+      { clerkId: userId },
+      {
+        $inc: { [`dailyClaims.${today}`]: 1 },
+        $setOnInsert: { clerkId: userId },
+      },
+      { upsert: true },
+    );
+
+    return NextResponse.json(
+      {
+        message: "Claim submitted successfully!",
+        claim: {
+          ...claim,
+          _id: result.insertedId.toString(),
+          reportTitle: report.description.slice(0, 60) + "...",
+        },
+      },
+      { status: 201 },
+    );
+  } catch (error: any) {
+    console.error("POST /api/claims error:", error);
+    return NextResponse.json(
+      { error: "Failed to submit claim" },
+      { status: 500 },
+    );
+  }
 }

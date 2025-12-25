@@ -33,7 +33,6 @@ const HomePage = () => {
                   className="w-4 h-4"
                 />
                 Introducing TraceVault
-                <ChevronRight className="w-4 h-4" />
               </span>
             </button>
 

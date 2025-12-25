@@ -25,7 +25,9 @@ export default function HomePage() {
   const [filterCategory, setFilterCategory] = useState("all");
   const [loading, setLoading] = useState(false);
   const [fetchingMore, setFetchingMore] = useState(false);
-  const { user, isSignedIn, isLoaded } = useUser();
+
+  const { isLoaded } = useUser();
+
   const [toast, setToast] = useState<{
     message: string;
     isSuccess: boolean;
@@ -110,25 +112,66 @@ export default function HomePage() {
           setFilterCategory={setFilterCategory}
         />
         <div className="divide-y divide-slate-700">
-          {filteredReports.map((report) => (
-            <ReportCard
-              key={report._id}
-              report={report}
-              onDelete={(id) =>
-                setReports((prev) => prev.filter((r) => r._id !== id))
-              }
-              onShare={(id) => {
-                navigator.clipboard.writeText(
-                  `${window.location.origin}/report/${id}`,
-                );
-                showToast("Link copied!");
-              }}
-              onClaim={(id) => {
-                setSelectedReportId(id);
-                setShowClaimModal(true);
-              }}
-            />
-          ))}
+          {filteredReports.length === 0 ? (
+            // Empty State
+            <div className="py-20 px-6 text-center">
+              <div className="max-w-md mx-auto">
+                <div className="bg-slate-800/50 rounded-3xl p-12 border-2 border-dashed border-slate-700">
+                  <div className="w-24 h-24 mx-auto mb-6 bg-slate-700/50 rounded-full flex items-center justify-center">
+                    <svg
+                      className="w-12 h-12 text-slate-500"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                  </div>
+                  <h3 className="text-2xl font-bold text-white mb-4">
+                    {reports.length === 0
+                      ? "No reports yet"
+                      : "No reports match your search"}
+                  </h3>
+                  <p className="text-slate-400 text-lg mb-8">
+                    {reports.length === 0
+                      ? "Be the first to help someone find what they lost!"
+                      : "Try adjusting your search or filters"}
+                  </p>
+                  {reports.length === 0 && (
+                    <div className="text-sm text-slate-500">
+                      Post something and start making a difference today.
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          ) : (
+            // Normal reports list
+            filteredReports.map((report) => (
+              <ReportCard
+                key={report._id}
+                report={report}
+                onDelete={(id) =>
+                  setReports((prev) => prev.filter((r) => r._id !== id))
+                }
+                onShare={(id) => {
+                  navigator.clipboard.writeText(
+                    `${window.location.origin}/report/${id}`,
+                  );
+                  showToast("Link copied!");
+                }}
+                onClaim={(id) => {
+                  setSelectedReportId(id);
+                  setShowClaimModal(true);
+                }}
+              />
+            ))
+          )}
         </div>
         <LoadMoreButton
           hasNext={pagination.hasNext}
