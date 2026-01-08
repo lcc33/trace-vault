@@ -1,12 +1,38 @@
-.astro
-.vscode
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+.yarn/install-state.gz
 
-e2eee-4a32c5614a-8bde0c0e8b-28e9f1d808-f0bbc8a4da-d28cf7443e-a246fe8a05-83cb3754c0-7cd5115b25-f06bc5588b-c9c54f6adc-80350b9086-177dc1aa66-0a071f05f3-01180dd7d5-a64293b658-9e923
+# testing
+/coverage
 
-server/.env
-client/.vscode
-client/.env.local
-client/.astro
-client/build
-client/dist
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# local env files
+.env*.local
+.env
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+LICENSE
