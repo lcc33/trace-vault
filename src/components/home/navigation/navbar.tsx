@@ -29,7 +29,7 @@ const Navbar = () => {
       label: "Settings",
     },
   ];
-
+ const webUrl = process.env.TRACEVAULT_WEB_URL;
   const handleItemClick = (id: string) => {
     setActiveItem(id);
     setSidebarOpen(false); // Close on mobile
@@ -90,7 +90,7 @@ const Navbar = () => {
           {/* Logo + Close Button */}
           <div className="flex items-center justify-between p-4 border-b border-slate-700">
             <Link
-              href="/"
+              href={`${webUrl}`}
               className="flex items-center gap-3"
               onClick={() => handleItemClick("home")}
             >

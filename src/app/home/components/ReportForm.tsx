@@ -27,6 +27,11 @@ export default function ReportForm({
   const [hasWhatsapp, setHasWhatsapp] = useState<boolean | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  useEffect(() => {
+    if (isLoaded && !user) {
+      router.push("/sign-in");
+    }
+  }, [isLoaded, user, router]);
   // Check if user has WhatsApp number
   useEffect(() => {
     if (isLoaded && user) {
