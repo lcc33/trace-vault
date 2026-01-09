@@ -21,31 +21,19 @@ export default function ProfilePage() {
   const { user, isLoaded: userLoaded } = useUser();
 
   const [userReports, setUserReports] = useState<Report[]>([]);
-  const [whatsappNumber, setWhatsappNumber] = useState<string | null>(null);
-  const [editingWhatsapp, setEditingWhatsapp] = useState(false);
-  const [tempNumber, setTempNumber] = useState("");
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch reports and WhatsApp number
+  // Fetch reports
   const fetchData = async () => {
     setLoading(true);
     setError(null);
     try {
-      const [reportsRes, statusRes] = await Promise.all([
-        fetch("/api/reports/user"),
-        fetch("/api/user/status"),
-      ]);
+      const reportsRes = await fetch("/api/reports/user");
 
       if (reportsRes.ok) {
         const reports = await reportsRes.json();
         setUserReports(reports);
-      }
-
-      if (statusRes.ok) {
-        const data = await statusRes.json();
-        setWhatsappNumber(data.whatsappNumber || null);
       }
     } catch (err) {
       setError("Failed to load profile data");
@@ -60,40 +48,6 @@ export default function ProfilePage() {
       fetchData();
     }
   }, [userLoaded, user]);
-
-  const handleSaveWhatsapp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    setSaving(true);
-
-    const cleaned = tempNumber.replace(/[^0-9+]/g, "");
-    if (cleaned.length < 10) {
-      setError("Please enter a valid phone number");
-      setSaving(false);
-      return;
-    }
-
-    try {
-      const res = await fetch("/api/user/whatsapp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ whatsappNumber: cleaned }),
-      });
-
-      if (res.ok) {
-        setWhatsappNumber(cleaned);
-        setEditingWhatsapp(false);
-        setTempNumber("");
-      } else {
-        const data = await res.json();
-        setError(data.error || "Failed to save");
-      }
-    } catch (err) {
-      setError("Network error");
-    } finally {
-      setSaving(false);
-    }
-  };
 
   if (!userLoaded) {
     return (
@@ -140,75 +94,6 @@ export default function ProfilePage() {
               <div className="flex-1 text-center sm:text-left">
                 <h1 className="text-3xl font-bold text-white">{displayName}</h1>
                 <p className="text-slate-400 mt-1">{email}</p>
-              </div>
-            </div>
-          </div>
-
-          {/* WhatsApp Number Section */}
-          <div className="bg-slate-800/50 backdrop-blur border border-slate-700 rounded-2xl p-8">
-            <h2 className="text-2xl font-bold mb-6">Contact Information</h2>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">
-                  WhatsApp Number
-                </label>
-                {whatsappNumber ? (
-                  <div className="flex items-center justify-between bg-slate-700/50 rounded-xl p-4">
-                    <p className="text-lg text-green-400">+{whatsappNumber}</p>
-                    <button
-                      onClick={() => {
-                        setTempNumber(whatsappNumber);
-                        setEditingWhatsapp(true);
-                      }}
-                      className="text-sky-400 hover:text-sky-300 text-sm font-medium"
-                    >
-                      Edit
-                    </button>
-                  </div>
-                ) : (
-                  <p className="text-slate-400 mb-4">
-                    Add your WhatsApp number so people can contact you when they
-                    claim your items.
-                  </p>
-                )}
-
-                {(editingWhatsapp || !whatsappNumber) && (
-                  <form
-                    onSubmit={handleSaveWhatsapp}
-                    className="mt-4 space-y-4"
-                  >
-                    <input
-                      type="tel"
-                      value={tempNumber}
-                      onChange={(e) => setTempNumber(e.target.value)}
-                      placeholder="+2348012345678"
-                      className="w-full px-5 py-4 bg-slate-700 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:border-sky-500 transition"
-                      required
-                    />
-                    <div className="flex gap-3">
-                      <button
-                        type="submit"
-                        disabled={saving}
-                        className="flex-1 py-3 bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 disabled:opacity-70 text-white font-bold rounded-xl transition flex items-center justify-center gap-2"
-                      >
-                        {saving && <Loader2 className="w-5 h-5 animate-spin" />}
-                        {saving ? "Saving..." : "Save Number"}
-                      </button>
-                      {whatsappNumber && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setEditingWhatsapp(false);
-                            setTempNumber("");
-                          }}
-                          className="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-xl transition"
-                        >
-                          Cancel
-                        </button>
-                      )}
-                    </div>
-                  </form>
-                )}
               </div>
             </div>
           </div>

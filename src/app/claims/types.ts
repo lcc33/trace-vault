@@ -6,7 +6,8 @@ export interface Claim {
   claimantName: string;
   claimantEmail: string;
   claimantPhone?: string;
-  reporterWhatsapp?: string;
+  reporterEmail: string;
+  reporterName: string;
   description: string;
   proofImage?: string;
   status: "pending" | "approved" | "rejected";

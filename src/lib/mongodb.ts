@@ -24,12 +24,31 @@ if (!process.env.MONGODB_URI) {
 if (process.env.NODE_ENV === "development") {
   if (!global._mongoClientPromise) {
     client = new MongoClient(uri, options);
-    global._mongoClientPromise = client.connect();
+    global._mongoClientPromise = client.connect()
+      .then((connectedClient) => {
+        console.log("✓ MongoDB connection secured");
+        return connectedClient;
+      })
+      .catch((error) => {
+        console.error("✗ MongoDB connection failed:", error.message);
+        throw error;
+      });
   }
   clientPromise = global._mongoClientPromise;
 } else {
   client = new MongoClient(uri, options);
-  clientPromise = client.connect();
+  clientPromise = client.connect()
+    .then((connectedClient) => {
+      console.log("✓ MongoDB connection secured");
+      return connectedClient;
+    })
+    .catch((error) => {
+      console.error("✗ MongoDB connection failed:", error.message);
+      throw error;
+    });
 }
+
+client = new MongoClient(uri);
+export const db = client.db("tracevault"); 
 
 export default clientPromise;

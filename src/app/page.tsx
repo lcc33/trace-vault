@@ -1,42 +1,78 @@
+// src/app/page.tsx (Landing Page)
 "use client";
-import { useUser } from "@clerk/nextjs";
+
+import { useUser, SignedOut, RedirectToSignIn } from "@clerk/nextjs";
 import { useEffect } from "react";
-import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-const Landingpage = () => {
-  const { user, isLoaded, isSignedIn } = useUser();
+export default function LandingPage() {
+  const { isLoaded, isSignedIn } = useUser();
   const router = useRouter();
 
+  // Redirect signed-in users to /home
   useEffect(() => {
     if (isLoaded && isSignedIn) {
-      if (user) {
-        router.push("/home");
-      }
-    } else if (isLoaded) {
-      router.push("/sign-in");
+      router.replace("/home");
+    } else if (isLoaded && !isSignedIn) {
+      router.replace("/sign-in");
     }
-  }, [isLoaded, isSignedIn, user, router]);
+  }, [isLoaded, isSignedIn, router]);
 
-  return (
-    <div className="flex items-center justify-center min-h-screen">
-      <div className="relative">
-        <div className="relative w-32 h-32">
-          <div
-            className="absolute w-full h-full rounded-full border-[3px] border-gray-100/10 border-r-[#0ff] border-b-[#0ff] animate-spin"
-            style={{ animationDuration: "3s" }}
-          ></div>
+  // Show spinner while auth is loading
+  if (!isLoaded || isSignedIn) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-black flex items-center justify-center">
+        <div className="relative">
+          {/* Outer glow */}
+          <div className="absolute inset-0 rounded-full animate-ping">
+            <div className="w-32 h-32 rounded-full bg-cyan-500/20 blur-xl" />
+          </div>
 
-          <div
-            className="absolute w-full h-full rounded-full border-[3px] border-gray-100/10 border-t-[#0ff] animate-spin"
-            style={{ animationDuration: "2s", animationDirection: "reverse" }}
-          ></div>
+          {/* Main spinner */}
+          <div className="relative w-32 h-32">
+            <div
+              className="absolute inset-0 rounded-full border-4 border-transparent border-r-cyan-400 border-b-cyan-400 animate-spin"
+              style={{ animationDuration: "3s" }}
+            />
+            <div
+              className="absolute inset-0 rounded-full border-4 border-transparent border-t-cyan-400 animate-spin"
+              style={{ animationDuration: "2s", animationDirection: "reverse" }}
+            />
+          </div>
+
+          {/* Inner pulse glow */}
+          <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-cyan-500/10 to-transparent animate-pulse blur-sm" />
         </div>
-
-        <div className="absolute inset-0 bg-gradient-to-tr from-[#0ff]/10 via-transparent to-[#0ff]/5 animate-pulse rounded-full blur-sm"></div>
       </div>
-    </div>
-  );
-};
+    );
+  } else if (isLoaded && !isSignedIn) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-black flex items-center justify-center">
+        <div className="relative">
+          {/* Outer glow */}
+          <div className="absolute inset-0 rounded-full animate-ping">
+            <div className="w-32 h-32 rounded-full bg-cyan-500/20 blur-xl" />
+          </div>
 
-export default Landingpage;
+          {/* Main spinner */}
+          <div className="relative w-32 h-32">
+            <div
+              className="absolute inset-0 rounded-full border-4 border-transparent border-r-cyan-400 border-b-cyan-400 animate-spin"
+              style={{ animationDuration: "3s" }}
+            />
+            <div
+              className="absolute inset-0 rounded-full border-4 border-transparent border-t-cyan-400 animate-spin"
+              style={{ animationDuration: "2s", animationDirection: "reverse" }}
+            />
+          </div>
+
+          {/* Inner pulse glow */}
+          <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-cyan-500/10 to-transparent animate-pulse blur-sm" />
+        </div>
+      </div>
+    );
+  }
+
+  // Only reached when NOT signed in and auth loaded
+  return null;
+}

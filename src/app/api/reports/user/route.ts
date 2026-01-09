@@ -33,7 +33,6 @@ export async function GET() {
           description: report.description,
           category: report.category,
           imageUrl: report.imageUrl || null,
-          whatsappNumber: report.whatsappNumber || null,
           status: report.status || "open",
           createdAt: report.createdAt.toISOString(),
           updatedAt: report.updatedAt?.toISOString() || null,

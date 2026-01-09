@@ -3,6 +3,7 @@ import { v2 as cloudinary } from "cloudinary";
 import { NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
 import { auth, currentUser } from "@clerk/nextjs/server";
+import { db } from "@/lib/mongodb"; 
 
 // --- Cloudinary Config ---
 cloudinary.config({
@@ -122,19 +123,12 @@ export async function POST(req: Request) {
       imageUrl = result?.secure_url ?? null;
     }
 
-    // --- Get DB user to fetch WhatsApp number ---
-    const client = await clientPromise;
-    const db = client.db("tracevault");
-
-    const dbUser = await db.collection("users").findOne({ clerkId: userId });
-
-    // --- Create Report with WhatsApp number ---
+    // --- Create Report ---
     const report = {
       reporterId: userId,
       description,
       category,
       imageUrl,
-      whatsappNumber: dbUser?.whatsappNumber || null, // ← Now dbUser exists!
       status: "open" as const,
       user: {
         name:

@@ -35,11 +35,6 @@ export default function ClaimModal({
     formData.append("reportId", reportId);
     formData.append("description", description);
     formData.append("image", image);
-    const res = await fetch("/api/user/status");
-    if (res.ok) {
-      const data = await res.json();
-      formData.append("reporterWhatsapp", data.whatsapp);
-    }
 
     try {
       const res = await fetch("/api/claims", {

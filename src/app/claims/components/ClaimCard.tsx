@@ -109,19 +109,6 @@ export default function ClaimCard({
       {/* Approved Actions */}
       {claim.status === "approved" && (
         <div className="mt-6 space-y-4">
-          {/* WhatsApp Button for Claimer */}
-          {!isReporterView && claim.reporterWhatsapp && (
-            <a
-              href={`https://wa.me/${claim.reporterWhatsapp.replace(/[^0-9]/g, "")}?text=Hi, my claim on your report was approved! Let's connect to return the item.`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-3 px-8 py-4 bg-[#25D366] hover:bg-[#128C7E] text-white font-bold rounded-2xl transition-all transform hover:scale-105 shadow-2xl"
-            >
-              <MessageCircle className="w-6 h-6" />
-              Message Reporter on WhatsApp
-            </a>
-          )}
-
           {/* Mark as Claimed — Reporter Only */}
           {isReporterView && (
             <button
@@ -132,14 +119,36 @@ export default function ClaimCard({
             </button>
           )}
 
-          {/* Fallback if no WhatsApp (for claimer) */}
-          {/*{!isReporterView && !claim.reporterWhatsapp && (
-            <div className="p-4 bg-green-900/30 border border-green-700 rounded-xl text-center">
-              <p className="text-green-400 font-medium">
-                Your claim was approved! The owner will contact you soon.
+          {/* Notification for Claimer */}
+          {!isReporterView && (
+            <div className="p-6 bg-green-900/30 border border-green-700 rounded-2xl text-center">
+              <p className="text-green-400 font-bold text-xl mb-4">
+                Yayyy!! Your claim was approved!
               </p>
+              <p className="text-slate-300 mb-6">
+                Contact the owner below to arrange pickup.
+              </p>
+
+              <a
+                href={`mailto:${
+                  claim.reporterEmail
+                }?subject=${encodeURIComponent(
+                  "TraceVault: Your lost item has been claimed!"
+                )}&body=${encodeURIComponent(
+                  `Hi ${claim.reporterName || "there"},\n\n` +
+                    `Great news! I submitted a claim on your report titled "${
+                      claim.reportTitle || "your lost item"
+                    }" and it was approved. \n\n` +
+                    `I'm the owner and would love to get it back. Please let me know when and where we can meet to return it.\n\n` +
+                    `Thank you so much for posting it on TraceVault!\n\n` +
+                    `Best regards,\n[Your Name]`
+                )}`}
+                className="inline-block px-10 py-5 bg-sky-600 hover:bg-sky-700 rounded-2xl text-white font-bold text-lg transition-all shadow-2xl transform hover:scale-105"
+              >
+                Email Reporter: {claim.reporterEmail}
+              </a>
             </div>
-          )}*/}
+          )}
         </div>
       )}
     </div>

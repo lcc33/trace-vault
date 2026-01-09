@@ -4,7 +4,6 @@ import { auth, currentUser } from "@clerk/nextjs/server";
 import clientPromise from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 import { v2 as cloudinary } from "cloudinary";
-import { FaWhatsapp } from "react-icons/fa";
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME!,
@@ -119,7 +118,8 @@ export async function GET() {
       claimantName: c.claimantName,
       claimantEmail: c.claimantEmail,
       claimantPhone: c.claimantUser?.phone || null,
-      reporterWhatsapp: c.reporterUser?.whatsapp || null,
+      reporterEmail: c.reporterUser?.email || null,
+      reporterName: c.reporterUser?.name || null,
       description: c.description,
       proofImage: c.proofImage || null,
       status: c.status,
@@ -149,7 +149,6 @@ export async function POST(request: Request) {
     const reportId = formData.get("reportId") as string;
     const description = formData.get("description") as string;
     const file = formData.get("image") as File | null;
-    const reporterWhatsapp = formData.get("reporterWhatsapp") as string | null;
 
     if (!reportId || !description?.trim()) {
       return NextResponse.json(
