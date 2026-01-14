@@ -93,7 +93,24 @@ export default function HomePage() {
       <main className="max-w-3xl mx-auto border-x border-slate-700 bg-black/40">
         <ReportForm onSuccessAction={() => fetchReports(1)} />
         <div className="divide-y divide-slate-700">
-          {reports.length === 0 ? (
+          {loading ? (
+            // Loading State
+            <div className="py-20 px-6 text-center">
+              <div className="max-w-md mx-auto">
+                <div className="bg-slate-800/50 rounded-3xl p-12 border-2 border-dashed border-slate-700">
+                  <div className="w-24 h-24 mx-auto mb-6 flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-sky-500" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-white mb-4">
+                    Loading reports...
+                  </h3>
+                  <p className="text-slate-400 text-lg">
+                    Fetching the latest reports
+                  </p>
+                </div>
+              </div>
+            </div>
+          ) : reports.length === 0 ? (
             // Empty State
             <div className="py-20 px-6 text-center">
               <div className="max-w-md mx-auto">

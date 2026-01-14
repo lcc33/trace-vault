@@ -1,9 +1,10 @@
 // src/app/claims/page.tsx
 "use client";
 
-import { useUser } from "@clerk/nextjs";
+import { useUser, SignedOut, SignedIn, RedirectToSignIn } from "@clerk/nextjs";
 import { useState, useEffect } from "react";
 import { Navbar } from "@/components";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import ClaimsTabs from "./components/ClaimTabs";
 import ReceivedClaims from "./components/RecievedClaims";
@@ -18,12 +19,19 @@ export default function ClaimsPage() {
   const [activeTab, setActiveTab] = useState<"made" | "received">("received");
   const [loading, setLoading] = useState(true);
   const [enlargedImage, setEnlargedImage] = useState<string | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     if (isLoaded && user) {
       fetchUserClaims();
     }
   }, [isLoaded, user]);
+
+  useEffect(() => {
+    if (isLoaded && !user) {
+      router.push("/sign-in");
+    }
+  }, [isLoaded, user, router]);
 
   const fetchUserClaims = async () => {
     try {
@@ -40,7 +48,7 @@ export default function ClaimsPage() {
 
   const handleClaimAction = async (
     claimId: string,
-    action: "approve" | "reject",
+    action: "approve" | "reject"
   ) => {
     try {
       const res = await fetch(`/api/claims/${claimId}`, {
@@ -71,6 +79,9 @@ export default function ClaimsPage() {
     }
   };
 
+
+  
+
   if (!isLoaded || loading) {
     return (
       <div className="min-h-screen bg-slate-900 flex items-center justify-center">
@@ -82,52 +93,49 @@ export default function ClaimsPage() {
     );
   }
 
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-slate-900 text-slate-100 flex items-center justify-center p-4">
-        <p className="text-center">
-          Please{" "}
-          <Link href="/sign-in" className="text-sky-400 hover:underline">
-            sign in
-          </Link>{" "}
-          to view your claims.
-        </p>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100">
-      <Navbar />
-      <div className="max-w-5xl mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-8 text-center sm:text-left">
-          Claims Management
-        </h1>
+    <>
+      <SignedIn>
+        <div className="min-h-screen bg-slate-900 text-slate-100">
+          <Navbar />
+          <div className="max-w-5xl mx-auto px-4 py-8">
+            <h1 className="text-3xl font-bold mb-8 text-center sm:text-left">
+              Claims Management
+            </h1>
 
-        <ClaimsTabs
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          madeCount={claimsMade.length}
-          receivedCount={claimsReceived.length}
-        />
+            <ClaimsTabs
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
+              madeCount={claimsMade.length}
+              receivedCount={claimsReceived.length}
+            />
 
-        {activeTab === "received" ? (
-          <ReceivedClaims
-            claims={claimsReceived}
-            onApprove={(id) => handleClaimAction(id, "approve")}
-            onReject={(id) => handleClaimAction(id, "reject")}
-            onMarkClaimed={markReportAsClaimed}
-            onEnlargeImage={setEnlargedImage}
+            {activeTab === "received" ? (
+              <ReceivedClaims
+                claims={claimsReceived}
+                onApprove={(id) => handleClaimAction(id, "approve")}
+                onReject={(id) => handleClaimAction(id, "reject")}
+                onMarkClaimed={markReportAsClaimed}
+                onEnlargeImage={setEnlargedImage}
+              />
+            ) : (
+              <MadeClaims
+                claims={claimsMade}
+                onEnlargeImage={setEnlargedImage}
+              />
+            )}
+          </div>
+
+          <EnlargedImageModal
+            imageUrl={enlargedImage}
+            onClose={() => setEnlargedImage(null)}
           />
-        ) : (
-          <MadeClaims claims={claimsMade} onEnlargeImage={setEnlargedImage} />
-        )}
-      </div>
+        </div>
+      </SignedIn>
 
-      <EnlargedImageModal
-        imageUrl={enlargedImage}
-        onClose={() => setEnlargedImage(null)}
-      />
-    </div>
+      <SignedOut>
+        <RedirectToSignIn />
+      </SignedOut>
+    </>
   );
 }

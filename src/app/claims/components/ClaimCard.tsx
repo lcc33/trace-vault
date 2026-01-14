@@ -113,7 +113,7 @@ export default function ClaimCard({
           {isReporterView && (
             <button
               onClick={() => onMarkClaimed(claim.reportId)}
-              className="w-full px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold rounded-2xl transition shadow-xl"
+              className="w-full px-8 py-4 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-2xl transition shadow-xl"
             >
               Mark Report as Claimed
             </button>

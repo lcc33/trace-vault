@@ -69,7 +69,7 @@ function validateDescription(desc: string): {
   const t = desc.trim();
   if (!t) return { isValid: false, error: "Description is required" };
   if (t.length < 5) return { isValid: false, error: "Min 5 characters" };
-  if (t.length > 1000) return { isValid: false, error: "Max 1000 characters" };
+  if (t.length > 280) return { isValid: false, error: "Max 280 characters" };
   return { isValid: true };
 }
 
@@ -107,10 +107,7 @@ export async function POST(req: Request) {
       const MAX_SIZE = parseInt(process.env.MAX_UPLOAD_BYTES || "5242880", 10);
       const allowed = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
       if (!allowed.includes(file.type)) {
-        return NextResponse.json(
-          { error: "Invalid file type" },
-          { status: 400 },
-        );
+        return NextResponse.json({ error: "Invalid file type" }, { status: 400 });
       }
       if (file.size > MAX_SIZE) {
         return NextResponse.json(
@@ -121,6 +118,23 @@ export async function POST(req: Request) {
       const buffer = Buffer.from(await file.arrayBuffer());
       const result = await uploadBufferToCloudinary(buffer);
       imageUrl = result?.secure_url ?? null;
+    }
+
+    // --- Daily Post Limit (3 per day) ---
+    const client = await clientPromise;
+    const db = client.db("tracevault");
+
+    const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+    const DAILY_POST_LIMIT = 3;
+
+    const stats = await db.collection("userStats").findOne({ clerkId: userId });
+    const todayPosts = stats?.dailyPosts?.[today] || 0;
+
+    if (todayPosts >= DAILY_POST_LIMIT) {
+      return NextResponse.json(
+        { error: `Daily post limit reached (3 per day). Try again tomorrow!` },
+        { status: 429 }
+      );
     }
 
     // --- Create Report ---
@@ -144,28 +158,38 @@ export async function POST(req: Request) {
 
     const result = await db.collection("reports").insertOne(report);
 
+    // --- Increment daily counter AFTER successful post ---
+    await db.collection("userStats").updateOne(
+      { clerkId: userId },
+      {
+        $inc: { [`dailyPosts.${today}`]: 1 },
+        $setOnInsert: { clerkId: userId },
+      },
+      { upsert: true }
+    );
+
     return NextResponse.json(
       {
         message: "Report created",
         report: { ...report, _id: result.insertedId.toString() },
       },
-      { status: 201 },
+      { status: 201 }
     );
   } catch (error: any) {
     console.error("POST /api/reports error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
-
+// --- GET: List Reports ---
 // --- GET: List Reports ---
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const category = searchParams.get("category");
-    const status = searchParams.get("status") || "open";
+    const status = searchParams. get("status") || "open";
     const reporterId = searchParams.get("reporterId");
     const limit = Math.min(parseInt(searchParams.get("limit") || "50"), 100);
     const page = Math.max(parseInt(searchParams.get("page") || "1"), 1);
@@ -173,9 +197,29 @@ export async function GET(req: Request) {
     const client = await clientPromise;
     const db = client.db("tracevault");
 
-    const filter: any = { status };
-    if (category && category !== "all") filter.category = category;
-    if (reporterId) filter.reporterId = reporterId;
+    // NEW:  Calculate 4 days ago
+    const fourDaysAgo = new Date(Date.now() - 4 * 24 * 60 * 60 * 1000);
+
+    // MODIFIED: Update filter to include recently claimed reports
+    const filter: any = {
+      $or: [
+        { status: "open" },
+        { 
+          status: "claimed", 
+          claimed_at: { $gte: fourDaysAgo } 
+        }
+      ]
+    };
+
+    // Apply category filter if provided
+    if (category && category !== "all") {
+      filter.category = category;
+    }
+
+    // Apply reporterId filter if provided
+    if (reporterId) {
+      filter.reporterId = reporterId;
+    }
 
     const reports = await db
       .collection("reports")
@@ -190,14 +234,13 @@ export async function GET(req: Request) {
     const serialized = reports.map((r: any) => ({
       _id: r._id.toString(),
       reporterId: r.reporterId,
-
       description: r.description,
       category: r.category,
-
       imageUrl: r.imageUrl,
-      status: r.status,
+      status: r. status,
+      claimed_at: r.claimed_at ? r.claimed_at.toISOString() : null, // Include claimed_at in response
       user: r.user,
-      createdAt: r.createdAt.toISOString(),
+      createdAt: r. createdAt.toISOString(),
       updatedAt: r.updatedAt.toISOString(),
     }));
 
@@ -208,7 +251,7 @@ export async function GET(req: Request) {
         limit,
         total,
         hasNext: page * limit < total,
-        totalPages: Math.ceil(total / limit),
+        totalPages: Math. ceil(total / limit),
       },
     });
   } catch (error: any) {

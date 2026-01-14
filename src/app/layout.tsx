@@ -2,6 +2,12 @@ import { SITE_CONFIG } from "@/config";
 import { cn } from "@/lib/utils";
 import "@/styles/globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
+import { startCleanupJob } from "@/lib/cleanup-job";
+
+// Initialize cleanup job on server startup
+if (process.env.NODE_ENV === "production") {
+  startCleanupJob();
+}
 
 export const metadata = SITE_CONFIG;
 

@@ -13,6 +13,7 @@ export interface Report {
   status: "open" | "claimed";
   user: User;
   createdAt: string;
+  claimed_at?: string | null;
 }
 
 export interface Pagination {

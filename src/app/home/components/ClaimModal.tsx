@@ -47,8 +47,8 @@ export default function ClaimModal({
         setDescription("");
         setImage(null);
         onSuccess();
-        
-        alert("Claim submitted! The Reporter will contact you.");
+
+        alert("Claim submitted! The Reporter will approve or reject your claim based on the evidence you provided.");
       } else {
         showToast(data.error || "Claim failed", false);
       }
@@ -74,8 +74,10 @@ export default function ClaimModal({
           placeholder="Describe how this item belongs to you..."
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          className="w-full bg-slate-800 border border-slate-700 rounded-2xl px-5 py-4 text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 min-h-32 resize-none mb-5"
+          className="w-full bg-slate-800 border border-slate-700 rounded-2xl px-5 py-4 text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 min-h-32 resize-none mb-0"
+          maxLength={280}
         />
+        <p className="text-slate-400 mb-5 text-sm mt-0">Characters remaining: {280 - description.length}</p>
 
         <div className="mb-6">
           <label className="block text-sm font-medium text-slate-400 mb-3">

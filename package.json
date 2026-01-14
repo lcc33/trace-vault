@@ -55,6 +55,7 @@
     "next": "^16.0.7",
     "next-cloudinary": "^6.16.0",
     "next-themes": "^0.3.0",
+    "node-cron": "^4.2.1",
     "react": "^19.2.1",
     "react-day-picker": "^8.10.1",
     "react-dom": "^19.2.1",

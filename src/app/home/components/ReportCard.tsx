@@ -1,7 +1,6 @@
-// src/app/home/components/ReportCard.tsx
 "use client";
 
-import { useState } from "react";
+import { use, useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
@@ -28,11 +27,24 @@ export default function ReportCard({
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const isOwner = isSignedIn && report.reporterId === user?.id;
   const claimed = report.status === "claimed";
+  const [loading, setLoading] = useState(true);
+
+  // If report is claimed and within 4 days, show disabled button
+  const isClaimed = report.status === "claimed";
+  const claimedDate = report.claimed_at ? new Date(report.claimed_at) : null;
+  const fourDaysAgo = new Date(Date.now() - 4 * 24 * 60 * 60 * 1000);
+  const isWithinGracePeriod = claimedDate && claimedDate > fourDaysAgo;
 
   const handleClick = () => {
     if (!claimed) router.push(`/report/${report._id}`);
   };
 
+  useEffect(() => {
+    if (!user) {
+      setMenuOpen(false);
+      return;
+    }
+  }, [user]);
   const confirmDelete = async () => {
     try {
       const res = await fetch(`/api/reports/${report._id}`, {
@@ -55,7 +67,11 @@ export default function ReportCard({
   return (
     <>
       <article
-        className={`p-5 transition-all ${claimed ? "opacity-60" : "hover:bg-slate-800/50"} ${!claimed ? "cursor-pointer" : ""}`}
+        className={`p-5 transition-all ${
+          claimed && !isWithinGracePeriod
+            ? "opacity-60"
+            : "hover:bg-slate-800/50"
+        } ${!claimed ? "cursor-pointer" : ""}`}
         onClick={handleClick}
       >
         {/* Header */}
@@ -123,7 +139,7 @@ export default function ReportCard({
         </div>
 
         {/* Description */}
-        <p className="text-slate-200 mb-4 leading-relaxed">
+        <p className="text-slate-200 mb-4 leading-relaxed break-words whitespace-pre-wrap">
           {report.description}
         </p>
 
@@ -144,19 +160,34 @@ export default function ReportCard({
 
         {/* Claim Button */}
         <div className="mt-4" onClick={(e) => e.stopPropagation()}>
-          {!isOwner && !claimed && (
-            <button
-              onClick={() => onClaim(report._id)}
-              className="w-full px-8 py-4 bg-sky-600 hover:to-blue-700 text-white font-bold rounded-2xl transition-all transform hover:scale-105 active:scale-95 shadow-xl"
-            >
-              Claim This Item
-            </button>
-          )}
-          {claimed && (
+          {!isOwner && isClaimed && isWithinGracePeriod ? (
             <div className="text-center py-3">
               <span className="inline-flex items-center gap-2 px-4 py-2 bg-green-900/30 border border-green-700 text-green-400 rounded-full text-sm font-medium">
                 <CheckCircle className="w-5 h-5" />
-                This item has been claimed
+                Claimed
+              </span>
+            </div>
+          ) : !isOwner && !isClaimed ? (
+            <button
+              onClick={() => onClaim(report._id)}
+              className="w-full px-8 py-4 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-2xl transition-all transform hover:scale-105 active:scale-95 shadow-xl"
+            >
+              Claim This Item
+            </button>
+          ) : null}
+          {isOwner && isClaimed && isWithinGracePeriod && (
+            <div className="text-center py-3">
+              <span className="inline-flex items-center gap-2 px-4 py-2 bg-green-900/30 border border-green-700 text-green-400 rounded-full text-sm font-medium">
+                <CheckCircle className="w-5 h-5" />
+                Item Claimed
+              </span>
+            </div>
+          )}
+          {isClaimed && !isWithinGracePeriod && (
+            <div className="text-center py-3">
+              <span className="inline-flex items-center gap-2 px-4 py-2 bg-slate-700/50 border border-slate-600 text-slate-400 rounded-full text-sm font-medium">
+                <X className="w-5 h-5" />
+                No longer available
               </span>
             </div>
           )}

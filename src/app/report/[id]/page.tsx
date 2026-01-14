@@ -37,7 +37,7 @@ export default function ReportPage() {
       setPopup({ isVisible: true, message, isSuccess });
       setTimeout(() => setPopup((p) => ({ ...p, isVisible: false })), duration);
     },
-    [],
+    []
   );
   const defaultAvatar =
     "https://i.pinimg.com/736x/21/f6/fc/21f6fc4abd29ba736e36e540a787e7da.jpg";
@@ -182,7 +182,7 @@ export default function ReportPage() {
 
             {/* Description */}
             <div className="mb-4">
-              <p className="text-slate-200 leading-relaxed">
+              <p className="text-slate-200 mb-4 leading-relaxed break-words whitespace-pre-wrap">
                 {report.description}
               </p>
             </div>

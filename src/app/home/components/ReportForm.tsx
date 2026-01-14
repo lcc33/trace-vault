@@ -22,6 +22,7 @@ export default function ReportForm({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -120,10 +121,11 @@ export default function ReportForm({
         <form onSubmit={handleSubmit} className="space-y-6">
           <textarea
             ref={descriptionRef}
+            onChange={(e) => setDescription(e.target.value)}
             placeholder="Describe the item (location, color, brand, etc.)..."
             className="w-full bg-slate-800/60 border border-slate-700 rounded-2xl px-5 py-4 text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 transition min-h-36 resize-none"
             required
-            maxLength={1000}
+            maxLength={280}
           />
 
           {imagePreview && (
