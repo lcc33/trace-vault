@@ -1,164 +1,102 @@
-# 🔐 TraceVault — Lost & Found System
-
-TraceVault is a campus-focused Lost & Found platform built to help students easily report lost items, view found items, and connect both ends securely. It aims to reduce the stress and time associated with finding lost belongings within university environments.
-
-## 🚀 Overview
-
-TraceVault provides a simple, user-friendly interface for students to:
-- Report a lost item
-- View items that have been found
-- Trace and claim items using a unique Trace ID
-
-## ✨ Features
-
-- 📌 **Lost Item Reporting**: Users can submit item details and contact info.
-- 🔍 **Found Item Explorer**: A searchable, filterable list of found items.
-- 🧩 **Trace ID Feature**: Users receive a unique ID to trace and verify claims.
-- 🧠 **Responsive Design**: Optimized for mobile and desktop.
-- 🔐 **Secure Cloud Storage**: Items and user data are managed using Firebase.
-
-## 🛠 Tech Stack
-
-- **Frontend**: HTML, CSS, JavaScript
-- **Backend/Database**: Firebase (Authentication, Firestore, Storage)
-- **Design**: Clean, minimal, mobile-first approach
-
-## 📦 Folder StructureTraceVault 🔍
-
-TraceVault is an open-source lost & found platform that makes it easy to report lost items, discover found items, and connect owners with finders.
-
-Whether you lost your phone, wallet, or bag — TraceVault helps you report, track, and reclaim your belongings seamlessly.
-
-🚀 Features (MVP)
-
-Google Authentication – quick and secure sign-in.
-
-Report Items – submit details of lost or found items.
-
-View Reports – browse reports from other users.
-
-Claims – request to claim an item (coming soon).
-
-User Profile – view your reports and claims (in progress).
-
-Notifications – get alerts when your item is matched (planned).
-
-📦 Tech Stack
-
-Frontend: HTML, CSS, JavaScript (Vanilla for MVP)
-
-Backend: Node.js, Express
-
-Database: Firebase (for reports & user data)
-
-Authentication: Google OAuth 2.0
-
-🛠️ Installation & Setup
-
-Clone the repo:
-
-git clone https://github.com/<your-username>/tracevault.git
-cd tracevault
-
-
-Install dependencies:
-
-npm install
-
-
-Create a .env file in the root directory and add your config:
-
-GOOGLE_CLIENT_ID=your-client-id
-GOOGLE_CLIENT_SECRET=your-client-secret
-CALLBACK_URL=http://localhost:5000/auth/google/callback
-SESSION_SECRET=your-random-secret
-FIREBASE_CONFIG=your-firebase-config
-
-
-Run locally:
-
-npm start
-
-
-Visit http://localhost:5000
-
-🌍 Deployment
-
-Currently deployed on Render:
-TraceVault App
-
-Make sure to add both your local and production callback URLs to Google Cloud Console → OAuth 2.0 Redirect URIs.
-
-🤝 Contributing
-
-We’re open to contributions!
-
-Fork the repo
-
-Create your feature branch:
-
-git checkout -b feature/awesome-feature
-
-
-Commit your changes:
-
-git commit -m "Add awesome feature"
-
-
-Push to the branch:
-
-git push origin feature/awesome-feature
-
-
-Open a Pull Request
-
-📌 Roadmap
-
- Google OAuth setup
-
- Report & view items
-
- Claim logic
-
- Profile with reports & claims
-
- Notifications system
-
- Improved UI/UX
-
-📄 License
-
-This project is licensed under the MIT License – feel free to use, modify, and share.
-
-🔥 Built with ❤️ by Muhammad Is’haq
- & the community.
-TraceVault/
-│
-├── index.html # Landing page
-├── explore.html # Found items page with search & filters
-├── trace.html # Trace ID functionality
-├── assets/ # Images, icons, etc.
-├── styles/ # Custom CSS
-└── scripts/ # JavaScript for UI and Firebase interaction
-
-
-## 📈 Status
-
-**Development Stage**: 🔧 *Early Development*
-
-> Working MVP landing, explore, and trace pages are live. Authentication and database integration in progress.
-
-## 🎯 Target Audience
-
-- Students
-- University staff
-- Lost & Found administrators
-
-## 🌍 Industry
-
-**Education** / **Digital Services**
-
-
-© 2025 TraceVault Team — Built with purpose.
-
-
+# TraceVault – Core Web App
+
+**TraceVault** is a modern lost-and-found platform that helps people report lost or found items, browse reports, submit claims with proof, and connect via email when a claim is approved.
+
+This repository contains the **full functional application** — everything related to user authentication, posting reports, claiming items, approving/rejecting claims, and managing user data.
+
+## Features
+
+- **Google Sign-in** via Clerk (secure, fast, no password hassle)
+- **Post Reports** — describe lost/found items with category and optional photo (Cloudinary)
+- **Browse & Search** — infinite scroll feed, keyword search, category filters
+- **Claim Items** — submit claims with description + proof image (daily limit: 3)
+- **Manage Claims** — reporters approve/reject claims on their reports
+- **Email Contact** — approved claimers get a pre-filled email template to coordinate return
+- **Daily Limits** — 3 reports and 3 claims per user per day (anti-spam)
+- **Responsive Design** — works on mobile, tablet, desktop
+- **Dark Theme** — modern, clean UI with Tailwind CSS
+- **MongoDB** — persistent storage for reports, claims, users, stats
+- **Image Uploads** — Cloudinary for secure, optimized images
+
+## Tech Stack
+
+- **Framework**: Next.js 14+ (App Router)
+- **Auth**: Clerk (Google OAuth)
+- **Database**: MongoDB Atlas
+- **Image Storage**: Cloudinary
+- **Styling**: Tailwind CSS + custom gradients
+- **Icons**: Lucide React
+- **Deployment**: Vercel (recommended)
+- **Package Manager**: pnpm
+
+## Project Structure (key folders/files)
+src/
+├── app/
+│   ├── claims/                ← Claims dashboard (made/received)
+│   ├── home/                  ← Main feed, report form, search
+│   ├── profile/               ← User reports
+│   ├── report/[id]/           ← Single report page
+│   ├── settings/              ← (placeholder)
+│   ├── layout.tsx             ← Root layout
+│   └── page.tsx               ← (redirect or proxy)
+├── components/
+│   ├── home/                  ← ReportCard, ReportForm, etc.
+│   ├── ui/                    ← Reusable components (button, card, etc.)
+│   └── global/                ← Navbar, container, etc.
+├── lib/
+│   ├── mongodb.ts             ← MongoDB client
+│   ├── auth.ts                ← Optional auth helpers
+│   └── utils.ts               ← Helpers
+├── api/
+│   ├── claims/                ← List, submit, approve/reject claims
+│   ├── reports/               ← List, post, get single, user reports
+│   └── user/                  ← (user status, etc.)
+└── styles/
+└── globals.css            ← Tailwind base
+text## Environment Variables (.env.local / Vercel)
+
+```env
+# Clerk (required)
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
+CLERK_SECRET_KEY=sk_test_...
+
+# MongoDB Atlas
+MONGODB_URI=mongodb+srv://user:pass@cluster0.xxx.mongodb.net/tracevault?retryWrites=true&w=majority
+
+# Cloudinary
+CLOUDINARY_CLOUD_NAME=...
+CLOUDINARY_API_KEY=...
+CLOUDINARY_API_SECRET=...
+Setup & Development
+
+Clone the repo
+Install dependenciesBashpnpm install
+Create .env.local with the variables above
+Start dev serverBashpnpm dev→ http://localhost:3000
+
+Deployment (Vercel)
+
+Push to GitHub
+Import repo in Vercel dashboard
+Add environment variables
+Deploy
+
+Recommended domain: app.tracevault.xyz (subdomain of your main domain)
+Important Notes
+
+Daily Limits: Enforced at 3 reports and 3 claims per user per day (tracked in userStats collection)
+Security: All API routes use Clerk auth middleware
+Image Limits: Max 8MB, only JPEG/PNG/WEBP
+No phone numbers: Email-only contact (security decision)
+
+Future Improvements
+
+Email notifications on claims/approvals
+Full-text search indexing
+Location-based filtering
+Mobile PWA support
+Admin dashboard
+Analytics
+
+License
+MIT
