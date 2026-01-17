@@ -5,7 +5,7 @@ import { Navbar } from "@/components";
 
 export default function SettingsPage() {
   const { user, isLoaded } = useUser();
-  if (!user) {
+  if (isLoaded && !user) {
     return (
       <div className="min-h-screen bg-slate-900 text-slate-100 flex items-center justify-center p-4">
         <p className="text-center">

@@ -7,7 +7,6 @@ import { useUser, useClerk } from "@clerk/nextjs";
 import { useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { FaHome, FaFileAlt, FaSearch, FaBars, FaTimes } from "react-icons/fa";
-
 import { IoSettingsSharp } from "react-icons/io5";
 
 const Navbar = () => {
@@ -29,27 +28,27 @@ const Navbar = () => {
       label: "Settings",
     },
   ];
- const webUrl = process.env.TRACEVAULT_WEB_URL;
+
+  const webUrl = process.env.TRACEVAULT_WEB_URL || "/";
+
   const handleItemClick = (id: string) => {
     setActiveItem(id);
-    setSidebarOpen(false); // Close on mobile
+    setSidebarOpen(false);
   };
 
   const defaultAvatar =
     "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
 
-  // Close sidebar on route change or resize
+  // Close sidebar on escape key
   useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth >= 868) {
-        setSidebarOpen(false);
-      }
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setSidebarOpen(false);
     };
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
   }, []);
 
-  // Update active nav item when the pathname changes
+  // Update active nav item based on pathname
   useEffect(() => {
     if (!pathname) return;
 
@@ -64,9 +63,19 @@ const Navbar = () => {
     } else if (pathname.startsWith("/explore")) {
       setActiveItem("explore");
     }
-
-    // keep sidebar state unchanged here; clicking nav items will close on mobile
   }, [pathname]);
+
+  // Prevent body scroll when sidebar is open on mobile
+  useEffect(() => {
+    if (sidebarOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [sidebarOpen]);
 
   if (!isLoaded) {
     return (
@@ -78,20 +87,52 @@ const Navbar = () => {
 
   const userImageUrl = user?.imageUrl || defaultAvatar;
   const userName = user?.fullName || user?.firstName || "User";
+
   return (
     <>
-      {/* Desktop Sidebar */}
+      {/* Mobile Header - Only visible on mobile */}
+      <header className="lg:hidden sticky top-0 left-0 right-0 z-40 bg-transparent border-none">
+        <div className="flex items-center justify-between px-4 h-14">
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="p-2 -ml-2 rounded-full hover:bg-slate-800 transition-colors"
+            aria-label="Open menu"
+          >
+            <Image
+              src={userImageUrl}
+              alt="Profile"
+              width={32}
+              height={32}
+              className="w-8 h-8 rounded-full object-cover"
+              onError={(e) => {
+                e.currentTarget.src = defaultAvatar;
+              }}
+            />
+          </button>
+          <div className="w-8" /> {/* Spacer for balance */}
+        </div>
+      </header>
+
+      {/* Sidebar Overlay - Mobile only */}
+      {sidebarOpen && (
+        <div
+          className="lg:hidden fixed inset-0 bg-black/40 z-40 backdrop-blur-sm"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
       <aside
-        className={`fixed left-0 top-0 h-full bg-slate-900 border-r border-slate-700 z-50 transition-transform duration-300 ease-in-out ${
-          sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        } md:translate-x-0 w-64`}
+        className={`fixed top-0 left-0 h-full bg-slate-900 border-r border-slate-700 z-50 transition-transform duration-300 ease-out
+          ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
+          lg:translate-x-0 w-[280px] lg:w-[88px] xl:w-[275px]`}
       >
         <div className="flex flex-col h-full">
-          {/* Logo + Close Button */}
-          <div className="flex items-center justify-between p-4 border-b border-slate-700">
+          {/* Logo Section */}
+          <div className="flex items-center justify-between px-4 h-14 border-b border-slate-700 lg:justify-center">
             <Link
-              href={`${webUrl}`}
-              className="flex items-center gap-3"
+              href={webUrl}
+              className="flex gap-3 justify-between xl:justify-start"
               onClick={() => handleItemClick("home")}
             >
               <Image
@@ -99,21 +140,23 @@ const Navbar = () => {
                 alt="TraceVault"
                 width={40}
                 height={40}
-                className="w-10 h-10 rounded-lg"
+                className="w-10 h-10 rounded-lg flex-shrink-0"
                 priority
               />
-              <span className="text-xl font-bold text-white">TraceVault</span>
             </Link>
+
+            {/* Close button - Mobile only */}
             <button
               onClick={() => setSidebarOpen(false)}
-              className="md:hidden text-slate-400 hover:text-white p-1"
+              className="lg:hidden p-2 -mr-2 rounded-full hover:bg-slate-800 transition-colors"
+              aria-label="Close menu"
             >
-              <FaTimes className="w-5 h-5" />
+              <FaTimes className="w-5 h-5 text-slate-400" />
             </button>
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 p-4 space-y-1">
+          <nav className="flex-1 p-3 space-y-2">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = activeItem === item.id;
@@ -123,112 +166,75 @@ const Navbar = () => {
                   key={item.id}
                   href={item.href}
                   onClick={() => handleItemClick(item.id)}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group ${
-                    isActive
-                      ? "bg-sky-500/10 text-sky-400 font-medium"
-                      : "text-slate-300 hover:bg-slate-800 hover:text-white"
-                  }`}
+                  className={`flex items-center gap-4 px-4 py-3 rounded-full transition-all duration-200 group
+                    lg:justify-center xl:justify-start
+                    ${
+                      isActive
+                        ? "bg-sky-500/10 text-sky-400 font-bold"
+                        : "text-slate-300 hover:bg-slate-800 hover:text-white"
+                    }`}
                 >
-                  <Icon className="w-5 h-5" />
-                  <span>{item.label}</span>
+                  <Icon className="w-6 h-6 flex-shrink-0" />
+                  <span className="text-xl lg:hidden md:hidden xl:block">
+                    {item.label}
+                  </span>
                 </Link>
               );
             })}
           </nav>
 
-          {/* User Profile + Sign Out */}
-          <div className="p-4 border-t border-slate-700">
-            <div className="space-y-4">
-              <Link
-                href="/profile"
-                onClick={() => handleItemClick("profile")}
-                className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-800 transition-colors"
-              >
-                <div className="relative">
-                  <Image
-                    src={userImageUrl}
-                    alt="Profile"
-                    width={40}
-                    height={40}
-                    className="w-10 h-10 rounded-full object-cover border-2 border-slate-600"
-                    onError={(e) => {
-                      e.currentTarget.src = defaultAvatar;
-                    }}
-                  />
-                  <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-400 rounded-full ring-2 ring-slate-900"></span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-white truncate">
-                    {userName}
-                  </p>
-                  <p className="text-xs text-slate-400">View Profile</p>
-                </div>
-              </Link>
-
-              {/* Sign Out Button */}
-              {user && (
-                <button
-                  onClick={() => signOut({ redirectUrl: "/sign-in" })}
-                  className="w-full py-3 px-4 rounded-xl bg-red-600 hover:bg-red-700 text-white font-semibold transition-all shadow-md hover:shadow-lg"
-                >
-                  Sign Out
-                </button>
-              )}
-              {!user && (
-                <button
-                  onClick={() => router.push("/sign-in")}
-                  className="w-full py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold transition-all shadow-md hover:shadow-lg"
-                >
-                  Sign In
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-      </aside>
-
-      {/* Mobile Topbar (visible on small screens) */}
-      <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-slate-900 border-b border-slate-700 px-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between h-14">
-          <Link
-            href="/"
-            className="flex items-center gap-3"
-            onClick={() => handleItemClick("home")}
-          >
-            <Image
-              src="/assets/logo.jpeg"
-              alt="TraceVault"
-              width={32}
-              height={32}
-              className="w-8 h-8 rounded-md"
-              priority
-            />
-            <span className="text-lg font-bold text-white">TraceVault</span>
-          </Link>
-
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setSidebarOpen(true)}
-              className="p-2 rounded-md bg-slate-800 hover:bg-slate-700 text-white"
+          {/* User Profile Section */}
+          <div className="p-3 border-t border-slate-700">
+            <Link
+              href="/profile"
+              onClick={() => handleItemClick("profile")}
+              className="flex items-center gap-3 p-3 rounded-full hover:bg-slate-800 transition-colors lg:justify-center xl:justify-start"
             >
-              <FaBars className="w-5 h-5" />
+              <div className="relative flex-shrink-0">
+                <Image
+                  src={userImageUrl}
+                  alt="Profile"
+                  width={40}
+                  height={40}
+                  className="w-10 h-10 rounded-full object-cover"
+                  onError={(e) => {
+                    e.currentTarget.src = defaultAvatar;
+                  }}
+                />
+                <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-400 rounded-full ring-2 ring-slate-900" />
+              </div>
+
+              <div className="flex-1 min-w-0 lg:hidden xl:block">
+                <p className="text-sm font-bold text-white truncate">
+                  {userName}
+                </p>
+              </div>
+            </Link>
+
+            {/* Sign Out Button */}
+            <button
+              onClick={() => signOut({ redirectUrl: "/sign-in" })}
+              className="w-full mt-3 py-3 px-4 rounded-full bg-red-600 hover:bg-red-700 text-white font-bold transition-all
+                lg:justify-center xl:justify-start flex items-center gap-2"
+            >
+              <svg
+                className="w-5 h-5 flex-shrink-0"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                />
+              </svg>
+              <span className="lg:hidden xl:block">Sign Out</span>
             </button>
           </div>
         </div>
-      </div>
-
-      {/* Main Content Offset: add top padding on mobile to account for fixed topbar */}
-      <div className="pt-14 md:pt-0 md:pl-64">
-        {/* Your page content goes here */}
-      </div>
-
-      {/* Overlay for mobile */}
-      {sidebarOpen && (
-        <div
-          className="md:hidden fixed inset-0 bg-black/50 z-40"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
+      </aside>
     </>
   );
 };

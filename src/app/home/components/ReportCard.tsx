@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
@@ -15,6 +15,42 @@ interface Props {
   onClaim: (id: string) => void;
 }
 
+// Loading skeleton component
+export function ReportCardSkeleton() {
+  return (
+    <article className="p-5 animate-pulse">
+      {/* Header */}
+      <div className="flex items-start justify-between gap-4 mb-4">
+        <div className="flex items-center gap-4 flex-1 min-w-0">
+          {/* Avatar skeleton */}
+          <div className="w-12 h-12 rounded-full bg-slate-700 flex-shrink-0" />
+          <div className="min-w-0 flex-1">
+            {/* Name skeleton */}
+            <div className="h-5 bg-slate-700 rounded w-32 mb-2" />
+            {/* Meta info skeleton */}
+            <div className="h-3 bg-slate-700 rounded w-48" />
+          </div>
+        </div>
+      </div>
+
+      {/* Description skeleton */}
+      <div className="space-y-2 mb-4">
+        <div className="h-4 bg-slate-700 rounded w-full" />
+        <div className="h-4 bg-slate-700 rounded w-5/6" />
+        <div className="h-4 bg-slate-700 rounded w-4/6" />
+      </div>
+
+      {/* Image skeleton */}
+      <div className="mb-4">
+        <div className="w-full h-96 bg-slate-700 rounded-2xl" />
+      </div>
+
+      {/* Button skeleton */}
+      <div className="h-14 bg-slate-700 rounded-2xl w-full" />
+    </article>
+  );
+}
+
 export default function ReportCard({
   report,
   onDelete,
@@ -25,11 +61,10 @@ export default function ReportCard({
   const { user, isSignedIn } = useUser();
   const [menuOpen, setMenuOpen] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [imageLoading, setImageLoading] = useState(true);
   const isOwner = isSignedIn && report.reporterId === user?.id;
   const claimed = report.status === "claimed";
-  const [loading, setLoading] = useState(true);
 
-  // If report is claimed and within 4 days, show disabled button
   const isClaimed = report.status === "claimed";
   const claimedDate = report.claimed_at ? new Date(report.claimed_at) : null;
   const fourDaysAgo = new Date(Date.now() - 4 * 24 * 60 * 60 * 1000);
@@ -45,6 +80,7 @@ export default function ReportCard({
       return;
     }
   }, [user]);
+
   const confirmDelete = async () => {
     try {
       const res = await fetch(`/api/reports/${report._id}`, {
@@ -83,6 +119,8 @@ export default function ReportCard({
               width={48}
               height={48}
               className="w-12 h-12 rounded-full object-cover border-2 border-slate-700 flex-shrink-0"
+              quality={75}
+              loading="lazy"
             />
             <div className="min-w-0">
               <p className="font-bold text-white truncate">
@@ -143,24 +181,31 @@ export default function ReportCard({
           {report.description}
         </p>
 
-        {/* Image */}
+        {/* Image with skeleton */}
         {report.imageUrl && (
-          <div className="mb-5 -mx-5">
+          <div className="mb-4 relative">
+            {/* Skeleton shown while image loads */}
+            {imageLoading && (
+              <div className="absolute inset-0 bg-slate-700 rounded-2xl animate-pulse" />
+            )}
             <Image
               src={report.imageUrl}
               alt="Report"
               width={800}
               height={600}
-              className="w-full rounded-2xl border border-slate-700 object-cover max-h-96 cursor-pointer hover:opacity-90 transition"
+              className={`w-full rounded-2xl border border-slate-700 object-cover max-h-96 cursor-pointer hover:opacity-90 transition ${
+                imageLoading ? "opacity-0" : "opacity-100"
+              }`}
               unoptimized
               onClick={(e) => e.stopPropagation()}
+              onLoadingComplete={() => setImageLoading(false)}
             />
           </div>
         )}
 
         {/* Claim Button */}
         <div className="mt-4" onClick={(e) => e.stopPropagation()}>
-          {!isOwner && isClaimed && isWithinGracePeriod ? (
+          {!isOwner && isClaimed ? (
             <div className="text-center py-3">
               <span className="inline-flex items-center gap-2 px-4 py-2 bg-green-900/30 border border-green-700 text-green-400 rounded-full text-sm font-medium">
                 <CheckCircle className="w-5 h-5" />

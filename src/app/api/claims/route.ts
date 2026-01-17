@@ -162,7 +162,7 @@ export async function POST(request: Request) {
 
     const today = new Date().toISOString().split("T")[0];
 
-    // === DAILY CLAIM LIMIT (3 per day) ===
+    
     const DAILY_CLAIM_LIMIT = 3;
 
     const stats = await db.collection("userStats").findOne({ clerkId: userId });
@@ -178,7 +178,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // === Get or create DB user ===
+    // Get or create DB user 
     let dbUser = await db.collection("users").findOne({ clerkId: userId });
     if (!dbUser) {
       const clerkProfile = await currentUser();
@@ -200,7 +200,7 @@ export async function POST(request: Request) {
       dbUser = { ...newUser, _id: res.insertedId };
     }
 
-    // === Validate report ===
+    //  Validate report 
     const report = await db.collection("reports").findOne({
       _id: new ObjectId(reportId),
       status: "open",
@@ -220,7 +220,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // === Upload image ===
+    // Upload image 
     let proofImage = null;
     if (file && file.size > 0) {
       const buffer = Buffer.from(await file.arrayBuffer());
@@ -234,7 +234,7 @@ export async function POST(request: Request) {
       proofImage = (result as any).secure_url;
     }
 
-    // === Create claim ===
+    // Create claim 
     const claim = {
       reportId: new ObjectId(reportId),
       claimantId: dbUser._id,
@@ -249,7 +249,7 @@ export async function POST(request: Request) {
 
     const result = await db.collection("claims").insertOne(claim);
 
-    // === Increment daily counter AFTER successful claim ===
+    // Increment daily counter AFTER successful claim 
     await db.collection("userStats").updateOne(
       { clerkId: userId },
       {

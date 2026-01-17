@@ -4,7 +4,7 @@
 import { useState, useEffect, useCallback } from "react";
 import Navbar from "@/components/home/navigation/navbar";
 import ReportForm from "./components/ReportForm";
-import ReportCard from "./components/ReportCard";
+import ReportCard, { ReportCardSkeleton } from "./components/ReportCard";
 import LoadMoreButton from "./components/LoadMoreButton";
 import ClaimModal from "./components/ClaimModal";
 import EnlargedImageModal from "./components/EnlargedImageModal";
@@ -94,22 +94,12 @@ export default function HomePage() {
         <ReportForm onSuccessAction={() => fetchReports(1)} />
         <div className="divide-y divide-slate-700">
           {loading ? (
-            // Loading State
-            <div className="py-20 px-6 text-center">
-              <div className="max-w-md mx-auto">
-                <div className="bg-slate-800/50 rounded-3xl p-12 border-2 border-dashed border-slate-700">
-                  <div className="w-24 h-24 mx-auto mb-6 flex items-center justify-center">
-                    <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-sky-500" />
-                  </div>
-                  <h3 className="text-2xl font-bold text-white mb-4">
-                    Loading reports...
-                  </h3>
-                  <p className="text-slate-400 text-lg">
-                    Fetching the latest reports
-                  </p>
-                </div>
-              </div>
-            </div>
+            // Loading Skeletons
+            <>
+              <ReportCardSkeleton />
+              <ReportCardSkeleton />
+              <ReportCardSkeleton />
+            </>
           ) : reports.length === 0 ? (
             // Empty State
             <div className="py-20 px-6 text-center">
@@ -165,6 +155,15 @@ export default function HomePage() {
             ))
           )}
         </div>
+        
+        {/* Load More with skeleton on fetching more */}
+        {fetchingMore && (
+          <div className="divide-y divide-slate-700">
+            <ReportCardSkeleton />
+            <ReportCardSkeleton />
+          </div>
+        )}
+        
         <LoadMoreButton
           hasNext={pagination.hasNext}
           loading={fetchingMore}
