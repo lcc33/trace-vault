@@ -1,81 +1,322 @@
 // src/app/api/reports/[id]/route.ts
 import { NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
 import clientPromise from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
-import { auth } from "@clerk/nextjs/server";
+import { getCached, invalidateCache } from "@/lib/redis";
+import {
+  requireAuth,
+  applyRateLimit,
+  withRetry,
+  handleApiError,
+} from "@/lib/api-utils";
 
+// GET: Fetch single report details WITH CACHING
 export async function GET(
-  _: Request,
-  { params }: { params: Promise<{ id: string }> },
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // 1. Get report ID (no auth required for viewing public reports)
     const { id } = await params;
-
+    
     if (!ObjectId.isValid(id)) {
-      return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Invalid report ID format" },
+        { status: 400 }
+      );
     }
 
-    const client = await clientPromise;
-    const db = client.db("tracevault");
+    // 2. Optional auth for rate limiting
+    const { userId } = await auth();
+    
+    // 3. Apply rate limiting (even for unauthenticated users, use IP)
+    const identifier = userId || request.headers.get('x-forwarded-for') || 'anonymous';
+    const rateLimitResult = await applyRateLimit(identifier, 'read');
+    if (rateLimitResult.error) return rateLimitResult.error;
 
-    const report = await db.collection("reports").findOne({
-      _id: new ObjectId(id),
-    });
+    // 4. Use caching (10 minute TTL for individual reports)
+    const cacheKey = `report:${id}`;
+    
+    const reportData = await getCached(
+      cacheKey,
+      async () => {
+        const client = await clientPromise;
+        const db = client.db("tracevault");
 
-    if (!report) {
-      return NextResponse.json({ error: "Report not found" }, { status: 404 });
+        // Fetch report with retry
+        const report = await withRetry(async () => {
+          return await db.collection("reports").findOne({
+            _id: new ObjectId(id),
+          });
+        });
+
+        if (!report) {
+          return null;
+        }
+
+        // Fetch claim count
+        const claimCount = await withRetry(async () => {
+          return await db.collection("claims").countDocuments({
+            reportId: new ObjectId(id),
+          });
+        });
+
+        // Fetch recent claims (for reporter view)
+        const recentClaims = await withRetry(async () => {
+          return await db
+            .collection("claims")
+            .find({ reportId: new ObjectId(id) })
+            .sort({ createdAt: -1 })
+            .limit(5)
+            .toArray();
+        });
+
+        return {
+          _id: report._id.toString(),
+          reporterId: report.reporterId,
+          description: report.description,
+          category: report.category,
+          imageUrl: report.imageUrl || null,
+          status: report.status || "open",
+          claimed_at: report.claimed_at?.toISOString() || null,
+          user: report.user,
+          createdAt: report.createdAt.toISOString(),
+          updatedAt: report.updatedAt?.toISOString() || null,
+          claimCount,
+          recentClaims: recentClaims.map(c => ({
+            _id: c._id.toString(),
+            status: c.status,
+            createdAt: c.createdAt.toISOString(),
+          })),
+        };
+      },
+      600 // Cache for 10 minutes
+    );
+
+    if (!reportData) {
+      return NextResponse.json(
+        { error: "Report not found" },
+        { status: 404 }
+      );
     }
 
-    return NextResponse.json({
-      ...report,
-      _id: report._id.toString(),
-      createdAt: report.createdAt.toISOString(),
+    // 5. Return report data
+    return NextResponse.json(reportData, {
+      headers: rateLimitResult.headers as Record<string, string>,
     });
+
   } catch (error) {
-    console.error("GET error:", error);
-    return NextResponse.json({ error: "Server error" }, { status: 500 });
+    return handleApiError(error, "Failed to fetch report");
   }
 }
 
-export async function DELETE(
-  _: Request,
-  { params }: { params: Promise<{ id: string }> },
+// PATCH: Update report (mark as claimed, etc.)
+export async function PATCH(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    // 1. Require authentication
+    const authResult = await requireAuth();
+    if (authResult instanceof NextResponse) return authResult;
+    const { userId } = authResult;
+
+    // 2. Apply rate limiting
+    const rateLimitResult = await applyRateLimit(userId, 'general');
+    if (rateLimitResult.error) return rateLimitResult.error;
+
+    // 3. Get report ID
+    const { id } = await params;
+    
+    if (!ObjectId.isValid(id)) {
+      return NextResponse.json(
+        { error: "Invalid report ID format" },
+        { status: 400 }
+      );
     }
 
-    const { id } = await params;
+    // 4. Parse body
+    const body = await request.json();
+    const { status, description, category } = body;
 
-    if (!ObjectId.isValid(id)) {
-      return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+    // 5. Validate allowed updates
+    const allowedStatuses = ["open", "claimed", "closed"];
+    if (status && !allowedStatuses.includes(status)) {
+      return NextResponse.json(
+        { error: `Invalid status. Allowed: ${allowedStatuses.join(", ")}` },
+        { status: 400 }
+      );
     }
 
     const client = await clientPromise;
     const db = client.db("tracevault");
 
-    const report = await db.collection("reports").findOne({
-      _id: new ObjectId(id),
+    // 6. Verify ownership
+    const report = await withRetry(async () => {
+      return await db.collection("reports").findOne({
+        _id: new ObjectId(id),
+      });
     });
 
     if (!report) {
-      return NextResponse.json({ error: "Report not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Report not found" },
+        { status: 404 }
+      );
     }
 
-    // SECURITY: Only owner can delete
     if (report.reporterId !== userId) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      return NextResponse.json(
+        { error: "Forbidden: You can only update your own reports" },
+        { status: 403 }
+      );
     }
 
-    // Delete report + all claims
-    await db.collection("reports").deleteOne({ _id: new ObjectId(id) });
-    await db.collection("claims").deleteMany({ reportId: new ObjectId(id) });
+    // 7. Build update object
+    const updateFields: any = { updatedAt: new Date() };
+    
+    if (status) {
+      updateFields.status = status;
+      if (status === "claimed") {
+        updateFields.claimed_at = new Date();
+      }
+    }
+    
+    if (description) updateFields.description = description.trim();
+    if (category) updateFields.category = category;
 
-    return NextResponse.json({ message: "Deleted successfully" });
+    // 8. Update report
+    await withRetry(async () => {
+      return await db.collection("reports").updateOne(
+        { _id: new ObjectId(id) },
+        { $set: updateFields }
+      );
+    });
+
+    // 9. Invalidate caches
+    await Promise.all([
+      invalidateCache(`report:${id}`), // Single report cache
+      invalidateCache(`user-reports:${userId}`), // User's reports
+      invalidateCache(`reports:*`), // All report feeds
+    ]);
+
+    // 10. Return success
+    return NextResponse.json(
+      {
+        success: true,
+        message: "Report updated successfully",
+        updatedFields: Object.keys(updateFields),
+      },
+      {
+        headers: rateLimitResult.headers as Record<string, string>,
+      }
+    );
+
   } catch (error) {
-    console.error("DELETE error:", error);
-    return NextResponse.json({ error: "Server error" }, { status: 500 });
+    return handleApiError(error, "Failed to update report");
+  }
+}
+
+// DELETE: Delete report (owner only)
+export async function DELETE(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    // 1. Require authentication
+    const authResult = await requireAuth();
+    if (authResult instanceof NextResponse) return authResult;
+    const { userId } = authResult;
+
+    // 2. Apply rate limiting
+    const rateLimitResult = await applyRateLimit(userId, 'general');
+    if (rateLimitResult.error) return rateLimitResult.error;
+
+    // 3. Get report ID
+    const { id } = await params;
+    
+    if (!ObjectId.isValid(id)) {
+      return NextResponse.json(
+        { error: "Invalid report ID format" },
+        { status: 400 }
+      );
+    }
+
+    const client = await clientPromise;
+    const db = client.db("tracevault");
+
+    // 4. Verify ownership before deletion
+    const report = await withRetry(async () => {
+      return await db.collection("reports").findOne({
+        _id: new ObjectId(id),
+      });
+    });
+
+    if (!report) {
+      return NextResponse.json(
+        { error: "Report not found" },
+        { status: 404 }
+      );
+    }
+
+    if (report.reporterId !== userId) {
+      return NextResponse.json(
+        { error: "Forbidden: You can only delete your own reports" },
+        { status: 403 }
+      );
+    }
+
+    // 5. Check if report has approved claims
+    const hasApprovedClaims = await withRetry(async () => {
+      const count = await db.collection("claims").countDocuments({
+        reportId: new ObjectId(id),
+        status: "approved",
+      });
+      return count > 0;
+    });
+
+    if (hasApprovedClaims) {
+      return NextResponse.json(
+        {
+          error: "Cannot delete report with approved claims. Please mark as closed instead.",
+        },
+        { status: 409 } // Conflict
+      );
+    }
+
+    // 6. Delete report and associated claims
+    await withRetry(async () => {
+      // Delete all claims for this report
+      await db.collection("claims").deleteMany({
+        reportId: new ObjectId(id),
+      });
+
+      // Delete the report
+      await db.collection("reports").deleteOne({
+        _id: new ObjectId(id),
+      });
+    });
+
+    // 7. Invalidate caches
+    await Promise.all([
+      invalidateCache(`report:${id}`),
+      invalidateCache(`user-reports:${userId}`),
+      invalidateCache(`reports:*`),
+    ]);
+
+    // 8. Return success
+    return NextResponse.json(
+      {
+        success: true,
+        message: "Report and associated claims deleted successfully",
+      },
+      {
+        headers: rateLimitResult.headers as Record<string, string>,
+      }
+    );
+
+  } catch (error) {
+    return handleApiError(error, "Failed to delete report");
   }
 }

@@ -10,23 +10,19 @@ import ReceivedClaims from "./components/RecievedClaims";
 import MadeClaims from "./components/MadeClaims";
 import EnlargedImageModal from "./components/EnlargedImageModal";
 import type { Claim } from "./types";
+import { AlertCircle } from "lucide-react";
 
 // Loading skeleton component
 function ClaimsPageSkeleton() {
   return (
     <div className="min-h-screen bg-slate-900 text-slate-100">
       <Navbar />
-      <div className="max-w-5xl mx-auto px-4 py-8">
-        {/* Title skeleton */}
+      <div className="max-w-5xl mx-auto px-4 py-8 pb-24 lg:pb-8">
         <div className="h-9 bg-slate-800 rounded-lg w-64 mb-8 animate-pulse mx-auto sm:mx-0" />
-
-        {/* Tabs skeleton */}
         <div className="flex gap-4 mb-6 border-b border-slate-700 pb-2">
           <div className="h-10 bg-slate-800 rounded-lg w-32 animate-pulse" />
           <div className="h-10 bg-slate-800 rounded-lg w-32 animate-pulse" />
         </div>
-
-        {/* Claims cards skeleton */}
         <div className="space-y-4">
           {[1, 2, 3].map((i) => (
             <div
@@ -34,27 +30,18 @@ function ClaimsPageSkeleton() {
               className="bg-slate-800/50 border border-slate-700 rounded-2xl p-6 animate-pulse"
             >
               <div className="flex flex-col sm:flex-row gap-4">
-                {/* Image skeleton */}
                 <div className="w-full sm:w-48 h-48 bg-slate-700 rounded-xl flex-shrink-0" />
-                
                 <div className="flex-1 space-y-3">
-                  {/* Header skeleton */}
                   <div className="h-6 bg-slate-700 rounded w-3/4" />
-                  
-                  {/* Description skeleton */}
                   <div className="space-y-2">
                     <div className="h-4 bg-slate-700 rounded w-full" />
                     <div className="h-4 bg-slate-700 rounded w-5/6" />
                     <div className="h-4 bg-slate-700 rounded w-4/6" />
                   </div>
-                  
-                  {/* Meta info skeleton */}
                   <div className="flex gap-2">
                     <div className="h-4 bg-slate-700 rounded w-20" />
                     <div className="h-4 bg-slate-700 rounded w-24" />
                   </div>
-                  
-                  {/* Buttons skeleton */}
                   <div className="flex gap-3 pt-2">
                     <div className="h-10 bg-slate-700 rounded-lg w-24" />
                     <div className="h-10 bg-slate-700 rounded-lg w-24" />
@@ -77,6 +64,7 @@ export default function ClaimsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [enlargedImage, setEnlargedImage] = useState<string | null>(null);
+  const [actionLoading, setActionLoading] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -99,7 +87,19 @@ export default function ClaimsPage() {
       const res = await fetch("/api/claims");
       
       if (!res.ok) {
-        throw new Error("Failed to fetch claims");
+        if (res.status === 429) {
+          const data = await res.json();
+          const resetTime = data.reset 
+            ? new Date(data.reset).toLocaleTimeString() 
+            : 'later';
+          throw new Error(`Too many requests. Try again after ${resetTime}`);
+        } else if (res.status === 503) {
+          throw new Error("Service temporarily unavailable. Please try again in a moment.");
+        } else if (res.status >= 500) {
+          throw new Error("Server error. Please try again.");
+        } else {
+          throw new Error("Failed to fetch claims");
+        }
       }
       
       const data = await res.json();
@@ -107,7 +107,15 @@ export default function ClaimsPage() {
       setClaimsReceived(data.claimsReceived || []);
     } catch (error) {
       console.error("Error fetching claims:", error);
-      setError("Failed to load claims. Please try again.");
+      const errorMsg = error instanceof Error ? error.message : "Failed to load claims. Please try again.";
+      setError(errorMsg);
+      
+      // Auto-retry on network/server errors
+      if (errorMsg.includes("temporarily unavailable") || errorMsg.includes("Network")) {
+        setTimeout(() => {
+          fetchUserClaims();
+        }, 5000);
+      }
     } finally {
       setLoading(false);
     }
@@ -117,6 +125,7 @@ export default function ClaimsPage() {
     claimId: string,
     action: "approve" | "reject"
   ) => {
+    setActionLoading(true);
     try {
       const res = await fetch(`/api/claims/${claimId}`, {
         method: "PATCH",
@@ -126,23 +135,31 @@ export default function ClaimsPage() {
       
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error || "Failed to update claim");
+        
+        if (res.status === 429) {
+          const resetTime = data.reset 
+            ? new Date(data.reset).toLocaleTimeString() 
+            : 'later';
+          throw new Error(`Rate limit exceeded. Try again after ${resetTime}`);
+        } else if (res.status >= 500) {
+          throw new Error("Server error. Please try again.");
+        } else {
+          throw new Error(data.error || "Failed to update claim");
+        }
       }
       
       // Refresh claims after action
       await fetchUserClaims();
       
-      // Show success feedback
-      const successMsg = action === "approve" 
-        ? "Claim approved! You can now contact the claimer."
-        : "Claim rejected.";
-      
-      // You could add a toast notification here
-      console.log(successMsg);
+      // Clear any previous errors
+      setError(null);
       
     } catch (error) {
       console.error("Error updating claim:", error);
-      alert(error instanceof Error ? error.message : "Failed to update claim");
+      const errorMsg = error instanceof Error ? error.message : "Failed to update claim";
+      alert(errorMsg);
+    } finally {
+      setActionLoading(false);
     }
   };
 
@@ -151,6 +168,7 @@ export default function ClaimsPage() {
       return;
     }
     
+    setActionLoading(true);
     try {
       const res = await fetch(`/api/reports/${reportId}`, {
         method: "PATCH",
@@ -160,7 +178,17 @@ export default function ClaimsPage() {
       
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error || "Failed to mark as claimed");
+        
+        if (res.status === 429) {
+          const resetTime = data.reset 
+            ? new Date(data.reset).toLocaleTimeString() 
+            : 'later';
+          throw new Error(`Rate limit exceeded. Try again after ${resetTime}`);
+        } else if (res.status >= 500) {
+          throw new Error("Server error. Please try again.");
+        } else {
+          throw new Error(data.error || "Failed to mark as claimed");
+        }
       }
       
       await fetchUserClaims();
@@ -168,7 +196,10 @@ export default function ClaimsPage() {
       
     } catch (error) {
       console.error("Error marking report:", error);
-      alert(error instanceof Error ? error.message : "Failed to update report");
+      const errorMsg = error instanceof Error ? error.message : "Failed to update report";
+      alert(errorMsg);
+    } finally {
+      setActionLoading(false);
     }
   };
 
@@ -194,28 +225,48 @@ export default function ClaimsPage() {
               receivedCount={claimsReceived.length}
             />
 
-            {/* Error state */}
+            {/* Error Banner */}
             {error && (
               <div className="bg-red-900/30 border border-red-700/50 text-red-400 px-4 py-3 rounded-2xl mb-6 flex items-start gap-3">
-                <svg
-                  className="w-5 h-5 flex-shrink-0 mt-0.5"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
+                <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <p className="font-medium text-sm sm:text-base">{error}</p>
+                  {!error.includes("temporarily unavailable") && (
+                    <button
+                      onClick={fetchUserClaims}
+                      className="mt-2 text-xs sm:text-sm text-red-300 hover:text-red-200 underline"
+                    >
+                      Try again
+                    </button>
+                  )}
+                  {error.includes("temporarily unavailable") && (
+                    <p className="mt-1 text-xs text-red-300">
+                      Automatically retrying...
+                    </p>
+                  )}
+                </div>
+                <button
+                  onClick={() => setError(null)}
+                  className="text-red-400 hover:text-red-300 p-1"
+                  aria-label="Dismiss error"
                 >
-                  <path
-                    fillRule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                <div>
-                  <p className="font-medium">{error}</p>
-                  <button
-                    onClick={fetchUserClaims}
-                    className="mt-2 text-sm text-red-300 hover:text-red-200 underline"
-                  >
-                    Try again
-                  </button>
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path
+                      fillRule="evenodd"
+                      d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </button>
+              </div>
+            )}
+
+            {/* Action Loading Overlay */}
+            {actionLoading && (
+              <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
+                <div className="bg-slate-800 rounded-2xl p-6 flex items-center gap-3 shadow-2xl">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-sky-500" />
+                  <p className="text-white font-medium">Processing...</p>
                 </div>
               </div>
             )}

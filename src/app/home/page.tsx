@@ -8,8 +8,9 @@ import ReportCard, { ReportCardSkeleton } from "./components/ReportCard";
 import LoadMoreButton from "./components/LoadMoreButton";
 import ClaimModal from "./components/ClaimModal";
 import EnlargedImageModal from "./components/EnlargedImageModal";
-import type { Report, Pagination, ReportsResponse } from "./types";
+import type { Report, Pagination } from "./types";
 import { useUser } from "@clerk/nextjs";
+import { AlertCircle, Clock } from "lucide-react";
 
 export default function HomePage() {
   const [reports, setReports] = useState<Report[]>([]);
@@ -22,6 +23,7 @@ export default function HomePage() {
   });
   const [loading, setLoading] = useState(false);
   const [fetchingMore, setFetchingMore] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const { isLoaded } = useUser();
 
@@ -44,6 +46,8 @@ export default function HomePage() {
       if (isLoadMore) setFetchingMore(true);
       else setLoading(true);
 
+      setError(null); // Clear previous errors
+
       try {
         const params = new URLSearchParams({
           page: page.toString(),
@@ -60,15 +64,48 @@ export default function HomePage() {
           );
           setPagination(data.pagination);
         } else {
-          const msg = data.error || "Failed to load reports";
+          // Handle different error types
           if (res.status === 429) {
-            showToast("Daily limit reached. Try again tomorrow.", false);
+            // Rate limit exceeded
+            const resetTime = data.reset 
+              ? new Date(data.reset).toLocaleTimeString() 
+              : 'later';
+            
+            setError(
+              data.message || 
+              `Rate limit exceeded. Please try again after ${resetTime}`
+            );
+            showToast("Too many requests. Please wait a moment.", false);
+          } else if (res.status === 503) {
+            // Service unavailable (database down)
+            setError("Service temporarily unavailable. Please try again in a moment.");
+            showToast("Server is experiencing issues. Retrying...", false);
+            
+            // Auto-retry after 5 seconds
+            setTimeout(() => {
+              if (!append) fetchReports(page, append);
+            }, 5000);
+          } else if (res.status >= 500) {
+            // Server error
+            setError("Server error. Our team has been notified.");
+            showToast("Something went wrong. Please try again.", false);
           } else {
+            // Other errors (400, 401, etc.)
+            const msg = data.error || "Failed to load reports";
+            setError(msg);
             showToast(msg, false);
           }
         }
       } catch (err) {
-        showToast("Network error", false);
+        // Network error (offline, timeout, etc.)
+        console.error("Network error:", err);
+        setError("Network error. Check your connection and try again.");
+        showToast("Connection failed. Retrying...", false);
+        
+        // Auto-retry after 3 seconds
+        setTimeout(() => {
+          if (!append) fetchReports(page, append);
+        }, 3000);
       } finally {
         setLoading(false);
         setFetchingMore(false);
@@ -92,6 +129,40 @@ export default function HomePage() {
       <Navbar />
       <main className="max-w-3xl mx-auto border-x border-slate-700 bg-black/40">
         <ReportForm onSuccessAction={() => fetchReports(1)} />
+
+        {/* Error Banner */}
+        {error && (
+          <div className="border-b border-slate-700 bg-red-900/20 p-4">
+            <div className="max-w-4xl mx-auto flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="text-red-400 text-sm sm:text-base font-medium">
+                  {error}
+                </p>
+                <button
+                  onClick={() => fetchReports(1)}
+                  className="mt-2 text-xs sm:text-sm text-red-300 hover:text-red-200 underline"
+                >
+                  Try again
+                </button>
+              </div>
+              <button
+                onClick={() => setError(null)}
+                className="text-red-400 hover:text-red-300 p-1"
+                aria-label="Dismiss error"
+              >
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path
+                    fillRule="evenodd"
+                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
+        )}
+
         <div className="divide-y divide-slate-700">
           {loading ? (
             // Loading Skeletons
@@ -100,8 +171,8 @@ export default function HomePage() {
               <ReportCardSkeleton />
               <ReportCardSkeleton />
             </>
-          ) : reports.length === 0 ? (
-            // Empty State
+          ) : reports.length === 0 && !error ? (
+            // Empty State (only show if no error)
             <div className="py-20 px-6 text-center">
               <div className="max-w-md mx-auto">
                 <div className="bg-slate-800/50 rounded-3xl p-12 border-2 border-dashed border-slate-700">
@@ -171,7 +242,6 @@ export default function HomePage() {
         />
       </main>
 
-      {/*<Toast toast={toast} onClose={() => setToast(null)} />*/}
       <ClaimModal
         isOpen={showClaimModal}
         onClose={() => setShowClaimModal(false)}

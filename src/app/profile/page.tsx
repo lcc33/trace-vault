@@ -6,7 +6,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Navbar } from "@/components";
-import { Loader2, FileText, Calendar } from "lucide-react";
+import { FileText, Calendar, AlertCircle } from "lucide-react";
 
 interface Report {
   _id: string;
@@ -22,12 +22,9 @@ function ProfileHeaderSkeleton() {
   return (
     <div className="bg-slate-800/50 backdrop-blur border border-slate-700 rounded-2xl p-6 sm:p-8 animate-pulse">
       <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
-        {/* Avatar skeleton */}
         <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-slate-700 flex-shrink-0" />
         <div className="flex-1 w-full space-y-3 text-center sm:text-left">
-          {/* Name skeleton */}
           <div className="h-8 sm:h-9 bg-slate-700 rounded w-48 mx-auto sm:mx-0" />
-          {/* Email skeleton */}
           <div className="h-5 bg-slate-700 rounded w-64 mx-auto sm:mx-0" />
         </div>
       </div>
@@ -39,23 +36,16 @@ function ProfileHeaderSkeleton() {
 function ReportCardSkeleton() {
   return (
     <div className="bg-slate-800 rounded-xl overflow-hidden shadow-lg border border-slate-700 animate-pulse">
-      {/* Image skeleton */}
       <div className="h-40 sm:h-48 bg-slate-700" />
-      
       <div className="p-4 sm:p-5 space-y-3">
-        {/* Description skeleton */}
         <div className="space-y-2">
           <div className="h-4 bg-slate-700 rounded w-full" />
           <div className="h-4 bg-slate-700 rounded w-3/4" />
         </div>
-        
-        {/* Meta info skeleton */}
         <div className="flex justify-between items-center">
           <div className="h-4 bg-slate-700 rounded w-20" />
           <div className="h-4 bg-slate-700 rounded w-24" />
         </div>
-        
-        {/* Claims count skeleton */}
         <div className="flex justify-end">
           <div className="h-4 bg-slate-700 rounded w-16" />
         </div>
@@ -72,14 +62,11 @@ function ProfilePageSkeleton() {
       <div className="p-4 sm:p-6 pb-24 lg:pb-6">
         <div className="max-w-5xl mx-auto space-y-6 sm:space-y-8">
           <ProfileHeaderSkeleton />
-          
-          {/* Reports section skeleton */}
           <div>
             <div className="flex items-center justify-between mb-4 sm:mb-6">
               <div className="h-7 sm:h-8 bg-slate-700 rounded w-32 sm:w-40 animate-pulse" />
               <div className="h-6 bg-slate-700 rounded w-20 animate-pulse" />
             </div>
-            
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               <ReportCardSkeleton />
               <ReportCardSkeleton />
@@ -104,11 +91,24 @@ export default function ProfilePage() {
   const fetchData = async () => {
     setLoading(true);
     setError(null);
+    
     try {
       const reportsRes = await fetch("/api/reports/user");
 
       if (!reportsRes.ok) {
-        throw new Error("Failed to load reports");
+        if (reportsRes.status === 429) {
+          const data = await reportsRes.json();
+          const resetTime = data.reset 
+            ? new Date(data.reset).toLocaleTimeString() 
+            : 'later';
+          throw new Error(`Too many requests. Try again after ${resetTime}`);
+        } else if (reportsRes.status === 503) {
+          throw new Error("Service temporarily unavailable. Please try again in a moment.");
+        } else if (reportsRes.status >= 500) {
+          throw new Error("Server error. Please try again.");
+        } else {
+          throw new Error("Failed to load reports");
+        }
       }
 
       const reports = await reportsRes.json();
@@ -124,8 +124,16 @@ export default function ProfilePage() {
       setImageLoadingStates(loadingStates);
       
     } catch (err) {
-      setError("Failed to load profile data. Please try again.");
-      console.error(err);
+      console.error("Fetch error:", err);
+      const errorMsg = err instanceof Error ? err.message : "Failed to load profile data. Please try again.";
+      setError(errorMsg);
+      
+      // Auto-retry on network/server errors
+      if (errorMsg.includes("temporarily unavailable") || errorMsg.includes("Network")) {
+        setTimeout(() => {
+          fetchData();
+        }, 5000);
+      }
     } finally {
       setLoading(false);
     }
@@ -214,29 +222,39 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* Error Message */}
+          {/* Error Banner */}
           {error && (
             <div className="bg-red-900/30 border border-red-700/50 text-red-400 px-4 sm:px-6 py-3 sm:py-4 rounded-2xl flex items-start gap-3">
-              <svg
-                className="w-5 h-5 flex-shrink-0 mt-0.5"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              <div>
+              <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
                 <p className="font-medium text-sm sm:text-base">{error}</p>
-                <button
-                  onClick={fetchData}
-                  className="mt-2 text-xs sm:text-sm text-red-300 hover:text-red-200 underline"
-                >
-                  Try again
-                </button>
+                {!error.includes("temporarily unavailable") && (
+                  <button
+                    onClick={fetchData}
+                    className="mt-2 text-xs sm:text-sm text-red-300 hover:text-red-200 underline"
+                  >
+                    Try again
+                  </button>
+                )}
+                {error.includes("temporarily unavailable") && (
+                  <p className="mt-1 text-xs text-red-300">
+                    Automatically retrying...
+                  </p>
+                )}
               </div>
+              <button
+                onClick={() => setError(null)}
+                className="text-red-400 hover:text-red-300 p-1"
+                aria-label="Dismiss error"
+              >
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path
+                    fillRule="evenodd"
+                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </button>
             </div>
           )}
 
@@ -252,7 +270,7 @@ export default function ProfilePage() {
               </span>
             </h2>
 
-            {userReports.length === 0 ? (
+            {userReports.length === 0 && !error ? (
               <div className="text-center py-12 sm:py-16 bg-slate-800/30 rounded-2xl border border-dashed border-slate-700">
                 <div className="max-w-md mx-auto px-4">
                   <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 bg-slate-700/50 rounded-full flex items-center justify-center">
