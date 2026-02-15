@@ -1,8 +1,30 @@
-# TraceVault – Core Web App
+TraceVault: The Community Security Layer
 
-**TraceVault** is a modern lost-and-found platform that helps people report lost or found items, browse reports, submit claims with proof, and connect via email when a claim is approved.
+TraceVault is a high-performance, secure lost-and-found ecosystem built for modern communities and campuses. It replaces chaotic WhatsApp groups with a structured, searchable, and verified recovery platform.
 
-This repository contains the **full functional application** — everything related to user authentication, posting reports, claiming items, approving/rejecting claims, and managing user data.
+    Status: 🚀 Pre-launch Phase. Optimized for high-latency environments (NG).
+
+⚡ Key Enhancements
+
+    Anti-Spam Shield: Integrated Upstash Redis for sliding-window rate limiting. Enforces a strict 3-post/day and 10-upload/hour policy to prevent platform abuse.
+
+    Fail-Open Architecture: Intelligent rate-limiting logic that allows traffic to flow even if the cache layer faces high latency.
+
+    Aggressive SEO: Optimized metadata for indexing lost and found searches in the West African region.
+
+    Secure Verification: Two-step claim process requiring proof-of-ownership before contact details are revealed.
+
+    Edge-Ready: Configured for Vercel's London (lhr1) region to minimize TTFB for users in Nigeria.
+
+## Tech Stack
+
+Layer Technology
+Frontend Next.js 15 (App Router), Tailwind CSS, Framer Motion
+Authentication Clerk (Google OAuth & Session Management)
+Database MongoDB Atlas (Persistent Storage)
+Caching/Limits Upstash Redis (Sliding Window Rate Limiting)
+Media Storage Cloudinary (AI-optimized image delivery)
+UI Components Shadcn/UI + Lucide React + Radix UI
 
 ## Features
 
@@ -18,50 +40,51 @@ This repository contains the **full functional application** — everything rela
 - **MongoDB** — persistent storage for reports, claims, users, stats
 - **Image Uploads** — Cloudinary for secure, optimized images
 
-## Tech Stack
-
-- **Framework**: Next.js 14+ (App Router)
-- **Auth**: Clerk (Google OAuth)
-- **Database**: MongoDB Atlas
-- **Image Storage**: Cloudinary
-- **Styling**: Tailwind CSS + custom gradients
-- **Icons**: Lucide React
-- **Deployment**: Vercel (recommended)
-- **Package Manager**: pnpm
-
 ## Project Structure (key folders/files)
+
 src/
 ├── app/
-│   ├── claims/                ← Claims dashboard (made/received)
-│   ├── home/                  ← Main feed, report form, search
-│   ├── profile/               ← User reports
-│   ├── report/[id]/           ← Single report page
-│   ├── settings/              ← (placeholder)
-│   ├── layout.tsx             ← Root layout
-│   └── page.tsx               ← (redirect or proxy)
+│ ├── claims/ ← Claims dashboard (made/received)
+│ ├── home/ ← Main feed, report form, search
+│ ├── profile/ ← User reports
+│ ├── report/[id]/ ← Single report page
+│ ├── settings/ ← (placeholder)
+│ ├── layout.tsx ← Root layout
+│ └── page.tsx ← (redirect or proxy)
 ├── components/
-│   ├── home/                  ← ReportCard, ReportForm, etc.
-│   ├── ui/                    ← Reusable components (button, card, etc.)
-│   └── global/                ← Navbar, container, etc.
+│ ├── home/ ← ReportCard, ReportForm, etc.
+│ ├── ui/ ← Reusable components (button, card, etc.)
+│ └── global/ ← Navbar, container, etc.
 ├── lib/
-│   ├── mongodb.ts             ← MongoDB client
-│   ├── auth.ts                ← Optional auth helpers
-│   └── utils.ts               ← Helpers
+│ ├── mongodb.ts ← MongoDB client
+│ ├── auth.ts ← Optional auth helpers
+| |── ratelimit.ts # Upstash Redis implementation
+│ └── utils.ts ← Helpers
 ├── api/
-│   ├── claims/                ← List, submit, approve/reject claims
-│   ├── reports/               ← List, post, get single, user reports
-│   └── user/                  ← (user status, etc.)
+│ ├── claims/ ← List, submit, approve/reject claims
+│ ├── reports/ ← List, post, get single, user reports
+│ └── user/ ← (user status, etc.)
 └── styles/
-└── globals.css            ← Tailwind base
+└── globals.css ← Tailwind base
 text## Environment Variables (.env.local / Vercel)
 
 ```env
+#Log
+TRACEVAULT_WEB_URL=...
+NEXT_PUBLIC_BASE_URL=..
+NEXTAUTH_URL=...
+NEXTAUTH_SECRET=....
+
 # Clerk (required)
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
 CLERK_SECRET_KEY=sk_test_...
 
 # MongoDB Atlas
 MONGODB_URI=mongodb+srv://user:pass@cluster0.xxx.mongodb.net/tracevault?retryWrites=true&w=majority
+
+#Cache
+UPSTASH_REDIS_REST_TOKEN=...
+UPSTASH_REDIS_REST_TOKEN
 
 # Cloudinary
 CLOUDINARY_CLOUD_NAME=...
@@ -70,9 +93,9 @@ CLOUDINARY_API_SECRET=...
 Setup & Development
 
 Clone the repo
-Install dependenciesBashpnpm install
+Install dependencies "pnpm install"
 Create .env.local with the variables above
-Start dev serverBashpnpm dev→ http://localhost:3000
+Start dev server pnpm dev→ http://localhost:3000
 
 Deployment (Vercel)
 
@@ -89,14 +112,37 @@ Security: All API routes use Clerk auth middleware
 Image Limits: Max 8MB, only JPEG/PNG/WEBP
 No phone numbers: Email-only contact (security decision)
 
-Future Improvements
+Deployment
 
-Email notifications on claims/approvals
-Full-text search indexing
-Location-based filtering
-Mobile PWA support
-Admin dashboard
-Analytics
+    Vercel Configuration:
 
-License
-MIT
+        Set Framework Preset to Next.js.
+
+        Override Output Directory if using a custom build script.
+
+        Region: Set to London (lhr1) for optimal latency to Nigeria.
+
+    Database Indexing:
+    Run the setup script to ensure search performance:
+    Bash
+
+    pnpm ts-node scripts/setup-indexes.ts
+
+🛣️ Roadmap
+
+    [x] Sliding Window Rate Limiting
+
+    [x] Responsive Sidebar with Hover Logic
+
+    [ ] Email/Push notifications for claim approvals
+
+    [ ] Location-based "Radius Search"
+
+    [ ] AI-powered image matching (Lost vs Found)
+
+    [ ] Mobile PWA (Progressive Web App) Support
+
+📄 License
+
+Licensed under the MIT License. Created with intention by the TraceVault Team.
+```
