@@ -1,4 +1,3 @@
-// src/app/claims/page.tsx
 "use client";
 
 import { useUser, SignedOut, SignedIn, RedirectToSignIn } from "@clerk/nextjs";
@@ -12,7 +11,6 @@ import EnlargedImageModal from "./components/EnlargedImageModal";
 import type { Claim } from "./types";
 import { AlertCircle } from "lucide-react";
 
-// Loading skeleton component
 function ClaimsPageSkeleton() {
   return (
     <div className="min-h-screen bg-slate-900 text-slate-100">
@@ -82,36 +80,43 @@ export default function ClaimsPage() {
   const fetchUserClaims = async () => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const res = await fetch("/api/claims");
-      
+
       if (!res.ok) {
         if (res.status === 429) {
           const data = await res.json();
-          const resetTime = data.reset 
-            ? new Date(data.reset).toLocaleTimeString() 
-            : 'later';
+          const resetTime = data.reset
+            ? new Date(data.reset).toLocaleTimeString()
+            : "later";
           throw new Error(`Too many requests. Try again after ${resetTime}`);
         } else if (res.status === 503) {
-          throw new Error("Service temporarily unavailable. Please try again in a moment.");
+          throw new Error(
+            "Service temporarily unavailable. Please try again in a moment.",
+          );
         } else if (res.status >= 500) {
           throw new Error("Server error. Please try again.");
         } else {
           throw new Error("Failed to fetch claims");
         }
       }
-      
+
       const data = await res.json();
       setClaimsMade(data.claimsMade || []);
       setClaimsReceived(data.claimsReceived || []);
     } catch (error) {
       console.error("Error fetching claims:", error);
-      const errorMsg = error instanceof Error ? error.message : "Failed to load claims. Please try again.";
+      const errorMsg =
+        error instanceof Error
+          ? error.message
+          : "Failed to load claims. Please try again.";
       setError(errorMsg);
-      
-      // Auto-retry on network/server errors
-      if (errorMsg.includes("temporarily unavailable") || errorMsg.includes("Network")) {
+
+      if (
+        errorMsg.includes("temporarily unavailable") ||
+        errorMsg.includes("Network")
+      ) {
         setTimeout(() => {
           fetchUserClaims();
         }, 5000);
@@ -123,7 +128,7 @@ export default function ClaimsPage() {
 
   const handleClaimAction = async (
     claimId: string,
-    action: "approve" | "reject"
+    action: "approve" | "reject",
   ) => {
     setActionLoading(true);
     try {
@@ -132,14 +137,14 @@ export default function ClaimsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action }),
       });
-      
+
       if (!res.ok) {
         const data = await res.json();
-        
+
         if (res.status === 429) {
-          const resetTime = data.reset 
-            ? new Date(data.reset).toLocaleTimeString() 
-            : 'later';
+          const resetTime = data.reset
+            ? new Date(data.reset).toLocaleTimeString()
+            : "later";
           throw new Error(`Rate limit exceeded. Try again after ${resetTime}`);
         } else if (res.status >= 500) {
           throw new Error("Server error. Please try again.");
@@ -147,16 +152,14 @@ export default function ClaimsPage() {
           throw new Error(data.error || "Failed to update claim");
         }
       }
-      
-      // Refresh claims after action
+
       await fetchUserClaims();
-      
-      // Clear any previous errors
+
       setError(null);
-      
     } catch (error) {
       console.error("Error updating claim:", error);
-      const errorMsg = error instanceof Error ? error.message : "Failed to update claim";
+      const errorMsg =
+        error instanceof Error ? error.message : "Failed to update claim";
       alert(errorMsg);
     } finally {
       setActionLoading(false);
@@ -164,10 +167,14 @@ export default function ClaimsPage() {
   };
 
   const markReportAsClaimed = async (reportId: string) => {
-    if (!confirm("Mark this report as claimed? This will close it and prevent new claims.")) {
+    if (
+      !confirm(
+        "Mark this report as claimed? This will close it and prevent new claims.",
+      )
+    ) {
       return;
     }
-    
+
     setActionLoading(true);
     try {
       const res = await fetch(`/api/reports/${reportId}`, {
@@ -175,14 +182,14 @@ export default function ClaimsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: "claimed" }),
       });
-      
+
       if (!res.ok) {
         const data = await res.json();
-        
+
         if (res.status === 429) {
-          const resetTime = data.reset 
-            ? new Date(data.reset).toLocaleTimeString() 
-            : 'later';
+          const resetTime = data.reset
+            ? new Date(data.reset).toLocaleTimeString()
+            : "later";
           throw new Error(`Rate limit exceeded. Try again after ${resetTime}`);
         } else if (res.status >= 500) {
           throw new Error("Server error. Please try again.");
@@ -190,20 +197,19 @@ export default function ClaimsPage() {
           throw new Error(data.error || "Failed to mark as claimed");
         }
       }
-      
+
       await fetchUserClaims();
       alert("Report marked as claimed!");
-      
     } catch (error) {
       console.error("Error marking report:", error);
-      const errorMsg = error instanceof Error ? error.message : "Failed to update report";
+      const errorMsg =
+        error instanceof Error ? error.message : "Failed to update report";
       alert(errorMsg);
     } finally {
       setActionLoading(false);
     }
   };
 
-  // Show skeleton while loading
   if (!isLoaded || loading) {
     return <ClaimsPageSkeleton />;
   }
@@ -225,7 +231,6 @@ export default function ClaimsPage() {
               receivedCount={claimsReceived.length}
             />
 
-            {/* Error Banner */}
             {error && (
               <div className="bg-red-900/30 border border-red-700/50 text-red-400 px-4 py-3 rounded-2xl mb-6 flex items-start gap-3">
                 <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
@@ -250,7 +255,11 @@ export default function ClaimsPage() {
                   className="text-red-400 hover:text-red-300 p-1"
                   aria-label="Dismiss error"
                 >
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <svg
+                    className="w-5 h-5"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
                     <path
                       fillRule="evenodd"
                       d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
@@ -261,7 +270,6 @@ export default function ClaimsPage() {
               </div>
             )}
 
-            {/* Action Loading Overlay */}
             {actionLoading && (
               <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
                 <div className="bg-slate-800 rounded-2xl p-6 flex items-center gap-3 shadow-2xl">
@@ -271,7 +279,6 @@ export default function ClaimsPage() {
               </div>
             )}
 
-            {/* Claims content */}
             {activeTab === "received" ? (
               <ReceivedClaims
                 claims={claimsReceived}

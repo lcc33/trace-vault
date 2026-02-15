@@ -15,37 +15,30 @@ interface Props {
   onClaim: (id: string) => void;
 }
 
-// Loading skeleton component
 export function ReportCardSkeleton() {
   return (
     <article className="p-5 animate-pulse">
-      {/* Header */}
       <div className="flex items-start justify-between gap-4 mb-4">
         <div className="flex items-center gap-4 flex-1 min-w-0">
-          {/* Avatar skeleton */}
           <div className="w-12 h-12 rounded-full bg-slate-700 flex-shrink-0" />
           <div className="min-w-0 flex-1">
-            {/* Name skeleton */}
             <div className="h-5 bg-slate-700 rounded w-32 mb-2" />
-            {/* Meta info skeleton */}
+
             <div className="h-3 bg-slate-700 rounded w-48" />
           </div>
         </div>
       </div>
 
-      {/* Description skeleton */}
       <div className="space-y-2 mb-4">
         <div className="h-4 bg-slate-700 rounded w-full" />
         <div className="h-4 bg-slate-700 rounded w-5/6" />
         <div className="h-4 bg-slate-700 rounded w-4/6" />
       </div>
 
-      {/* Image skeleton */}
       <div className="mb-4">
         <div className="w-full h-96 bg-slate-700 rounded-2xl" />
       </div>
 
-      {/* Button skeleton */}
       <div className="h-14 bg-slate-700 rounded-2xl w-full" />
     </article>
   );
@@ -110,7 +103,6 @@ export default function ReportCard({
         } ${!claimed ? "cursor-pointer" : ""}`}
         onClick={handleClick}
       >
-        {/* Header */}
         <div className="flex items-start justify-between gap-4 mb-4">
           <div className="flex items-center gap-4 flex-1 min-w-0">
             <Image
@@ -176,15 +168,12 @@ export default function ReportCard({
           )}
         </div>
 
-        {/* Description */}
         <p className="text-slate-200 mb-4 leading-relaxed break-words whitespace-pre-wrap">
           {report.description}
         </p>
 
-        {/* Image with skeleton */}
         {report.imageUrl && (
           <div className="mb-4 relative">
-            {/* Skeleton shown while image loads */}
             {imageLoading && (
               <div className="absolute inset-0 bg-slate-700 rounded-2xl animate-pulse" />
             )}
@@ -203,7 +192,6 @@ export default function ReportCard({
           </div>
         )}
 
-        {/* Claim Button */}
         <div className="mt-4" onClick={(e) => e.stopPropagation()}>
           {!isOwner && isClaimed ? (
             <div className="text-center py-3">
@@ -239,7 +227,6 @@ export default function ReportCard({
         </div>
       </article>
 
-      {/* Delete Confirmation Modal */}
       {showDeleteModal && (
         <div
           className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"

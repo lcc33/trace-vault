@@ -1,5 +1,3 @@
-"use client";
-import { ClerkProvider } from "@clerk/nextjs";
 import { Navbar } from "@/components";
 
 export default function DynamicReportLayout({
@@ -8,9 +6,11 @@ export default function DynamicReportLayout({
   children: React.ReactNode;
 }) {
   return (
-    <ClerkProvider>
+    <>
       <Navbar />
-      {children}
-    </ClerkProvider>
+      <main className="relative flex min-h-screen flex-col">
+        {children}
+      </main>
+    </>
   );
 }

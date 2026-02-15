@@ -17,7 +17,6 @@ import {
   CheckCircle,
 } from "lucide-react";
 
-// Loading skeleton
 function SettingsSkeleton() {
   return (
     <div className="min-h-screen bg-slate-900 text-slate-100">
@@ -73,7 +72,6 @@ export default function SettingsPage() {
     setError(null);
 
     try {
-      // 1. Delete all user data from MongoDB
       const deleteDataRes = await fetch("/api/user/delete", {
         method: "DELETE",
       });
@@ -83,10 +81,8 @@ export default function SettingsPage() {
         throw new Error(data.error || "Failed to delete user data");
       }
 
-      // 2. Delete Clerk account
       await user?.delete();
 
-      // 3. Sign out and redirect
       await signOut();
       router.push("/");
     } catch (err: any) {
@@ -96,12 +92,10 @@ export default function SettingsPage() {
     }
   };
 
-  // Show skeleton while loading
   if (!isLoaded) {
     return <SettingsSkeleton />;
   }
 
-  // Redirect if not signed in
   if (!user) {
     return (
       <div className="min-h-screen bg-slate-900 text-slate-100 flex items-center justify-center p-4">
@@ -132,7 +126,6 @@ export default function SettingsPage() {
           </h1>
 
           <div className="space-y-6">
-            {/* Account Information */}
             <section className="bg-slate-800/50 border border-slate-700 rounded-2xl p-6">
               <div className="flex items-center gap-3 mb-6">
                 <User className="w-6 h-6 text-sky-400" />
@@ -172,7 +165,6 @@ export default function SettingsPage() {
               </div>
             </section>
 
-            {/* Preferences */}
             <section className="bg-slate-800/50 border border-slate-700 rounded-2xl p-6">
               <div className="flex items-center gap-3 mb-6">
                 <Bell className="w-6 h-6 text-sky-400" />
@@ -211,7 +203,6 @@ export default function SettingsPage() {
               </div>
             </section>
 
-            {/* Account Actions */}
             <section className="bg-slate-800/50 border border-slate-700 rounded-2xl p-6">
               <div className="flex items-center gap-3 mb-6">
                 <Shield className="w-6 h-6 text-sky-400" />
@@ -219,7 +210,6 @@ export default function SettingsPage() {
               </div>
 
               <div className="space-y-3">
-                {/* Sign Out Button */}
                 <button
                   onClick={() => setShowLogoutModal(true)}
                   className="w-full flex items-center justify-between p-4 bg-slate-700/30 hover:bg-slate-700/50 border border-slate-600 hover:border-sky-500 rounded-xl transition-all group"
@@ -235,7 +225,6 @@ export default function SettingsPage() {
                   </div>
                 </button>
 
-                {/* Delete Account Button */}
                 <button
                   onClick={() => setShowDeleteModal(true)}
                   className="w-full flex items-center justify-between p-4 bg-red-900/20 hover:bg-red-900/30 border border-red-700/50 hover:border-red-600 rounded-xl transition-all group"
@@ -253,7 +242,6 @@ export default function SettingsPage() {
               </div>
             </section>
 
-            {/* App Info */}
             <section className="bg-slate-800/50 border border-slate-700 rounded-2xl p-6">
               <div className="text-center text-sm text-slate-400 space-y-2">
                 <p>TraceVault v1.0.0</p>
@@ -263,7 +251,6 @@ export default function SettingsPage() {
         </main>
       </div>
 
-      {/* Sign Out Modal */}
       {showLogoutModal && (
         <div
           className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
@@ -302,7 +289,6 @@ export default function SettingsPage() {
         </div>
       )}
 
-      {/* Delete Account Modal */}
       {showDeleteModal && (
         <div
           className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"

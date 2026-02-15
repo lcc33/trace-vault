@@ -1,4 +1,3 @@
-// src/app/api/reports/route.ts
 import { v2 as cloudinary } from "cloudinary";
 import { NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
@@ -6,14 +5,12 @@ import { auth, currentUser } from "@clerk/nextjs/server";
 import { getCached, invalidateCache } from "@/lib/redis";
 import { checkRateLimit } from "@/lib/ratelimit";
 
-// --- Cloudinary Config ---
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME!,
   api_key: process.env.CLOUDINARY_API_KEY!,
   api_secret: process.env.CLOUDINARY_API_SECRET!,
 });
 
-// --- Upload Helper ---
 async function uploadBufferToCloudinary(
   buffer: Buffer,
   folder = "tracevault",
@@ -48,7 +45,6 @@ async function uploadBufferToCloudinary(
   }
 }
 
-// --- Validation ---
 const VALID_CATEGORIES = [
   "electronics",
   "documents",
@@ -74,7 +70,6 @@ function validateDescription(desc: string): {
   return { isValid: true };
 }
 
-// --- GET: List Reports (WITH CACHING) ---
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
@@ -83,48 +78,40 @@ export async function GET(req: Request) {
     const reporterId = searchParams.get("reporterId");
     const limit = Math.min(parseInt(searchParams.get("limit") || "50"), 100);
     const page = Math.max(parseInt(searchParams.get("page") || "1"), 1);
-    const query = searchParams.get("q"); // Search query
+    const query = searchParams.get("q");
 
-    // Build cache key based on query params
-    const cacheKey = `reports:${category}:${status}:${reporterId || 'all'}:${page}:${limit}:${query || 'none'}`;
+    const cacheKey = `reports:${category}:${status}:${reporterId || "all"}:${page}:${limit}:${query || "none"}`;
 
-    // Use cached data if available (5 minute TTL)
     const data = await getCached(
       cacheKey,
       async () => {
         const client = await clientPromise;
         const db = client.db("tracevault");
 
-        // Calculate 4 days ago
         const fourDaysAgo = new Date(Date.now() - 4 * 24 * 60 * 60 * 1000);
 
-        // Build filter
         const filter: any = {
           $or: [
             { status: "open" },
-            { 
-              status: "claimed", 
-              claimed_at: { $gte: fourDaysAgo } 
-            }
-          ]
+            {
+              status: "claimed",
+              claimed_at: { $gte: fourDaysAgo },
+            },
+          ],
         };
 
-        // Apply category filter
         if (category && category !== "all") {
           filter.category = category;
         }
 
-        // Apply reporterId filter
         if (reporterId) {
           filter.reporterId = reporterId;
         }
 
-        // Apply search query (text search)
         if (query) {
           filter.$text = { $search: query };
         }
 
-        // Fetch reports
         const reports = await db
           .collection("reports")
           .find(filter)
@@ -159,11 +146,10 @@ export async function GET(req: Request) {
           },
         };
       },
-      300 // Cache for 5 minutes
+      300,
     );
 
     return NextResponse.json(data);
-
   } catch (error: any) {
     console.error("GET /api/reports error:", error);
     return NextResponse.json(
@@ -173,7 +159,6 @@ export async function GET(req: Request) {
   }
 }
 
-// --- POST: Create Report (WITH RATE LIMITING) ---
 export async function POST(req: Request) {
   try {
     const { userId } = await auth();
@@ -181,12 +166,11 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Check rate limit (3 posts per day)
-    const rateLimit = await checkRateLimit(userId, 'create');
+    const rateLimit = await checkRateLimit(userId, "create");
     if (!rateLimit.success) {
       return NextResponse.json(
         {
-          error: 'Rate limit exceeded',
+          error: "Rate limit exceeded",
           message: `Daily post limit reached (${rateLimit.limit} per day). Try again after ${rateLimit.reset.toLocaleTimeString()}`,
           limit: rateLimit.limit,
           remaining: rateLimit.remaining,
@@ -195,7 +179,7 @@ export async function POST(req: Request) {
         {
           status: 429,
           headers: rateLimit.headers as Record<string, string>,
-        }
+        },
       );
     }
 
@@ -209,7 +193,6 @@ export async function POST(req: Request) {
     const category = (formData.get("category") as string) || "other";
     const file = formData.get("image") as File | null;
 
-    // --- Validation ---
     const descVal = validateDescription(description);
     if (!descVal.isValid) {
       return NextResponse.json({ error: descVal.error }, { status: 400 });
@@ -220,25 +203,26 @@ export async function POST(req: Request) {
 
     let imageUrl: string | null = null;
 
-    // --- Image Upload (with upload rate limit) ---
     if (file) {
-      // Check upload rate limit (10 per hour)
-      const uploadLimit = await checkRateLimit(userId, 'upload');
+      const uploadLimit = await checkRateLimit(userId, "upload");
       if (!uploadLimit.success) {
         return NextResponse.json(
           {
-            error: 'Upload rate limit exceeded',
+            error: "Upload rate limit exceeded",
             message: `Too many uploads. Try again after ${uploadLimit.reset.toLocaleTimeString()}`,
           },
-          { status: 429 }
+          { status: 429 },
         );
       }
 
       const MAX_SIZE = parseInt(process.env.MAX_UPLOAD_BYTES || "5242880", 10);
       const allowed = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
-      
+
       if (!allowed.includes(file.type)) {
-        return NextResponse.json({ error: "Invalid file type" }, { status: 400 });
+        return NextResponse.json(
+          { error: "Invalid file type" },
+          { status: 400 },
+        );
       }
       if (file.size > MAX_SIZE) {
         return NextResponse.json(
@@ -252,7 +236,6 @@ export async function POST(req: Request) {
       imageUrl = result?.secure_url ?? null;
     }
 
-    // --- Create Report ---
     const client = await clientPromise;
     const db = client.db("tracevault");
 
@@ -276,25 +259,23 @@ export async function POST(req: Request) {
 
     const result = await db.collection("reports").insertOne(report);
 
-    // Invalidate all report caches when a new report is created
-    await invalidateCache('reports:*');
+    await invalidateCache("reports:*");
 
     return NextResponse.json(
       {
         message: "Report created",
         report: { ...report, _id: result.insertedId.toString() },
       },
-      { 
+      {
         status: 201,
         headers: rateLimit.headers as Record<string, string>,
-      }
+      },
     );
-
   } catch (error: any) {
     console.error("POST /api/reports error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

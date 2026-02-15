@@ -1,4 +1,3 @@
-// src/app/claims/types.ts
 export interface Claim {
   _id: string;
   reportId: string;

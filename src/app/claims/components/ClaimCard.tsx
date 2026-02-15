@@ -1,14 +1,7 @@
-// src/app/claims/components/ClaimCard.tsx
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import {
-  Clock,
-  CheckCircle,
-  XCircle,
-  ExternalLink,
-  Mail,
-} from "lucide-react";
+import { Clock, CheckCircle, XCircle, ExternalLink, Mail } from "lucide-react";
 import type { Claim } from "../types";
 
 interface Props {
@@ -20,32 +13,25 @@ interface Props {
   onEnlargeImage: (url: string) => void;
 }
 
-// Loading skeleton component
 export function ClaimCardSkeleton() {
   return (
     <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-4 sm:p-6 animate-pulse">
       <div className="flex flex-col sm:flex-row gap-4 mb-4">
-        {/* Image skeleton */}
         <div className="w-full sm:w-48 h-48 bg-slate-700 rounded-xl flex-shrink-0" />
-        
+
         <div className="flex-1 space-y-3">
-          {/* Title skeleton */}
           <div className="h-6 bg-slate-700 rounded w-3/4" />
-          
-          {/* Subtitle skeleton */}
+
           <div className="h-4 bg-slate-700 rounded w-1/2" />
-          
-          {/* Description skeleton */}
+
           <div className="space-y-2 pt-2">
             <div className="h-4 bg-slate-700 rounded w-full" />
             <div className="h-4 bg-slate-700 rounded w-5/6" />
             <div className="h-4 bg-slate-700 rounded w-4/6" />
           </div>
-          
-          {/* Status badge skeleton */}
+
           <div className="h-8 bg-slate-700 rounded-full w-24 mt-3" />
-          
-          {/* Buttons skeleton */}
+
           <div className="flex flex-col sm:flex-row gap-3 pt-4">
             <div className="h-12 bg-slate-700 rounded-xl flex-1" />
             <div className="h-12 bg-slate-700 rounded-xl flex-1" />
@@ -107,28 +93,29 @@ export default function ClaimCard({
 
   return (
     <div className="bg-slate-800/70 border border-slate-700 rounded-2xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-shadow">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start gap-3 sm:gap-4 mb-4">
         <div className="flex-1 min-w-0">
           <Link
             href={`/report/${claim.reportId}`}
             className="text-sky-400 hover:text-sky-300 font-semibold text-base sm:text-lg flex flex-wrap items-center text-wrap gap-2 group break-words"
           >
-            <span className="truncate flex flex-wrap lg:w-full w-40">{claim.reportTitle || "View Report"}</span>
+            <span className="truncate flex flex-wrap lg:w-full w-40">
+              {claim.reportTitle || "View Report"}
+            </span>
             <ExternalLink className="w-4 h-4 opacity-70 group-hover:opacity-100 flex-shrink-0" />
           </Link>
           <p className="text-xs sm:text-sm text-slate-400 mt-1">
             {isReporterView ? (
               <>
-                Claimed by: <strong className="text-slate-300">{claim.claimantName}</strong>
+                Claimed by:{" "}
+                <strong className="text-slate-300">{claim.claimantName}</strong>
               </>
             ) : (
               <>Submitted on {formatDate(claim.createdAt)}</>
             )}
           </p>
         </div>
-        
-        {/* Status Badge */}
+
         <div
           className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-bold flex items-center gap-2 ${config.color} border whitespace-nowrap flex-shrink-0`}
         >
@@ -138,12 +125,10 @@ export default function ClaimCard({
         </div>
       </div>
 
-      {/* Description */}
       <p className="text-slate-300 mb-4 text-sm sm:text-base leading-relaxed break-words">
         {claim.description}
       </p>
 
-      {/* Proof Image */}
       {claim.proofImage && (
         <div className="mb-4 relative">
           {imageLoading && (
@@ -164,7 +149,6 @@ export default function ClaimCard({
         </div>
       )}
 
-      {/* Actions - Pending (Reporter View) */}
       {isReporterView && claim.status === "pending" && (
         <div className="flex flex-col sm:flex-row gap-3 mt-6">
           <button
@@ -186,10 +170,8 @@ export default function ClaimCard({
         </div>
       )}
 
-      {/* Actions - Approved */}
       {claim.status === "approved" && (
         <div className="mt-6 space-y-4">
-          {/* Mark as Claimed - Reporter Only */}
           {isReporterView && (
             <button
               onClick={() => handleAction(() => onMarkClaimed(claim.reportId))}
@@ -200,32 +182,32 @@ export default function ClaimCard({
             </button>
           )}
 
-          {/* Success Notification - Claimer View */}
           {!isReporterView && (
             <div className="p-4 sm:p-6 bg-green-900/30 border border-green-700 rounded-xl sm:rounded-2xl">
               <div className="text-center">
                 <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-green-500/20 rounded-full mb-3 sm:mb-4">
                   <CheckCircle className="w-6 h-6 sm:w-8 sm:h-8 text-green-400" />
                 </div>
-                
+
                 <p className="text-green-400 font-bold text-lg sm:text-xl mb-2 sm:mb-3">
-                  🎉 Claim Approved!
+                  Claim Approved!
                 </p>
-                
+
                 <p className="text-slate-300 text-sm sm:text-base mb-4 sm:mb-6">
-                  Great news! The reporter approved your claim. Contact them below to arrange pickup.
+                  Great news! The reporter approved your claim. Contact them
+                  below to arrange pickup.
                 </p>
 
                 <a
                   href={`mailto:${claim.reporterEmail}?subject=${encodeURIComponent(
-                    "TraceVault: About My Approved Claim"
+                    "TraceVault: About My Approved Claim",
                   )}&body=${encodeURIComponent(
                     `Hi ${claim.reporterName || "there"},\n\n` +
                       `My claim for "${claim.reportTitle || "your item"}" was approved! ` +
                       `I'd love to arrange a time to pick it up.\n\n` +
                       `Please let me know when and where works best for you.\n\n` +
                       `Thank you for using TraceVault!\n\n` +
-                      `Best regards`
+                      `Best regards`,
                   )}`}
                   className="inline-flex items-center justify-center gap-2 px-6 sm:px-10 py-3 sm:py-4 bg-sky-600 hover:bg-sky-700 rounded-xl sm:rounded-2xl text-white font-bold text-sm sm:text-base transition-all shadow-lg hover:shadow-xl transform hover:scale-105 w-full sm:w-auto"
                 >
@@ -238,11 +220,10 @@ export default function ClaimCard({
         </div>
       )}
 
-      {/* Rejected Info */}
       {claim.status === "rejected" && (
         <div className="mt-4 p-4 bg-red-900/20 border border-red-700/50 rounded-xl text-center">
           <p className="text-red-400 text-sm sm:text-base">
-            {isReporterView 
+            {isReporterView
               ? "You rejected this claim. The claimer has been notified."
               : "Unfortunately, your claim was not approved. You may try claiming other reports."}
           </p>

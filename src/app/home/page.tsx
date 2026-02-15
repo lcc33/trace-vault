@@ -1,4 +1,3 @@
-// src/app/home/page.tsx
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
@@ -40,79 +39,68 @@ export default function HomePage() {
     setTimeout(() => setToast(null), 3000);
   };
 
-  const fetchReports = useCallback(
-    async (page = 1, append = false) => {
-      const isLoadMore = page > 1;
-      if (isLoadMore) setFetchingMore(true);
-      else setLoading(true);
+  const fetchReports = useCallback(async (page = 1, append = false) => {
+    const isLoadMore = page > 1;
+    if (isLoadMore) setFetchingMore(true);
+    else setLoading(true);
 
-      setError(null); // Clear previous errors
+    setError(null);
 
-      try {
-        const params = new URLSearchParams({
-          page: page.toString(),
-          limit: "10",
-        });
+    try {
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: "10",
+      });
 
-        const res = await fetch(`/api/reports?${params}`);
-        const data = await res.json();
+      const res = await fetch(`/api/reports?${params}`);
+      const data = await res.json();
 
-        if (res.ok) {
-          const newReports: Report[] = data.reports || [];
-          setReports((prev) =>
-            append ? [...prev, ...newReports] : newReports,
+      if (res.ok) {
+        const newReports: Report[] = data.reports || [];
+        setReports((prev) => (append ? [...prev, ...newReports] : newReports));
+        setPagination(data.pagination);
+      } else {
+        if (res.status === 429) {
+          const resetTime = data.reset
+            ? new Date(data.reset).toLocaleTimeString()
+            : "later";
+
+          setError(
+            data.message ||
+              `Rate limit exceeded. Please try again after ${resetTime}`,
           );
-          setPagination(data.pagination);
+          showToast("Too many requests. Please wait a moment.", false);
+        } else if (res.status === 503) {
+          setError(
+            "Service temporarily unavailable. Please try again in a moment.",
+          );
+          showToast("Server is experiencing issues. Retrying...", false);
+
+          setTimeout(() => {
+            if (!append) fetchReports(page, append);
+          }, 5000);
+        } else if (res.status >= 500) {
+          setError("Server error. Our team has been notified.");
+          showToast("Something went wrong. Please try again.", false);
         } else {
-          // Handle different error types
-          if (res.status === 429) {
-            // Rate limit exceeded
-            const resetTime = data.reset 
-              ? new Date(data.reset).toLocaleTimeString() 
-              : 'later';
-            
-            setError(
-              data.message || 
-              `Rate limit exceeded. Please try again after ${resetTime}`
-            );
-            showToast("Too many requests. Please wait a moment.", false);
-          } else if (res.status === 503) {
-            // Service unavailable (database down)
-            setError("Service temporarily unavailable. Please try again in a moment.");
-            showToast("Server is experiencing issues. Retrying...", false);
-            
-            // Auto-retry after 5 seconds
-            setTimeout(() => {
-              if (!append) fetchReports(page, append);
-            }, 5000);
-          } else if (res.status >= 500) {
-            // Server error
-            setError("Server error. Our team has been notified.");
-            showToast("Something went wrong. Please try again.", false);
-          } else {
-            // Other errors (400, 401, etc.)
-            const msg = data.error || "Failed to load reports";
-            setError(msg);
-            showToast(msg, false);
-          }
+          const msg = data.error || "Failed to load reports";
+          setError(msg);
+          showToast(msg, false);
         }
-      } catch (err) {
-        // Network error (offline, timeout, etc.)
-        console.error("Network error:", err);
-        setError("Network error. Check your connection and try again.");
-        showToast("Connection failed. Retrying...", false);
-        
-        // Auto-retry after 3 seconds
-        setTimeout(() => {
-          if (!append) fetchReports(page, append);
-        }, 3000);
-      } finally {
-        setLoading(false);
-        setFetchingMore(false);
       }
-    },
-    [],
-  );
+    } catch (err) {
+      console.error("Network error:", err);
+      setError("Network error. Check your connection and try again.");
+      showToast("Connection failed. Retrying...", false);
+
+      setTimeout(() => {
+        if (!append) fetchReports(page, append);
+      }, 3000);
+    } finally {
+      setLoading(false);
+      setFetchingMore(false);
+    }
+  }, []);
 
   useEffect(() => {
     if (isLoaded) fetchReports(1);
@@ -130,7 +118,6 @@ export default function HomePage() {
       <main className="max-w-3xl mx-auto border-x border-slate-700 bg-black/40">
         <ReportForm onSuccessAction={() => fetchReports(1)} />
 
-        {/* Error Banner */}
         {error && (
           <div className="border-b border-slate-700 bg-red-900/20 p-4">
             <div className="max-w-4xl mx-auto flex items-start gap-3">
@@ -151,7 +138,11 @@ export default function HomePage() {
                 className="text-red-400 hover:text-red-300 p-1"
                 aria-label="Dismiss error"
               >
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <svg
+                  className="w-5 h-5"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
                   <path
                     fillRule="evenodd"
                     d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
@@ -165,14 +156,12 @@ export default function HomePage() {
 
         <div className="divide-y divide-slate-700">
           {loading ? (
-            // Loading Skeletons
             <>
               <ReportCardSkeleton />
               <ReportCardSkeleton />
               <ReportCardSkeleton />
             </>
           ) : reports.length === 0 && !error ? (
-            // Empty State (only show if no error)
             <div className="py-20 px-6 text-center">
               <div className="max-w-md mx-auto">
                 <div className="bg-slate-800/50 rounded-3xl p-12 border-2 border-dashed border-slate-700">
@@ -204,7 +193,6 @@ export default function HomePage() {
               </div>
             </div>
           ) : (
-            // Normal reports list
             reports.map((report) => (
               <ReportCard
                 key={report._id}
@@ -226,15 +214,14 @@ export default function HomePage() {
             ))
           )}
         </div>
-        
-        {/* Load More with skeleton on fetching more */}
+
         {fetchingMore && (
           <div className="divide-y divide-slate-700">
             <ReportCardSkeleton />
             <ReportCardSkeleton />
           </div>
         )}
-        
+
         <LoadMoreButton
           hasNext={pagination.hasNext}
           loading={fetchingMore}

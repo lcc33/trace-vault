@@ -3,7 +3,9 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { Search, Filter, X } from "lucide-react";
 import Navbar from "@/components/home/navigation/navbar";
-import ReportCard, { ReportCardSkeleton } from "@/app/home/components/ReportCard";
+import ReportCard, {
+  ReportCardSkeleton,
+} from "@/app/home/components/ReportCard";
 import LoadMoreButton from "@/app/home/components/LoadMoreButton";
 import ClaimModal from "@/app/home/components/ClaimModal";
 import EnlargedImageModal from "@/app/home/components/EnlargedImageModal";
@@ -113,11 +115,9 @@ export default function ExplorePage() {
     <div className="min-h-screen bg-slate-900 text-slate-100">
       <Navbar />
       <main className="max-w-3xl mx-auto border-x border-slate-700 bg-black/40">
-        {/* Search & Filter Bar */}
         <div className="sticky top-0 lg:top-0 z-20 bg-slate-900/95 backdrop-blur-lg border-b border-slate-700">
           <div className="px-4 py-3 sm:py-4">
             <div className="flex flex-col gap-3">
-              {/* Search Input */}
               <div className="relative">
                 <Search className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-slate-500" />
                 <input
@@ -138,7 +138,6 @@ export default function ExplorePage() {
                 )}
               </div>
 
-              {/* Filter & Clear */}
               <div className="flex gap-2 sm:gap-3">
                 <div className="relative flex-1">
                   <Filter className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-slate-500 pointer-events-none" />
@@ -168,7 +167,6 @@ export default function ExplorePage() {
                 )}
               </div>
 
-              {/* Active Filters Summary */}
               {hasActiveFilters && (
                 <div className="flex flex-wrap gap-2 text-xs sm:text-sm">
                   {searchQuery && (
@@ -187,35 +185,42 @@ export default function ExplorePage() {
           </div>
         </div>
 
-        {/* Results Count */}
         {!loading && reports.length > 0 && (
           <div className="px-4 py-3 border-b border-slate-700 bg-slate-800/30">
             <p className="text-xs sm:text-sm text-slate-400">
               {filteredReports.length === reports.length ? (
                 <>
-                  Showing <span className="text-white font-medium">{reports.length}</span> {reports.length === 1 ? "report" : "reports"}
+                  Showing{" "}
+                  <span className="text-white font-medium">
+                    {reports.length}
+                  </span>{" "}
+                  {reports.length === 1 ? "report" : "reports"}
                 </>
               ) : (
                 <>
-                  Showing <span className="text-white font-medium">{filteredReports.length}</span> of{" "}
-                  <span className="text-white font-medium">{reports.length}</span> reports
+                  Showing{" "}
+                  <span className="text-white font-medium">
+                    {filteredReports.length}
+                  </span>{" "}
+                  of{" "}
+                  <span className="text-white font-medium">
+                    {reports.length}
+                  </span>{" "}
+                  reports
                 </>
               )}
             </p>
           </div>
         )}
 
-        {/* Reports List */}
         <div className="divide-y divide-slate-700">
           {loading ? (
-            // Loading Skeletons
             <>
               <ReportCardSkeleton />
               <ReportCardSkeleton />
               <ReportCardSkeleton />
             </>
           ) : filteredReports.length === 0 ? (
-            // Empty State
             <div className="py-16 sm:py-20 px-4 sm:px-6 text-center">
               <div className="max-w-md mx-auto">
                 <div className="bg-slate-800/50 rounded-2xl sm:rounded-3xl p-8 sm:p-12 border-2 border-dashed border-slate-700">
@@ -256,7 +261,6 @@ export default function ExplorePage() {
               </div>
             </div>
           ) : (
-            // Reports List
             filteredReports.map((report) => (
               <ReportCard
                 key={report._id}
@@ -279,7 +283,6 @@ export default function ExplorePage() {
           )}
         </div>
 
-        {/* Load More with Skeleton */}
         {fetchingMore && (
           <div className="divide-y divide-slate-700">
             <ReportCardSkeleton />

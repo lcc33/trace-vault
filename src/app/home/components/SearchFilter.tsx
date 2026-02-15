@@ -1,4 +1,3 @@
-// src/app/home/components/SearchFilter.tsx
 import { Search, Filter } from "lucide-react";
 
 interface Props {

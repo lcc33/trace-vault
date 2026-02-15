@@ -4,11 +4,9 @@ import { redis } from "@/lib/redis";
 
 export async function GET() {
   try {
-    // Check MongoDB
     const mongoHealthy = await checkMongoConnection();
     const poolStats = await getPoolStats();
 
-    // Check Redis
     let redisHealthy = false;
     try {
       await redis.ping();
@@ -31,7 +29,7 @@ export async function GET() {
   } catch (error) {
     return NextResponse.json(
       { status: "unhealthy", error: "Health check failed" },
-      { status: 503 }
+      { status: 503 },
     );
   }
 }

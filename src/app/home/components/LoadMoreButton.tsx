@@ -1,4 +1,3 @@
-// src/app/home/components/LoadMoreButton.tsx
 import { Loader2 } from "lucide-react";
 
 interface Props {

@@ -1,10 +1,7 @@
-// src/lib/ratelimit.ts
 import { Ratelimit } from "@upstash/ratelimit";
 import { redis } from "./redis";
 
-// Different rate limits for different operations
 export const rateLimits = {
-  // Strict limit for creating reports/claims (3 per day)
   create: new Ratelimit({
     redis,
     limiter: Ratelimit.fixedWindow(3, "24 h"),
@@ -12,7 +9,6 @@ export const rateLimits = {
     prefix: "ratelimit:create",
   }),
 
-  // Medium limit for API reads (100 per minute)
   read: new Ratelimit({
     redis,
     limiter: Ratelimit.slidingWindow(100, "1 m"),
@@ -20,7 +16,6 @@ export const rateLimits = {
     prefix: "ratelimit:read",
   }),
 
-  // Strict limit for image uploads (10 per hour)
   upload: new Ratelimit({
     redis,
     limiter: Ratelimit.slidingWindow(10, "1 h"),
@@ -28,7 +23,6 @@ export const rateLimits = {
     prefix: "ratelimit:upload",
   }),
 
-  // General API protection (50 per 10 seconds)
   general: new Ratelimit({
     redis,
     limiter: Ratelimit.slidingWindow(50, "10 s"),
@@ -37,9 +31,8 @@ export const rateLimits = {
   }),
 };
 
-// Helper to apply rate limiting to any route
 export async function checkRateLimit(
-  identifier: string, // Usually userId or IP
+  identifier: string,
   limitType: keyof typeof rateLimits = "general",
 ) {
   try {
@@ -59,7 +52,7 @@ export async function checkRateLimit(
     };
   } catch (error) {
     console.error("Rate limit check error:", error);
-    // If Redis fails, allow the request (fail open)
+
     return {
       success: true,
       limit: 0,
@@ -70,7 +63,6 @@ export async function checkRateLimit(
   }
 }
 
-// Middleware wrapper for Next.js routes
 export function withRateLimit(limitType: keyof typeof rateLimits = "general") {
   return async function (
     identifier: string,
@@ -97,7 +89,6 @@ export function withRateLimit(limitType: keyof typeof rateLimits = "general") {
       );
     }
 
-    // Execute handler and add rate limit headers
     const response = await handler();
     if (result.headers) {
       Object.entries(result.headers).forEach(([key, value]) => {

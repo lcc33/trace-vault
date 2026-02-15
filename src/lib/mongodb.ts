@@ -1,4 +1,3 @@
-// src/lib/mongodb.ts - PRODUCTION OPTIMIZED
 import { MongoClient, Db, ServerApiVersion, MongoClientOptions } from "mongodb";
 
 if (!process.env.MONGODB_URI) {
@@ -17,7 +16,6 @@ const options: MongoClientOptions = {
   retryWrites: true,
   retryReads: true,
 
-  // Now TypeScript knows 'zlib' is one of the allowed literals
   compressors: ["zlib"],
   zlibCompressionLevel: 6,
 
@@ -28,11 +26,9 @@ const options: MongoClientOptions = {
   },
 };
 
-// Global type declaration for dev mode caching
 declare global {
-  // eslint-disable-next-line no-var
   var _mongoClientPromise: Promise<MongoClient> | undefined;
-  // eslint-disable-next-line no-var
+
   var _mongoClient: MongoClient | undefined;
 }
 
@@ -40,7 +36,6 @@ let client: MongoClient;
 let clientPromise: Promise<MongoClient>;
 
 if (process.env.NODE_ENV === "development") {
-  // In development, use a global variable to preserve the client across hot reloads
   if (!global._mongoClientPromise) {
     client = new MongoClient(uri, options);
     global._mongoClient = client;
@@ -55,7 +50,7 @@ if (process.env.NODE_ENV === "development") {
       })
       .catch((error) => {
         console.error("✗ MongoDB connection failed:", error.message);
-        // Clean up global state on error
+
         global._mongoClientPromise = undefined;
         global._mongoClient = undefined;
         throw error;
@@ -65,7 +60,6 @@ if (process.env.NODE_ENV === "development") {
   }
   clientPromise = global._mongoClientPromise;
 } else {
-  // In production, create a new client for each deployment
   client = new MongoClient(uri, options);
   clientPromise = client
     .connect()
@@ -82,7 +76,6 @@ if (process.env.NODE_ENV === "development") {
     });
 }
 
-// Helper to get the database instance with caching
 let cachedDb: Db | null = null;
 
 export async function getDb(): Promise<Db> {
@@ -96,13 +89,10 @@ export async function getDb(): Promise<Db> {
   return db;
 }
 
-// Export for backward compatibility
 export const db = client.db("tracevault");
 
-// Export the client promise
 export default clientPromise;
 
-// Health check function
 export async function checkMongoConnection(): Promise<boolean> {
   try {
     const client = await clientPromise;
@@ -114,7 +104,6 @@ export async function checkMongoConnection(): Promise<boolean> {
   }
 }
 
-// Get connection pool stats (for monitoring)
 export async function getPoolStats() {
   try {
     const client = await clientPromise;
@@ -133,7 +122,6 @@ export async function getPoolStats() {
   }
 }
 
-// Graceful shutdown
 export async function closeMongoConnection(): Promise<void> {
   try {
     const client = await clientPromise;

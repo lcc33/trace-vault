@@ -2,6 +2,7 @@ import { SITE_CONFIG } from "@/config";
 import { cn } from "@/lib/utils";
 import "@/styles/globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
+import ThemeProvider from "@/components/providers/theme-provider";
 import { startCleanupJob } from "@/lib/cleanup-job";
 
 // Initialize cleanup job on server startup
@@ -19,20 +20,29 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="en" suppressHydrationWarning>
+        <head>
+          <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"
+          />
+          <meta name="theme-color" content="#020617" />
+        </head>
         <body
           className={cn(
-            "min-h-screen bg-background text-foreground font-sans antialiased max-w-full overflow-x-hidden"
+            "min-h-screen bg-background text-foreground font-sans antialiased selection:bg-cyan-500/30",
+            "max-w-full overflow-x-hidden scroll-smooth",
           )}
         >
-          <div
-            style={{
-              margin: "0",
-              padding: "0",
-              boxSizing: "border-box",
-            }}
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="dark"
+            enableSystem
+            disableTransitionOnChange
           >
-            {children}
-          </div>
+            <div className="relative flex min-h-screen flex-col">
+              {children}
+            </div>
+          </ThemeProvider>
         </body>
       </html>
     </ClerkProvider>

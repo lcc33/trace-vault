@@ -1,4 +1,3 @@
-// src/app/api/claims/route.ts
 import { NextResponse } from "next/server";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import clientPromise from "@/lib/mongodb";
@@ -13,7 +12,6 @@ cloudinary.config({
 
 const DAILY_CLAIM_LIMIT = 5;
 
-// --- GET: Fetch user's claims (made + received) ---
 export async function GET() {
   try {
     const { userId } = await auth();
@@ -23,7 +21,6 @@ export async function GET() {
     const client = await clientPromise;
     const db = client.db("tracevault");
 
-    // Get or create DB user
     let dbUser = await db.collection("users").findOne({ clerkId: userId });
     if (!dbUser) {
       const clerkProfile = await currentUser();
@@ -45,7 +42,6 @@ export async function GET() {
       dbUser = { ...newUser, _id: res.insertedId };
     }
 
-    // === CLAIMS MADE BY USER (Claimant view) ===
     const claimsMade = await db
       .collection("claims")
       .aggregate([
@@ -74,7 +70,6 @@ export async function GET() {
       ])
       .toArray();
 
-    // === CLAIMS RECEIVED ON USER'S REPORTS (Reporter view) ===
     const userReports = await db
       .collection("reports")
       .find({ reporterId: userId })
@@ -162,7 +157,6 @@ export async function POST(request: Request) {
 
     const today = new Date().toISOString().split("T")[0];
 
-    
     const DAILY_CLAIM_LIMIT = 3;
 
     const stats = await db.collection("userStats").findOne({ clerkId: userId });
@@ -178,7 +172,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Get or create DB user 
     let dbUser = await db.collection("users").findOne({ clerkId: userId });
     if (!dbUser) {
       const clerkProfile = await currentUser();
@@ -200,7 +193,6 @@ export async function POST(request: Request) {
       dbUser = { ...newUser, _id: res.insertedId };
     }
 
-    //  Validate report 
     const report = await db.collection("reports").findOne({
       _id: new ObjectId(reportId),
       status: "open",
@@ -220,7 +212,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Upload image 
     let proofImage = null;
     if (file && file.size > 0) {
       const buffer = Buffer.from(await file.arrayBuffer());
@@ -234,7 +225,6 @@ export async function POST(request: Request) {
       proofImage = (result as any).secure_url;
     }
 
-    // Create claim 
     const claim = {
       reportId: new ObjectId(reportId),
       claimantId: dbUser._id,
@@ -249,7 +239,6 @@ export async function POST(request: Request) {
 
     const result = await db.collection("claims").insertOne(claim);
 
-    // Increment daily counter AFTER successful claim 
     await db.collection("userStats").updateOne(
       { clerkId: userId },
       {

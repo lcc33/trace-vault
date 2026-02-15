@@ -1,4 +1,4 @@
-// src/app/not-found.tsx
+
 import { Metadata } from "next";
 import Link from "next/link";
 
@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 export default function NotFound() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-950 text-white relative overflow-hidden">
-      {/* Background Blobs */}
+      
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-600 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse"></div>
       <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-pink-500 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse animation-delay-2000"></div>
 
@@ -22,7 +22,7 @@ export default function NotFound() {
           Looks like you got lost in the vault :)
         </p>
 
-        {/* Use Link instead of router.back() */}
+        
         <Link
           href="/"
           className="inline-block px-8 py-4 text-lg font-semibold rounded-full bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl hover:shadow-pink-500/50"

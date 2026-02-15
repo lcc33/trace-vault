@@ -1,4 +1,3 @@
-// src/app/home/components/Toast.tsx
 import { X } from "lucide-react";
 
 interface Props {

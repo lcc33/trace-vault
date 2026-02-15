@@ -1,12 +1,7 @@
-// src/lib/api-utils.ts
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { checkRateLimit } from "./ratelimit";
 
-/**
- * Retry wrapper for database operations
- * Automatically retries failed operations with exponential backoff
- */
 export async function withRetry<T>(
   operation: () => Promise<T>,
   maxRetries: number = 3,
@@ -22,7 +17,7 @@ export async function withRetry<T>(
       console.error(`Retry attempt ${attempt}/${maxRetries} failed:`, error);
 
       if (attempt < maxRetries) {
-        const delay = delayMs * attempt; // Exponential backoff
+        const delay = delayMs * attempt;
         await new Promise((resolve) => setTimeout(resolve, delay));
       }
     }
@@ -31,17 +26,12 @@ export async function withRetry<T>(
   throw lastError;
 }
 
-/**
- * Standard error response handler
- * Returns appropriate HTTP status based on error type
- */
 export function handleApiError(
   error: any,
   defaultMessage: string = "Internal server error",
 ) {
   console.error("API Error:", error);
 
-  // MongoDB errors
   if (error.name === "MongoServerError" || error.name === "MongoNetworkError") {
     return NextResponse.json(
       { error: "Database temporarily unavailable. Please try again." },
@@ -49,7 +39,6 @@ export function handleApiError(
     );
   }
 
-  // Validation errors
   if (error.name === "ValidationError") {
     return NextResponse.json(
       { error: error.message || "Invalid input" },
@@ -57,7 +46,6 @@ export function handleApiError(
     );
   }
 
-  // Auth errors
   if (
     error.message?.includes("Unauthorized") ||
     error.message?.includes("unauthenticated")
@@ -65,14 +53,9 @@ export function handleApiError(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // Default server error
   return NextResponse.json({ error: defaultMessage }, { status: 500 });
 }
 
-/**
- * Require authentication middleware
- * Returns userId if authenticated, otherwise returns error response
- */
 export async function requireAuth(): Promise<
   { userId: string } | NextResponse
 > {
@@ -88,17 +71,12 @@ export async function requireAuth(): Promise<
   return { userId };
 }
 
-/**
- * Apply rate limiting to a route
- * Returns rate limit info or error response if exceeded
- */
 export async function applyRateLimit(
   identifier: string,
   limitType: "read" | "create" | "upload" | "general" = "general",
 ) {
   const rateLimit = await checkRateLimit(identifier, limitType);
 
-  
   if (!rateLimit.success) {
     return {
       error: NextResponse.json(
@@ -125,9 +103,6 @@ export async function applyRateLimit(
   return { headers: rateLimit.headers };
 }
 
-/**
- * Validate request body fields
- */
 export function validateRequired(
   data: Record<string, any>,
   requiredFields: string[],
@@ -143,9 +118,6 @@ export function validateRequired(
   return { isValid: true };
 }
 
-/**
- * Validate text length
- */
 export function validateLength(
   text: string,
   min: number,
@@ -171,9 +143,6 @@ export function validateLength(
   return { isValid: true };
 }
 
-/**
- * Validate file upload
- */
 export function validateFile(
   file: File,
   maxSizeMB: number = 8,
@@ -202,9 +171,6 @@ export function validateFile(
   return { isValid: true };
 }
 
-/**
- * Upload file to Cloudinary with timeout and retry
- */
 export async function uploadToCloudinary(
   file: File,
   folder: string = "tracevault",
@@ -228,32 +194,3 @@ export async function uploadToCloudinary(
   const result = await Promise.race([uploadPromise, timeoutPromise]);
   return result.secure_url;
 }
-
-/**
- * Example usage in a route:
- *
- * export async function GET() {
- *   try {
- *     // 1. Require auth
- *     const authResult = await requireAuth();
- *     if (authResult instanceof NextResponse) return authResult;
- *     const { userId } = authResult;
- *
- *     // 2. Apply rate limiting
- *     const rateLimitResult = await applyRateLimit(userId, 'read');
- *     if (rateLimitResult.error) return rateLimitResult.error;
- *
- *     // 3. Your logic here...
- *     const data = await withRetry(async () => {
- *       return await db.collection('items').find().toArray();
- *     });
- *
- *     return NextResponse.json(data, {
- *       headers: rateLimitResult.headers,
- *     });
- *
- *   } catch (error) {
- *     return handleApiError(error, "Failed to fetch data");
- *   }
- * }
- */

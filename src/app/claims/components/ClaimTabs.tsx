@@ -1,4 +1,3 @@
-// src/app/claims/components/ClaimsTabs.tsx
 interface Props {
   activeTab: "made" | "received";
   setActiveTab: (tab: "made" | "received") => void;

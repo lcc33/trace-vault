@@ -1,4 +1,3 @@
-// src/app/claims/components/EnlargedImageModal.tsx
 import Image from "next/image";
 
 interface Props {

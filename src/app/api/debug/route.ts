@@ -1,4 +1,3 @@
-// app/api/test-db/route.ts
 import { NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
 
@@ -7,19 +6,19 @@ export async function GET() {
     const client = await clientPromise;
     const db = client.db("tracevault");
     const result = await db.command({ ping: 1 });
-    return NextResponse.json({ 
-      status: "success", 
+    return NextResponse.json({
+      status: "success",
       message: "Connected to MongoDB server",
-      ping: result 
+      ping: result,
     });
   } catch (error: any) {
     return NextResponse.json(
-      { 
-        status: "error ti wa ohhh", 
+      {
+        status: "error ti wa ohhh",
         message: "Failed to connect to MongoDB Atlas",
-        error: error.message 
+        error: error.message,
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

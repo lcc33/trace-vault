@@ -3,7 +3,7 @@
 import { useUser } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { RefreshCcw, WifiOff } from "lucide-react"; // Assuming you use lucide-react
+import { RefreshCcw, WifiOff, ShieldCheck } from "lucide-react";
 
 export default function LandingPage() {
   const { isLoaded, isSignedIn } = useUser();
@@ -11,27 +11,26 @@ export default function LandingPage() {
   const [error, setError] = useState<"timeout" | "offline" | null>(null);
 
   useEffect(() => {
-    // 1. Handle Offline State
-    if (!navigator.onLine) {
+    if (typeof window !== "undefined" && !navigator.onLine) {
       setError("offline");
       return;
     }
 
-    // 2. Set a timeout (8 seconds) to prevent infinite spinning
     const timer = setTimeout(() => {
       if (!isLoaded) setError("timeout");
-    }, 8000);
+    }, 10000);
 
     if (isLoaded) {
       clearTimeout(timer);
-      if (isSignedIn) {
-        // 3. Prefetch for "instant" feeling before replacing
-        router.prefetch("/home");
-        router.replace("/home");
-      } else {
-        router.prefetch("/sign-in");
-        router.replace("/sign-in");
-      }
+      const target = isSignedIn ? "/home" : "/sign-in";
+
+      router.prefetch(target);
+
+      const redirectTimer = setTimeout(() => {
+        router.replace(target);
+      }, 800);
+
+      return () => clearTimeout(redirectTimer);
     }
 
     return () => clearTimeout(timer);
@@ -43,62 +42,75 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-black flex flex-col items-center justify-center p-4">
-      <div className="relative mb-8">
-        {/* Only show spinner if there is no error */}
-        {!error ? (
-          <div className="relative">
-            <div className="absolute inset-0 rounded-full animate-ping">
-              <div className="w-32 h-32 rounded-full bg-cyan-500/20 blur-xl" />
-            </div>
-            <div className="relative w-32 h-32">
+    <div className="min-h-screen bg-[#020617] flex flex-col items-center justify-center p-6 overflow-hidden">
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-cyan-500/10 blur-[120px] rounded-full" />
+
+      <div className="relative z-10 flex flex-col items-center">
+        <div className="mb-12 relative">
+          {!error ? (
+            <div className="relative flex items-center justify-center">
+              <div className="absolute w-24 h-24 border-2 border-cyan-500/20 rounded-full" />
               <div
-                className="absolute inset-0 rounded-full border-4 border-transparent border-r-cyan-400 border-b-cyan-400 animate-spin"
-                style={{ animationDuration: "2s" }}
+                className="absolute w-24 h-24 border-t-2 border-cyan-400 rounded-full animate-spin"
+                style={{ animationDuration: "0.8s" }}
               />
-              <div
-                className="absolute inset-0 rounded-full border-4 border-transparent border-t-cyan-400 animate-spin"
-                style={{ animationDuration: "1.5s", animationDirection: "reverse" }}
-              />
+
+              <div className="relative bg-slate-900 p-4 rounded-2xl border border-white/10 shadow-2xl animate-pulse">
+                <ShieldCheck className="w-8 h-8 text-cyan-400" />
+              </div>
             </div>
-          </div>
-        ) : (
-          <div className="flex flex-col items-center animate-in fade-in zoom-in duration-300">
-            {error === "offline" ? (
-              <WifiOff className="w-16 h-16 text-slate-500 mb-4" />
-            ) : (
-              <RefreshCcw className="w-16 h-16 text-cyan-500 mb-4" />
-            )}
-          </div>
-        )}
+          ) : (
+            <div className="bg-slate-900 p-6 rounded-3xl border border-white/10 animate-in zoom-in duration-300">
+              {error === "offline" ? (
+                <WifiOff className="w-12 h-12 text-slate-500" />
+              ) : (
+                <RefreshCcw className="w-12 h-12 text-amber-500 animate-spin-slow" />
+              )}
+            </div>
+          )}
+        </div>
+
+        <div className="text-center space-y-4">
+          {!error ? (
+            <>
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-white via-white to-slate-500 bg-clip-text text-transparent tracking-tight">
+                TraceVault
+              </h1>
+              <div className="flex flex-col items-center gap-2">
+                <p className="text-slate-400 text-sm font-medium">
+                  Verifying your secure session
+                </p>
+                <div className="flex gap-1">
+                  <span className="w-1.5 h-1.5 bg-cyan-500 rounded-full animate-bounce [animation-delay:-0.3s]" />
+                  <span className="w-1.5 h-1.5 bg-cyan-500 rounded-full animate-bounce [animation-delay:-0.15s]" />
+                  <span className="w-1.5 h-1.5 bg-cyan-500 rounded-full animate-bounce" />
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="max-w-xs animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <h1 className="text-xl font-semibold text-white">
+                {error === "offline" ? "Connection Lost" : "Taking a while..."}
+              </h1>
+              <p className="text-slate-400 text-sm mt-2 mb-8">
+                {error === "offline"
+                  ? "We can't reach the vault. Check your internet connection."
+                  : "Authentication is taking longer than expected. Network might be unstable."}
+              </p>
+              <button
+                onClick={handleRetry}
+                className="w-full py-4 bg-white text-black font-bold rounded-2xl hover:bg-cyan-400 transition-all active:scale-95 flex items-center justify-center gap-2 shadow-xl shadow-cyan-500/10"
+              >
+                <RefreshCcw className="w-5 h-5" />
+                Try Again
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Dynamic Text/UI for User Feedback */}
-      <div className="text-center max-w-xs">
-        {!error ? (
-          <>
-            <h1 className="text-white font-medium text-lg animate-pulse">TraceVault</h1>
-            <p className="text-slate-400 text-sm mt-2">Securing your session...</p>
-          </>
-        ) : (
-          <>
-            <h1 className="text-white font-medium text-lg">
-              {error === "offline" ? "No Internet Connection" : "Connection Timeout"}
-            </h1>
-            <p className="text-slate-400 text-sm mt-2 mb-6">
-              {error === "offline" 
-                ? "Please check your data or Wi-Fi settings." 
-                : "The connection is taking longer than usual."}
-            </p>
-            <button
-              onClick={handleRetry}
-              className="px-6 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-full transition-all active:scale-95 flex items-center gap-2 mx-auto"
-            >
-              <RefreshCcw className="w-4 h-4" />
-              Try Again
-            </button>
-          </>
-        )}
+      <div className="absolute bottom-12 text-slate-600 text-[10px] uppercase tracking-[0.2em] font-bold">
+        Secure Recovery Protocol v1.0
       </div>
     </div>
   );

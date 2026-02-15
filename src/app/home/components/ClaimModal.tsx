@@ -1,4 +1,4 @@
-// src/app/home/components/ClaimModal.tsx
+
 "use client";
 
 import { useState } from "react";

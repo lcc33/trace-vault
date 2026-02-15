@@ -1,4 +1,3 @@
-// src/app/claims/components/ReceivedClaims.tsx
 import ClaimCard from "./ClaimCard";
 import { Clock } from "lucide-react";
 import type { Claim } from "../types";
