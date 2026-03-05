@@ -16,7 +16,7 @@ const Navbar = () => {
   const [activeItem, setActiveItem] = useState("home");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false); // For desktop hover
-
+  const [isMobile, setIsMobile] = useState();
   const navItems = [
     { id: "home", href: "/home", icon: FaHome, label: "Home" },
     { id: "explore", href: "/explore", icon: FaSearch, label: "Explore" },
@@ -130,9 +130,13 @@ const Navbar = () => {
       )}
 
       <aside
+     
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
+     
+        
         className={`
+
     fixed top-0 left-0 h-full bg-slate-900 border-r border-slate-700 z-50 
     transition-all duration-300 ease-in-out
     ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
@@ -170,6 +174,7 @@ const Navbar = () => {
                   <span
                     className={`
               text-lg font-medium whitespace-nowrap transition-all duration-300
+              opacity-100 translate-x-0
               ${isHovered ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-10 lg:hidden"}
             `}
                   >

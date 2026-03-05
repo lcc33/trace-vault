@@ -108,10 +108,6 @@ export default function LandingPage() {
           )}
         </div>
       </div>
-
-      <div className="absolute bottom-12 text-slate-600 text-[10px] uppercase tracking-[0.2em] font-bold">
-        Secure Recovery Protocol v1.0
-      </div>
     </div>
   );
 }
